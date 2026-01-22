@@ -1,0 +1,67 @@
+export const API_ROUTES = {
+    SIGN_IN: '/sign-in',
+    LOGOUT: '/logout',
+    FORGOT_PASSWORD: {
+        VALIDATE_EMAIL: '/forgot-password/send-email',
+        RESET_PASSWORD: '/forgot-password/reset-password',
+    },
+    SIGN_URL: '/files/sign-url',
+    GET_FILE: '/files/download',
+    CHANGE_PASSWORD: '/users/change-password',
+    UPDATE_USER: '/users',
+    GET_UTIL_DATA: '/util-data',
+    NOTIFICATIONS: '/users/notifications',
+    MY_CLIENTS: {
+        LIST: '/customers/client',
+        CREATE: '/customers/client',
+        UPDATE: '/customers/client/{id}',
+    },
+    CUSTOM_SERVICES: {
+        GET_REQUEST_SERVICES: '/request-services',
+        CREATE: '/request-services',
+        UPDATE: '/request-services/{id}',
+        REQUEST_CORRECTION: '/request-services/{id}/correction',
+        GET_ACTIVITY: '/request-services/{id}/activity',
+        UPLOAD_FILES: '/request-services/{id}/attachments',
+        DOWNLOAD_FILE: '/request-services/{itemId}/attachments/{fileId}/download',
+        GET_FILES: '/request-services/{id}/attachments',
+        DELETE: '/request-services/{id}',
+        DELETE_ATTACHMENT: '/request-services/{id}/attachments/{attachmentId}',
+    },
+    GET_EVENTS: '/events',
+    GET_EVENT_FILES: '/events/{id}/files',
+    TRAININGS: {
+        LIST: '/trainings',
+        FILTER: '/trainings/filter',
+        DETAIL: '/trainings/{id}',
+    },
+    POSTS: {
+        LIST: '/posts',
+        STATS_MONTH: '/posts/stats/month',
+        MARK_AS_SENT: '/posts/{id}/sent',
+    },
+    SPONSORED: {
+        GALLERY: '/sponsored',
+        GET_AUTOCOMPLETE_LIST: '/sponsored/autocomplete',
+        UPDATE: '/sponsored/{id}',
+    },
+    SPONSORSHIP: {
+        REMOVE: '/sponsorships/{id}',
+        UPDATE: '/sponsorships/{id}',
+    },
+    TOOLS: {
+        LIST: '/tools',
+    },
+    REPORTS: {
+        LIST_UPLOADS: '/reports/uploads',
+        UPLOAD: '/reports/upload',
+        GENERATE_REPORT_PDF: '/reports/generate-pdf/{templateId}/{reportType}',
+        GENERATE_REPORT_PPTX: '/reports/generate-pptx/{templateId}/{reportType}',
+    },
+    VERIFICATION_TEMPORARY_CODE: '/verification-temporary-code',
+    DASHBOARD: '/dashboard',
+    CANVA: {
+        AUTHORIZE: '/canva/authorize',
+        DISCONNECT: '/canva/disconnect',
+    }
+}
