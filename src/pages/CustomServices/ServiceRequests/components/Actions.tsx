@@ -1,7 +1,7 @@
 import Modal from "@/components/common/Modal"
 import AlertConfirm from "@/components/generics/AlertConfirm"
 import { Button } from "@/components/ui/button"
-import { UserRequestService } from "@/interfaces/requestService"
+import { UserRequestService, UserRequestStatusTypes } from "@/interfaces/requestService"
 import { useRequestServicesStore } from "@/store/request-services"
 import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react"
 import CustomServiceForm from "./Form"
@@ -44,6 +44,7 @@ const ServiceActions = ({ item }: Props) => {
             <Button
                 variant="ghost"
                 size="icon"
+                disabled={item.status === UserRequestStatusTypes.COMPLETED}
                 className="text-emerald-400 rounded-lg"
                 onClick={() => {
                     setOpenAction('edit')
@@ -52,21 +53,23 @@ const ServiceActions = ({ item }: Props) => {
             >
                 <PencilIcon />
             </Button>
-            <AlertConfirm
-                trigger={
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-400 rounded-lg"
-                        disabled={requestState.loading}
-                    >
-                        <TrashIcon />
-                    </Button>
-                }
-                description='El servicio personalizado será eliminado permanentemente. Esta acción no se puede deshacer.'
-                loading={requestState.loading}
-                onConfirm={handleDelete}
-            />
+            {item.status === UserRequestStatusTypes.UNASSIGNED && (
+                <AlertConfirm
+                    trigger={
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-400 rounded-lg"
+                            disabled={requestState.loading}
+                        >
+                            <TrashIcon />
+                        </Button>
+                    }
+                    description='El servicio personalizado será eliminado permanentemente. Esta acción no se puede deshacer.'
+                    loading={requestState.loading}
+                    onConfirm={handleDelete}
+                />
+            )}
 
             <Modal
                 open={openAction === 'edit' && selectedId === item.id}

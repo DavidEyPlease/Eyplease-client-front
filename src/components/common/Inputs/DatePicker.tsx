@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label"
 interface DateTimePickerProps {
     label?: string;
     dateValue?: Date;
+    onDisableDate?: (date: Date) => boolean;
     onDateChange: (date: Date) => void;
 }
 
-const DatePicker = ({ label, dateValue, onDateChange }: DateTimePickerProps) => {
+const DatePicker = ({ label, dateValue, onDisableDate, onDateChange }: DateTimePickerProps) => {
     return (
         <Popover>
             <PopoverTrigger asChild>
@@ -21,7 +22,7 @@ const DatePicker = ({ label, dateValue, onDateChange }: DateTimePickerProps) => 
                     <Button
                         variant={"outline"}
                         className={cn(
-                            "w-full max-w-[400px] pl-3 text-left font-normal dark:bg-input/30 py-5",
+                            "w-full max-w-[400px] pl-3 text-left font-normal dark:bg-input/30 py-4",
                             !dateValue && "text-muted-foreground"
                         )}
                         type="button"
@@ -38,6 +39,7 @@ const DatePicker = ({ label, dateValue, onDateChange }: DateTimePickerProps) => 
             <PopoverContent className="w-auto p-0" align="start">
                 <CalendarInput
                     value={dateValue}
+                    onDisableDate={onDisableDate}
                     onChange={onDateChange}
                 />
             </PopoverContent>

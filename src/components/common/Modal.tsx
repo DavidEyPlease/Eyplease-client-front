@@ -18,6 +18,9 @@ const sizeClasses = {
     xl: 'sm:max-w-2xl',
     xxl: 'sm:max-w-4xl',
     '2xl': 'sm:max-w-5xl',
+    '3xl': 'sm:max-w-6xl',
+    '4xl': 'sm:max-w-7xl',
+    '5xl': 'sm:max-w-8xl',
     full: 'sm:w-full max-w-none',
 }
 

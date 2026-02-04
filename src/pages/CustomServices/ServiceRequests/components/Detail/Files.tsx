@@ -61,7 +61,22 @@ const CustomServiceFiles = ({ itemId }: Props) => {
                     onValueChange={value => setActiveTab(value as FilesTab)}
                 />
                 <div>
-                    <InputFile label="Añadir" id={`attachment-${itemId}`} multiple onChange={e => onUploadFiles(e.target.files ? Array.from(e.target.files) : [])} />
+                    <InputFile
+                        label="Añadir"
+                        id={`attachment-${itemId}`}
+                        multiple
+                        onChange={e => {
+                            onUploadFiles(
+                                e.target.files ? Array.from(e.target.files) : [],
+                                (newFiles) => {
+                                    setFiles([
+                                        ...serviceFiles?.data || [],
+                                        ...newFiles
+                                    ])
+                                }
+                            )
+                        }}
+                    />
                 </div>
             </div>
 
@@ -125,7 +140,13 @@ const CustomServiceFiles = ({ itemId }: Props) => {
                 })}
             </div>
 
-            {selectedFile && <AttachmentViewer isOpen={!!selectedFile} onClose={() => setSelectedFile(null)} attachment={selectedFile} />}
+            {selectedFile && (
+                <AttachmentViewer
+                    isOpen={!!selectedFile}
+                    onClose={() => setSelectedFile(null)}
+                    attachment={selectedFile}
+                />
+            )}
         </div>
     )
 }

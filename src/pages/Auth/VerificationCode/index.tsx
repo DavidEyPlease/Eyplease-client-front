@@ -8,11 +8,12 @@ import Button from "@/components/common/Button"
 import CodeInput from "@/components/common/Inputs/CodeInput"
 import { ApiResponse, CodeVerificationMethods, VerificationCodeRequestBody } from "@/interfaces/common"
 import { API_ROUTES } from "@/constants/api"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 const VerificationCodePage = () => {
     const navigate = useNavigate()
     const [code, setCode] = useState('')
+    const [email, setEmail] = useState('')
 
     const { request, requestState } = useRequest('POST')
 
@@ -30,13 +31,21 @@ const VerificationCodePage = () => {
         }
     }
 
+    useEffect(() => {
+        const search = new URLSearchParams(window.location.search)
+        const email = search.get('email')
+        if (email) {
+            setEmail(email)
+        }
+    }, [])
+
     return (
         <AuthLayout>
             <div className="w-full text-center">
                 <div className="mb-5">
                     <h2 className="mb-4 text-xl font-bold text-gray-800">Revisa tu correo electrónico</h2>
                     <p className="text-sm text-gray-600">
-                        Por favor ingresa el código de 6 dígitos que hemos enviado al correo <b className="text-primary">usermail@gmail.com</b>
+                        Por favor ingresa el código de 6 dígitos que hemos enviado al correo <b className="text-primary">{email}</b>
                     </p>
                 </div>
 

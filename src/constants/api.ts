@@ -15,6 +15,7 @@ export const API_ROUTES = {
         LIST: '/customers/client',
         CREATE: '/customers/client',
         UPDATE: '/customers/client/{id}',
+        DELETE: '/customers/client/{id}',
     },
     CUSTOM_SERVICES: {
         GET_REQUEST_SERVICES: '/request-services',
@@ -28,8 +29,11 @@ export const API_ROUTES = {
         DELETE: '/request-services/{id}',
         DELETE_ATTACHMENT: '/request-services/{id}/attachments/{attachmentId}',
     },
+    CREATE_EVENT: '/events',
+    UPDATE_EVENT: '/events/{id}',
     GET_EVENTS: '/events',
     GET_EVENT_FILES: '/events/{id}/files',
+    DELETE_EVENT: '/events/{id}',
     TRAININGS: {
         LIST: '/trainings',
         FILTER: '/trainings/filter',

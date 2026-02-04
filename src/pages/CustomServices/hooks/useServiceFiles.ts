@@ -20,7 +20,7 @@ const useServiceFiles = () => {
         }
     })
 
-    const onUploadFiles = (files: File[]) => {
+    const onUploadFiles = (files: File[], callback?: (newFiles: IUserRequestServiceFile[]) => void) => {
         if (!files || files.length === 0 || !selectedItem) return
 
         return new Promise<void>((resolve, reject) => {
@@ -40,6 +40,7 @@ const useServiceFiles = () => {
                                     ...selectedItem!.files,
                                 ]
                             })
+                            callback?.(newFiles.data)
                             // publishEvent('tasks-updated', { id: taskId, files: [...newTask.data, ...attachments], eventType: 'update' });
                             // publishEvent('tasks-updated', { id: taskId, files: [...newTask.data, ...attachments], eventType: 'updateDetail' });
                             // clean input file

@@ -8,6 +8,5 @@ export const IconFingerprint = () => {
             <path d="M15 22H17C20 22 22 20 22 17V15" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M2 15V17C2 20 4 22 7 22H9" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-
     )
 }
