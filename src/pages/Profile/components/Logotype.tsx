@@ -26,7 +26,6 @@ const Logotype = ({ user }: Props) => {
             await uploadUserPhoto(
                 file,
                 FileTypes.USER_LOGOTYPE,
-                `public/network-people/${user?.id}/logotypes`,
                 filename,
                 'logotype'
             )

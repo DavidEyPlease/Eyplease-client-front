@@ -21,11 +21,10 @@ const ProfilePhoto = ({ authUser }: Props) => {
     const onSubmitPhoto = async (file: File) => {
         try {
             setLoading(true)
-            const filename = `${new Date().getTime()}.${getFileType(file.type)}`
+            const filename = `${authUser.account}_${new Date().getTime()}.${getFileType(file.type)}`
             await uploadUserPhoto(
                 file,
                 FileTypes.SPONSOR_PHOTO,
-                `public/network-people/photos/${authUser?.id}/profile`,
                 filename,
                 'profilePicture'
             )

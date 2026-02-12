@@ -80,10 +80,10 @@ const useAuth = () => {
         })
     }
 
-    const uploadUserPhoto = async (file: File, type: FileTypes, uri: string, filename: string, updateKey?: keyof IUserUpdate) => {
+    const uploadUserPhoto = async (file: File, type: FileTypes, filename: string, updateKey?: keyof IUserUpdate) => {
         try {
             const fileKey = await uploadFile({
-                file, fileType: type, filename: `${uri}/${filename}`
+                file, fileType: type, filename
             })
             if (fileKey && updateKey) {
                 await updateUser({ [updateKey]: filename })

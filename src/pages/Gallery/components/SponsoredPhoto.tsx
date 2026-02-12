@@ -73,7 +73,7 @@ const SponsoredPhoto = ({ itemId, src, uri, alt, sizeClasses }: Props) => {
                 file: croppedFile,
                 fileType: FileTypes.SPONSORED_PHOTO,
                 callback: onUpdatePhoto
-            })
+            }, false)
 
             onResetCrop()
         } catch (error) {

@@ -74,7 +74,7 @@ const Photo = ({ itemId, src, uri, alt, sizeClasses }: Props) => {
                 file: croppedFile,
                 fileType: FileTypes.CUSTOMER_CLIENT,
                 callback: onUpdatePhoto
-            })
+            }, false)
 
             onResetCrop()
 

@@ -17,17 +17,18 @@ interface OnUploadParams {
 const useFiles = () => {
     const [executing, setExecuting] = useState(false)
 
-    const onUploadFile = async (params: OnUploadParams) => {
+    const onUploadFile = async (params: OnUploadParams, useFullUri = true) => {
         try {
             setExecuting(true)
+            const filename = params.filename || params.file.name
             const fileKey = await uploadFile({
                 file: params.file,
-                filename: params.filename || params.file.name,
+                filename,
                 fileType: params.fileType,
                 disk: params.disk || 'private',
             })
             if (fileKey) {
-                await params.callback?.(fileKey)
+                await params.callback?.(useFullUri ? fileKey : filename)
             }
         } catch (error) {
             console.log(error)
