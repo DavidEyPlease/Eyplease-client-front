@@ -16,4 +16,5 @@ export interface ICustomerOfClientUpdate {
 
 export interface ICustomersOfClientFilters {
     letter: string
+    search?: string
 }

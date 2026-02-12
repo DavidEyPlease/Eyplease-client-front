@@ -10,7 +10,8 @@ export default tseslint.config([
   {
     files: ['**/*.{ts,tsx}'],
     rules: {
-      semi: ["error", "never"]
+      semi: ["error", "never"],
+      "@typescript-eslint/no-explicit-any": "off",
     },
     extends: [
       js.configs.recommended,

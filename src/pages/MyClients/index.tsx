@@ -19,13 +19,11 @@ const MyClientsPage = () => {
     const [openForm, setOpenForm] = useState(false)
 
     const {
-        isFirstMount,
         clients,
         isLoading,
         hasNextPage,
         isFetchingNextPage,
-        setSearch,
-        loadMore,
+        fetchNextPage,
         setFilters
     } = useListMyClients()
 
@@ -35,7 +33,7 @@ const MyClientsPage = () => {
                 <div className="flex-1">
                     <SearchInput
                         placeholder="Buscar por nombre"
-                        onSubmitSearch={setSearch}
+                        onSubmitSearch={(e) => setFilters({ search: e })}
                     />
                 </div>
                 <Button
@@ -50,7 +48,7 @@ const MyClientsPage = () => {
                 />
             </div>
             <AlphabetFilter onFilter={letter => setFilters({ letter })} />
-            {isLoading && !isFirstMount ? (
+            {isLoading && !isFetchingNextPage ? (
                 <PageLoader />
             ) : (
                 <div className="grid mt-10 gap-x-5 gap-y-14 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -84,7 +82,7 @@ const MyClientsPage = () => {
                 />
             )}
             {hasNextPage &&
-                <LoadMorePaginator disabled={!hasNextPage} loading={isFetchingNextPage} onLoadMore={() => loadMore()} />
+                <LoadMorePaginator disabled={!hasNextPage} loading={isFetchingNextPage} onLoadMore={() => fetchNextPage()} />
             }
 
             <Modal open={openForm} onOpenChange={setOpenForm} title="Crear Nuevo Cliente">

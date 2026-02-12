@@ -21,4 +21,5 @@ export interface ITool {
 
 export interface IToolsFilters {
     section: ToolSectionTypes
+    search?: string
 }

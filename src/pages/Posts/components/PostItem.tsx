@@ -18,32 +18,16 @@ import IconDownload from "@/components/Svg/IconDownload"
 import useCarousel from "@/hooks/useCarousel"
 import useFiles from "@/hooks/useFiles"
 import { CheckIcon } from "lucide-react"
-import useRequestQuery from "@/hooks/useRequestQuery"
-import { API_ROUTES } from "@/constants/api"
-import { publishEvent } from "@/utils/events"
-import { BROWSER_EVENTS } from "@/constants/app"
-import { queryKeys } from "@/utils/cache"
+import usePostActions from "../hooks/usePostActions"
 
 interface Props {
     item: IPost
 }
 
 const PostItem = ({ item }: Props) => {
+    const { requestState, markAsSent } = usePostActions()
     const { setApi, current: currentFile } = useCarousel()
     const { executing, downloadFile } = useFiles()
-    const { request, requestState } = useRequestQuery({
-        invalidateQueries: [queryKeys.list('posts-stats')]
-    })
-
-    const markAsSent = async () => {
-        try {
-            publishEvent(BROWSER_EVENTS.POSTS_LIST_UPDATED, { action: 'updated', data: { id: item.id, shared_at: new Date().toISOString() } })
-            await request('PATCH', API_ROUTES.POSTS.MARK_AS_SENT.replace('{id}', item.id))
-        } catch (error) {
-            console.error(error)
-            publishEvent(BROWSER_EVENTS.POSTS_LIST_UPDATED, { action: 'updated', data: { id: item.id, shared_at: null } })
-        }
-    }
 
     const status = item.shared_at ? 'sent' : 'published'
 
@@ -90,7 +74,7 @@ const PostItem = ({ item }: Props) => {
                             disabled={status === "sent" || requestState.loading}
                             className={`relative w-5 h-5 rounded border-2 transition-all duration-300 ${status === "sent" ? "bg-green-500 border-green-500 scale-110" : "border-gray-300 hover:border-green-400"
                                 }`}
-                            onClick={markAsSent}
+                            onClick={() => markAsSent(item.id)}
                         >
                             {status === "sent" && (
                                 <CheckIcon className="w-3 h-3 text-white absolute top-0.5 left-0.5 animate-in zoom-in duration-200" />

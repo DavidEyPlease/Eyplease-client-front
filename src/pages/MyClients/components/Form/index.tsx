@@ -17,6 +17,7 @@ import { CustomerOfClient } from "@/interfaces/customerOfClients"
 import useRequestQuery from "@/hooks/useRequestQuery"
 import { BROWSER_EVENTS } from "@/constants/app"
 import DatePicker from "@/components/common/Inputs/DatePicker"
+import useCustomerActions from "../../hooks/useCustomerActions"
 
 interface Props {
     item?: CustomerOfClient
@@ -40,10 +41,16 @@ const CustomerByClientForm = ({ item, onSuccess }: Props) => {
         } : { gender: Gender.FEMALE }
     )
     const { request, requestState } = useRequestQuery()
+    const { updateCachedCustomer, addCachedCustomer } = useCustomerActions()
 
     const onSuccessForm = (newItem: CustomerOfClient) => {
         toast.success('Datos actualizados correctamente')
         publishEvent(BROWSER_EVENTS.CUSTOMER_CLIENTS_LIST_UPDATED, { data: newItem, action: isEdit ? 'updated' : 'created' })
+        if (isEdit) {
+            updateCachedCustomer(newItem.id, newItem)
+        } else {
+            addCachedCustomer(newItem)
+        }
         onSuccess?.()
     }
 

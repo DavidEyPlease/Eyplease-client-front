@@ -35,5 +35,5 @@ export interface IPost {
 export interface IPostsFilters {
     mainSection: MainPostSectionTypes
     section: PostSectionTypes
-    cursor?: string | null
+    search?: string
 }

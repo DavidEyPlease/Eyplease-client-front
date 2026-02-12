@@ -17,4 +17,5 @@ export interface IAuthUser {
     on_biometric_auth: boolean
     plan: IPlan
     canva_connected: boolean
+    template_id: string | null
 }

@@ -51,7 +51,7 @@ const TrainingItem = ({ training, showRibbon }: Props) => {
                     )}
                     <CardBgImage
                         srcImage={getTrainingFileByType(training.files, FileTypes.TRAINING_COVER)?.url || ''}
-                        classImageHeight="h-48 w-full"
+                        classImageHeight="h-64 w-full"
                         className="border-none"
                         objectPosition="object-cover"
                     />

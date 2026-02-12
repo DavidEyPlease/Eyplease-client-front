@@ -12,6 +12,7 @@ import { CustomerByClientService } from "@/services/customersByClient.service"
 import { publishEvent } from "@/utils/events"
 import { getCroppedImg } from "@/utils/files"
 import useCropImage from "@/hooks/useCropImage"
+import useCustomerActions from '../hooks/useCustomerActions'
 
 interface Props {
     itemId: string
@@ -22,6 +23,7 @@ interface Props {
 }
 
 const Photo = ({ itemId, src, uri, alt, sizeClasses }: Props) => {
+    const { updateCachedCustomer } = useCustomerActions()
     const { executing, onUploadFile } = useFiles()
     const {
         imgSrc,
@@ -38,7 +40,7 @@ const Photo = ({ itemId, src, uri, alt, sizeClasses }: Props) => {
     const onUpdatePhoto = async (fileUri: string) => {
         try {
             const itemUpdated = await CustomerByClientService.update(itemId, { photo: fileUri })
-            publishEvent(BROWSER_EVENTS.CUSTOMER_CLIENTS_LIST_UPDATED, { data: itemUpdated, action: 'updated' })
+            updateCachedCustomer(itemId, itemUpdated)
         } catch (error) {
             console.error("Error updating photo:", error)
         }

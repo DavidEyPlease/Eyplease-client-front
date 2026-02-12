@@ -53,7 +53,9 @@ const Modal = ({ title, description, children, size = 'sm', className, footer, .
                     }
                 </DialogHeader>
                 <Separator />
-                {children}
+                <div className="no-scrollbar -mx-4 max-h-[70vh] overflow-y-auto px-4">
+                    {children}
+                </div>
                 {footer &&
                     <DialogFooter>
                         {footer}

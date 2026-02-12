@@ -3,7 +3,7 @@ import Modal from "@/components/common/Modal"
 import IconDownload from "@/components/Svg/IconDownload"
 import { API_ROUTES } from "@/constants/api"
 import useRequest from "@/hooks/useRequest"
-import { ApiResponse, NewsletterSectionKeys, NewsletterTypes, ReportBackgrounds } from "@/interfaces/common"
+import { ApiResponse, Newsletter, NewsletterSectionKeys, NewsletterTypes, ReportBackgrounds } from "@/interfaces/common"
 import useAuthStore from "@/store/auth"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -21,16 +21,19 @@ interface Props {
     selectedTemplate: string;
 }
 
+const filterSectionsByType = (newsletters: Newsletter[], type: NewsletterTypes) => {
+    return newsletters.find(i => i.code === type)?.sections.filter(i => !!i.showInNewsletter)
+}
+
 const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }: Props) => {
     const { utilData, user } = useAuthStore(state => state)
     const [newsletterType, setNewsletterType] = useState<NewsletterTypes>(NewsletterTypes.UNITY)
-    const [selectedSections, setSelectedSections] = useState<NewsletterSectionKeys[]>([])
+    const [selectedSections, setSelectedSections] = useState<NewsletterSectionKeys[]>(filterSectionsByType(utilData.newsletters, NewsletterTypes.UNITY)?.map(i => i.sectionKey) || [])
     const { request, requestState } = useRequest('GET')
     const { startPptxUnityProcess, startPptxNationalProcess } = usePptxGeneratorStore(state => state)
 
     const onSuccessReport = () => {
         toast.success('Boletín generado correctamente.')
-        setSelectedSections([])
         onClose()
     }
 
@@ -72,10 +75,11 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
     }
 
     useEffect(() => {
-        setSelectedSections([])
-    }, [newsletterType])
+        setSelectedSections(filterSectionsByType(utilData.newsletters, newsletterType)?.map(i => i.sectionKey) || [])
+    }, [utilData.newsletters, newsletterType])
 
-    const sections = utilData.newsletters.find(i => i.code === newsletterType)?.sections.filter(i => !!i.showInNewsletter)
+    const sections = filterSectionsByType(utilData.newsletters, newsletterType)
+
     return (
         <Modal
             open={open}
@@ -98,7 +102,7 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
                 />
             }
         >
-            <div className="mx-auto">
+            {/* <div className="mx-auto">
                 <Button
                     text='Condiciones de boletín'
                     color="primary"
@@ -107,7 +111,7 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
                     variant="outline"
                     disabled={!selectedTemplate}
                 />
-            </div>
+            </div> */}
 
             <DynamicTabs
                 items={utilData.newsletters.map(n => ({ label: n.name, value: n.code }))}

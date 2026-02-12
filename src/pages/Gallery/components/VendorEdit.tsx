@@ -6,11 +6,8 @@ import VendorForm from "./VendorForm"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronDownIcon } from "lucide-react"
 import AlertConfirm from "@/components/generics/AlertConfirm"
-import useRequestQuery from "@/hooks/useRequestQuery"
-import { API_ROUTES } from "@/constants/api"
 import Spinner from "@/components/common/Spinner"
-import { publishEvent } from "@/utils/events"
-import { BROWSER_EVENTS } from "@/constants/app"
+import useSponsoredActions from "../hooks/useSponsoredActions"
 
 interface Props {
     sponsored: ISponsored
@@ -20,39 +17,7 @@ const DROPDOWN_ITEM_STYLES = 'cursor-pointer hover:bg-primary/10 transition-colo
 
 const VendorEdit = ({ sponsored }: Props) => {
     const [openEdit, setOpenEdit] = useState(false)
-    const [actionLoading, setActionLoading] = useState<'remove' | 'update' | null>(null)
-
-    const { request } = useRequestQuery()
-
-    const onRemoveVendor = async () => {
-        try {
-            setActionLoading('remove')
-            const response = await request('DELETE', API_ROUTES.SPONSORSHIP.REMOVE.replace('{id}', sponsored.id))
-            if (response.success) {
-                publishEvent(BROWSER_EVENTS.GALLERY_LIST_UPDATED, { data: { id: sponsored.id }, action: 'deleted' })
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setActionLoading(null)
-        }
-    }
-
-    const onDisplayVendor = async () => {
-        try {
-            setActionLoading('update')
-            const v = !sponsored.display_in_reports
-            const response = await request<{ display_in_reports: boolean }, ISponsored>('PATCH', API_ROUTES.SPONSORSHIP.UPDATE.replace('{id}', sponsored.id), { display_in_reports: v })
-            if (response.success) {
-                // toast.success('Datos actualizados correctamente')
-                publishEvent(BROWSER_EVENTS.GALLERY_LIST_UPDATED, { data: { id: sponsored.id, display_in_reports: v }, action: 'updated' })
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setActionLoading(null)
-        }
-    }
+    const { actionLoading, onRemoveVendor, onDisplayVendor } = useSponsoredActions()
 
     return (
         <>
@@ -87,7 +52,7 @@ const VendorEdit = ({ sponsored }: Props) => {
                         disabled={actionLoading === 'update'}
                         onClick={(e) => {
                             e.preventDefault()
-                            onDisplayVendor()
+                            onDisplayVendor(sponsored)
                         }}
                     >
                         <div className="flex items-center justify-between w-full">
@@ -118,7 +83,7 @@ const VendorEdit = ({ sponsored }: Props) => {
                         }
                         description='La vendedora dejara de pertenecer a tu lista de vendedoras'
                         // loading={requestState.loading}
-                        onConfirm={() => onRemoveVendor()}
+                        onConfirm={() => onRemoveVendor(sponsored.id)}
                     />
                 </DropdownMenuContent>
             </DropdownMenu>

@@ -38,7 +38,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					<SidebarMenu>
 						{sidebarMenu.map((item) => {
 							const Icon = ICONS[item.icon]
-							const isActive = location.pathname === item.path
+							const isActive = location.pathname.includes(item.path)
 							return (
 								item.children ? (
 									<Collapsible

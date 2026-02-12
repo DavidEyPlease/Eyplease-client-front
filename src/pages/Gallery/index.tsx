@@ -1,59 +1,40 @@
-import { useCallback, useEffect } from "react"
 
 import { API_ROUTES } from "@/constants/api"
-import { GalleryFilters, ISponsored, VendorFilterType } from "@/interfaces/sponsored"
+import { ISponsored, VendorFilterType } from "@/interfaces/sponsored"
 import VendorItem from "./components/Item"
 
 import SearchInput from "@/components/generics/SearchInput"
 import PageLoader from "@/components/generics/PageLoader"
 import VendorEdit from "./components/VendorEdit"
-import { BrowserEvent, subscribeEvent, unsubscribeEvent } from "@/utils/events"
 import LoadMorePaginator from "@/components/generics/LoadMorePaginator"
-import { useIsFirstMount } from "@/hooks/useIsFirstMount"
 import AlphabetFilter from "@/components/generics/AlphabetFilter"
 import DynamicTabs from "@/components/generics/DynamicTabs"
 import { IconBySection } from "@/components/generics/IconBySection"
 import { PermissionKeys } from "@/interfaces/permissions"
-import { BROWSER_EVENTS } from "@/constants/app"
 import { Badge } from "@/components/ui/badge"
 import useInfiniteListQuery from "@/hooks/useInfiniteListQuery"
 import { EmptySection } from "@/components/generics/EmptySection"
 import { IconGallery } from "@/components/Svg/IconGallery"
+import { useGalleryStore } from "@/store/gallery"
 
 const GalleryPage = () => {
+    const { filters, setFilters, getListQueryKey } = useGalleryStore(state => state)
+    const listQueryKey = getListQueryKey()
+
     const {
         data: sponsoredList,
-        isLoading,
         isFetchingNextPage,
+        isLoading,
         hasNextPage,
-        filters,
-        updateItems,
-        loadMore,
-        setSearch,
-        setFilter
-    } = useInfiniteListQuery<ISponsored, GalleryFilters>({
-        endpoint: API_ROUTES.SPONSORED.GALLERY,
-        defaultFilters: { vendorRole: 'unity', letter: '' },
-    })
-
-    const isFirstMount = useIsFirstMount()
-
-    const handleListUpdate = useCallback((event: BrowserEvent<{ action: 'updated' | 'deleted', data: ISponsored }>) => {
-        if (event.detail.action === 'updated') {
-            updateItems(sponsoredList.map(sponsored => sponsored.id === event.detail.data.id ? { ...sponsored, ...event.detail.data } : sponsored))
+        fetchNextPage,
+    } = useInfiniteListQuery<ISponsored>(
+        API_ROUTES.SPONSORED.GALLERY,
+        {
+            queryParams: filters,
+            customQueryKey: listQueryKey,
+            enabled: !!filters.vendorRole
         }
-        if (event.detail.action === 'deleted') {
-            updateItems(sponsoredList.filter(sponsored => sponsored.id !== event.detail.data.id))
-        }
-    }, [sponsoredList])
-
-    useEffect(() => {
-        subscribeEvent(BROWSER_EVENTS.GALLERY_LIST_UPDATED, handleListUpdate as EventListener)
-
-        return () => {
-            unsubscribeEvent(BROWSER_EVENTS.GALLERY_LIST_UPDATED, handleListUpdate as EventListener)
-        }
-    }, [handleListUpdate])
+    )
 
     return (
         <div className="grid pt-2">
@@ -65,22 +46,22 @@ const GalleryPage = () => {
                             { value: "directors", label: "Directoras", icon: <IconBySection sectionKey={PermissionKeys.POSTS_DIRECTORS} /> },
                         ]}
                         value={filters.vendorRole}
-                        onValueChange={value => setFilter({ vendorRole: value as VendorFilterType })}
+                        onValueChange={value => setFilters({ vendorRole: value as VendorFilterType })}
                     />
                     <div className="flex-1">
                         <SearchInput
                             placeholder="Buscar por nombre/cuenta"
-                            onSubmitSearch={setSearch}
+                            onSubmitSearch={(e) => setFilters({ search: e })}
                         />
                     </div>
                 </div>
-                <AlphabetFilter onFilter={letter => setFilter({ letter })} />
+                <AlphabetFilter onFilter={letter => setFilters({ letter })} />
             </div>
-            {isLoading && !isFirstMount ? (
+            {isLoading && !isFetchingNextPage ? (
                 <PageLoader />
             ) : (
                 <div className="grid mt-10 gap-x-5 gap-y-14 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {sponsoredList.map(sponsored => (
+                    {(sponsoredList?.pages.flatMap(page => page.items) ?? []).map(sponsored => (
                         <VendorItem
                             key={sponsored.id}
                             item={sponsored}
@@ -106,7 +87,7 @@ const GalleryPage = () => {
                     ))}
                 </div>
             )}
-            {sponsoredList.length === 0 && !isLoading && (
+            {(sponsoredList?.pages.flatMap(page => page.items) ?? []).length === 0 && !isLoading && (
                 <EmptySection
                     title="No hay resultados"
                     description="Intenta ajustar los filtros o buscar con otras palabras clave."
@@ -114,7 +95,7 @@ const GalleryPage = () => {
                 />
             )}
             {hasNextPage &&
-                <LoadMorePaginator disabled={!hasNextPage} loading={isFetchingNextPage} onLoadMore={() => loadMore()} />
+                <LoadMorePaginator disabled={!hasNextPage} loading={isFetchingNextPage} onLoadMore={() => fetchNextPage()} />
             }
         </div>
     )

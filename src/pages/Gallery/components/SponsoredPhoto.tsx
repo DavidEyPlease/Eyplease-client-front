@@ -4,13 +4,12 @@ import 'react-image-crop/dist/ReactCrop.css'
 import Button from "@/components/common/Button"
 import Modal from "@/components/common/Modal"
 import AvatarUploadPhoto from "@/components/generics/AvatarUploadPhoto"
-import { BROWSER_EVENTS } from "@/constants/app"
 import useCropImage from "@/hooks/useCropImage"
 import useFiles from "@/hooks/useFiles"
 import { FileTypes } from "@/interfaces/files"
 import { SponsoredService } from "@/services/sponsored.service"
-import { publishEvent } from "@/utils/events"
 import { getCroppedImg } from "@/utils/files"
+import useSponsoredActions from '../hooks/useSponsoredActions'
 
 interface Props {
     itemId: string
@@ -22,6 +21,7 @@ interface Props {
 }
 
 const SponsoredPhoto = ({ itemId, src, uri, alt, sizeClasses }: Props) => {
+    const { updateCachedVendor } = useSponsoredActions()
     const { executing, onUploadFile } = useFiles()
     const {
         imgSrc,
@@ -38,7 +38,7 @@ const SponsoredPhoto = ({ itemId, src, uri, alt, sizeClasses }: Props) => {
     const onUpdatePhoto = async (fileUri: string) => {
         try {
             const itemUpdated = await SponsoredService.update(itemId, { photo: fileUri })
-            publishEvent(BROWSER_EVENTS.GALLERY_LIST_UPDATED, { data: itemUpdated, action: 'updated' })
+            updateCachedVendor(itemId, itemUpdated)
         } catch (error) {
             console.error("Error updating photo:", error)
         }

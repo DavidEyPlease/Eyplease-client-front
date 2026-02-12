@@ -18,4 +18,6 @@ export interface ITraining extends IBaseDBProperties {
     files: EypleaseFile[]
 }
 
+export interface ITrainingListFilters { category: string, search?: string }
+
 export type FilterType = TrainingFilterTypes | TrainingCategoryTypes

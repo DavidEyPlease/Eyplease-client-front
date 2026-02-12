@@ -11,9 +11,8 @@ import { ISponsored } from "@/interfaces/sponsored"
 import { Gender } from "@/interfaces/common"
 import { API_ROUTES } from "@/constants/api"
 import { toast } from "sonner"
-import { publishEvent } from "@/utils/events"
 import useRequestQuery from "@/hooks/useRequestQuery"
-import { BROWSER_EVENTS } from "@/constants/app"
+import useSponsoredActions from "../../hooks/useSponsoredActions"
 
 interface Props {
     sponsored: ISponsored
@@ -30,13 +29,14 @@ const VendorForm = ({ sponsored, onSuccess }: Props) => {
         formState: { errors },
     } = useCustomForm<SponsoredFormData>(SponsoredSchema, sponsored)
     const { request, requestState } = useRequestQuery()
+    const { updateCachedVendor } = useSponsoredActions()
 
     const onSubmit = handleSubmit(async (data) => {
         try {
             const response = await request<SponsoredFormData, ISponsored>('PUT', API_ROUTES.SPONSORED.UPDATE.replace('{id}', sponsored.id), data)
             if (response.success) {
                 toast.success('Datos actualizados correctamente')
-                publishEvent(BROWSER_EVENTS.GALLERY_LIST_UPDATED, { data: response.data, action: 'updated' })
+                updateCachedVendor(sponsored.id, response.data)
                 onSuccess?.()
             }
         } catch (error) {

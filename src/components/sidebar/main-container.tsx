@@ -12,7 +12,7 @@ interface Props {
 }
 
 const MainContainer = ({ children, page }: Props) => {
-    const labelPage = SIDEBAR_ITEMS.find(item => item.path === page)?.label
+    const labelPage = SIDEBAR_ITEMS.find(item => page.includes(item.path))?.label
     return (
         <SidebarInset className="p-[10px]">
             <div className="h-full shadow-[0px_20px_20px_10px_#00000024] rounded-2xl">
