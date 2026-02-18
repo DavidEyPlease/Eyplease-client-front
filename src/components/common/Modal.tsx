@@ -57,7 +57,7 @@ const Modal = ({ title, description, children, size = 'sm', className, footer, .
                     {children}
                 </div>
                 {footer &&
-                    <DialogFooter>
+                    <DialogFooter className="border-t pt-4">
                         {footer}
                     </DialogFooter>
                 }

@@ -119,24 +119,26 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
                 onValueChange={value => setNewsletterType(value as NewsletterTypes)}
             />
 
-            {(sections || []).map(section => {
-                const selected = selectedSections.includes(section.sectionKey)
-                return (
-                    <div className="flex items-center space-x-2" key={section.sectionKey}>
-                        <Checkbox
-                            id={section.sectionKey}
-                            checked={selected}
-                            onCheckedChange={(e) => e ? setSelectedSections([...selectedSections, section.sectionKey]) : setSelectedSections(selectedSections.filter(i => i !== section.sectionKey))}
-                        />
-                        <Label
-                            htmlFor={section.sectionKey}
-                            className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                            {section.name}
-                        </Label>
-                    </div>
-                )
-            })}
+            <div className="space-y-4 mt-4">
+                {(sections || []).map(section => {
+                    const selected = selectedSections.includes(section.sectionKey)
+                    return (
+                        <div className="flex items-center space-x-2" key={section.sectionKey}>
+                            <Checkbox
+                                id={section.sectionKey}
+                                checked={selected}
+                                onCheckedChange={(e) => e ? setSelectedSections([...selectedSections, section.sectionKey]) : setSelectedSections(selectedSections.filter(i => i !== section.sectionKey))}
+                            />
+                            <Label
+                                htmlFor={section.sectionKey}
+                                className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                                {section.name}
+                            </Label>
+                        </div>
+                    )
+                })}
+            </div>
         </Modal>
     )
 }
