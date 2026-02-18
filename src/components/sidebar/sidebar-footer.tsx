@@ -24,13 +24,13 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    useSidebar,
+    // useSidebar,
 } from "@/components/ui/sidebar"
 import useAuth from "@/hooks/useAuth"
 import { useNavigate } from "react-router"
 import { APP_ROUTES } from "@/constants/app"
 import LoggedUserAvatar from "@/components/generics/LoggedUserAvatar"
-import UpgradePlan from "@/components/generics/UpgradePlan"
+// import UpgradePlan from "@/components/generics/UpgradePlan"
 import { IAuthUser } from "@/interfaces/auth"
 
 interface Props {
@@ -39,17 +39,17 @@ interface Props {
 
 const SidebarFooter = ({ user }: Props) => {
     const { handleLogout } = useAuth()
-    const { state } = useSidebar()
+    // const { state } = useSidebar()
     const navigate = useNavigate()
 
     return (
         <UISidebarFooter>
             <SidebarMenu>
-                {state !== 'collapsed' &&
+                {/* {state !== 'collapsed' &&
                     <SidebarMenuItem>
                         <UpgradePlan />
                     </SidebarMenuItem>
-                }
+                } */}
                 <SidebarMenuItem>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

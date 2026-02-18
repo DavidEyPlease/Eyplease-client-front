@@ -22,7 +22,7 @@ import useAuthStore from "@/store/auth"
 import { ICONS } from "./icons"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
 import { Link } from "react-router"
-import UserSubscription from "../generics/UserSubscription"
+// import UserSubscription from "../generics/UserSubscription"
 import SidebarFooter from "./sidebar-footer"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -91,7 +91,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</SidebarMenu>
 				</SidebarGroup>
 
-				{state === 'expanded' && <UserSubscription />}
+				{/* {state === 'expanded' && <UserSubscription />} */}
 
 			</SidebarContent>
 			{user && <SidebarFooter user={user} />}
