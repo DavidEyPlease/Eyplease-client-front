@@ -19,7 +19,7 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
     ...createListSlice<IPost>()(set),
 
     filters: {
-        mainSection: MainPostSectionTypes.UNITY,
+        post_type: MainPostSectionTypes.UNITY,
         section: PostSectionTypes.BIRTHDAYS
     },
     getListQueryKey: () => queryKeys.list('posts', { ...get().filters }),

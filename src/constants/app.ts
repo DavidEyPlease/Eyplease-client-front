@@ -74,7 +74,7 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     },
     {
         key: MenuKeys.POSTS,
-        label: 'Noticias',
+        label: 'Publicaciones',
         path: APP_ROUTES.POSTS.LIST,
         requiredPermission: true,
         permissionKeys: [PermissionKeys.POSTS],

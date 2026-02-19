@@ -35,14 +35,18 @@ export enum PermissionKeys {
     POSTS_UNITY = 'unity',
 
     STARS = 'stars',
+    NATIONAL_STARS = 'national_stars',
     HONOR_ROLL = 'honor_roll',
     PINK_CIRCLE = 'pink_circle',
     BIRTHDAYS = 'birthdays',
+    NATIONAL_BIRTHDAYS = 'national_birthdays',
     NEW_BEGGININGS = 'new_beginnings',
     ROAD_TO_SUCCESS = 'road_to_success',
     ANNIVERSARIES = 'anniversaries',
+    NATIONAL_ANNIVERSARIES = 'national_anniversaries',
     DIQ = 'diq',
     SALES_CUT = 'sales_cut',
     INITIATION_CUT = 'initiation_cut',
     UNIT_CLUB = 'target_unit_club',
+    CUSTOMER_BIRTHDAYS = 'customer_birthdays'
 }

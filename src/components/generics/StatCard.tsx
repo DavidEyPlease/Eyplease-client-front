@@ -78,9 +78,9 @@ interface StatCardProps {
 
 export const StatCard = ({ title, description, startContent, color, endContent, children }: StatCardProps) => {
     return (
-        <Card className={cn('border-l-4', COLOR_TO_CLASS[color]?.border)}>
+        <Card className={cn('border-l-4 gap-0', COLOR_TO_CLASS[color]?.border)}>
             <CardContent className="p-0 px-4">
-                <div className={cn("flex items-start justify-between", children && 'mb-3')}>
+                <div className={cn("flex items-start justify-between", children && 'mb-2')}>
                     <div className="flex items-center space-x-2">
                         {startContent}
                         <div>

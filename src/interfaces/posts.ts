@@ -1,8 +1,11 @@
 import { EypleaseFile } from "./files"
 
 export enum PostSectionTypes {
+    CUSTOMER_BIRTHDAYS = 'customer_birthdays',
     STARS = 'stars',
+    NATIONAL_STARS = 'national_stars',
     BIRTHDAYS = 'birthdays',
+    NATIONAL_BIRTHDAYS = 'national_birthdays',
     PINK_CIRCLE = 'pink_circle',
     NEW_BEGINNINGS = 'new_beginnings',
     ROAD_TO_SUCCESS = 'road_to_success',
@@ -11,6 +14,7 @@ export enum PostSectionTypes {
     INITIATION_CUT = 'initiation_cut',
     HONOR_ROLL = 'honor_roll',
     ANNIVERSARIES = 'anniversaries',
+    NATIONAL_ANNIVERSARIES = 'national_anniversaries',
 }
 
 export enum MainPostSectionTypes {
@@ -33,7 +37,7 @@ export interface IPost {
 }
 
 export interface IPostsFilters {
-    mainSection: MainPostSectionTypes
+    post_type: MainPostSectionTypes
     section: PostSectionTypes
     search?: string
 }
