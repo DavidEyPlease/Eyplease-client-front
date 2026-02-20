@@ -2,9 +2,20 @@ import { IMonthlyReportResponse } from "@/interfaces/monthlyReports"
 import PptxGenJS from "pptxgenjs"
 
 class SlideImageBuilder {
+    /**
+     * Appends a cache-busting query parameter to external URLs to avoid
+     * the browser serving a cached response (from a prior <img> load)
+     * that lacks CORS headers, which causes PptxGenJS's XHR to fail.
+     */
+    private static bustCorsCache(url: string): string {
+        if (!url || !url.startsWith('http')) return url
+        const separator = url.includes('?') ? '&' : '?'
+        return `${url}${separator}cb=${Date.now()}`
+    }
+
     static addBackground(slide: PptxGenJS.Slide, imagePath: string): void {
         slide.addImage({
-            path: imagePath,
+            path: this.bustCorsCache(imagePath),
             x: 0, y: 0, w: '100%', h: '100%'
         })
     }
@@ -15,13 +26,16 @@ class SlideImageBuilder {
         imageProps: PptxGenJS.ImageProps
     ): void {
         slide.addImage({
-            path: imageUrl,
+            path: this.bustCorsCache(imageUrl),
             ...imageProps
         })
     }
 
     static addImage(slide: PptxGenJS.Slide, props: PptxGenJS.ImageProps): void {
-        slide.addImage(props)
+        const bustedProps = props.path
+            ? { ...props, path: this.bustCorsCache(props.path) }
+            : props
+        slide.addImage(bustedProps)
     }
 
     static getImageDataUrl(report: IMonthlyReportResponse): string {
