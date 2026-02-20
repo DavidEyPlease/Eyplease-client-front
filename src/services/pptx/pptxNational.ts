@@ -253,8 +253,12 @@ class PptxNationalService {
         const { name, profile_picture } = authUser
         const slide = this.pres.addSlide()
 
+        const profilePhoto = authUser.profile_picture?.has_photo
+            ? profile_picture!.url
+            : `/images/${authUser.profile_picture?.filename ?? 'women-avatar.jpg'}`
+
         SlideImageBuilder.addBackground(slide, bgImage)
-        SlideImageBuilder.addProfileImage(slide, profile_picture!.url, {
+        SlideImageBuilder.addProfileImage(slide, profilePhoto, {
             sizing: {
                 type: 'cover',
                 x: 0.5, y: 1.1, w: '31%', h: '56%'
@@ -279,7 +283,7 @@ class PptxNationalService {
             SlideImageBuilder.addBackground(slide, bgImage)
             const imagePosition = SLIDE_POSITIONS.newDiqPhoto
             SlideImageBuilder.addImage(slide, {
-                path: item.photo_url,
+                path: SlideImageBuilder.getImageDataUrl(item),
                 sizing: {
                     type: 'cover',
                     ...imagePosition
@@ -298,7 +302,7 @@ class PptxNationalService {
             SlideImageBuilder.addBackground(slide, bgImage)
             const imagePosition = SLIDE_POSITIONS.diqPhoto
             SlideImageBuilder.addImage(slide, {
-                path: item.photo_url,
+                path: SlideImageBuilder.getImageDataUrl(item),
                 sizing: {
                     type: 'cover',
                     ...imagePosition
@@ -318,7 +322,7 @@ class PptxNationalService {
                 SlideImageBuilder.addBackground(slide, bgSection)
                 const imagePosition = SLIDE_POSITIONS.towardsSummit.photo
                 SlideImageBuilder.addImage(slide, {
-                    path: item.photo_url,
+                    path: SlideImageBuilder.getImageDataUrl(item),
                     sizing: {
                         type: 'cover',
                         w: imagePosition.w,
@@ -345,7 +349,7 @@ class PptxNationalService {
 
                     const imagePosition = { ...SLIDE_POSITIONS.towardsSummit.seniorDir.photo, ...SLIDE_POSITIONS.towardsSummit.seniorDir[`photoPosition${i}` as keyof typeof SLIDE_POSITIONS.towardsSummit.seniorDir] }
                     SlideImageBuilder.addImage(slide, {
-                        path: item.photo_url,
+                        path: SlideImageBuilder.getImageDataUrl(item),
                         sizing: {
                             type: 'cover',
                             ...imagePosition
@@ -364,7 +368,7 @@ class PptxNationalService {
                 SlideImageBuilder.addBackground(slide, bgSection)
                 const imagePosition = SLIDE_POSITIONS.bonds.photo
                 SlideImageBuilder.addImage(slide, {
-                    path: item.photo_url,
+                    path: SlideImageBuilder.getImageDataUrl(item),
                     sizing: {
                         type: 'cover',
                         w: imagePosition.w,
@@ -391,7 +395,7 @@ class PptxNationalService {
 
                     const imagePosition = { ...SLIDE_POSITIONS.bonds.minors.photo, ...SLIDE_POSITIONS.bonds.minors[`photoPosition${i}` as keyof typeof SLIDE_POSITIONS.bonds.minors] }
                     SlideImageBuilder.addImage(slide, {
-                        path: item.photo_url,
+                        path: SlideImageBuilder.getImageDataUrl(item),
                         sizing: {
                             type: 'cover',
                             ...imagePosition
@@ -431,7 +435,7 @@ class PptxNationalService {
 
             const imagePosition = { ...SLIDE_POSITIONS.nationalRanking.topThreePhotoSize, ...SLIDE_POSITIONS.nationalRanking[`topPhoto${index + 1}` as keyof typeof SLIDE_POSITIONS.nationalRanking] }
             SlideImageBuilder.addImage(slide, {
-                path: item.photo_url,
+                path: SlideImageBuilder.getImageDataUrl(item),
                 sizing: {
                     type: 'cover',
                     ...imagePosition
@@ -456,7 +460,7 @@ class PptxNationalService {
 
                 const imagePosition = { ...SLIDE_POSITIONS.nationalStars.photoSize, ...SLIDE_POSITIONS.nationalStars[`photoPosition${i}` as keyof typeof SLIDE_POSITIONS.nationalStars] }
                 SlideImageBuilder.addImage(slide, {
-                    path: item.photo_url,
+                    path: SlideImageBuilder.getImageDataUrl(item),
                     sizing: {
                         type: 'cover',
                         ...imagePosition
@@ -487,7 +491,7 @@ class PptxNationalService {
             SlideImageBuilder.addBackground(slide, bgSection)
             const imagePosition = SLIDE_POSITIONS.tops.topThreeSingle.photo
             SlideImageBuilder.addImage(slide, {
-                path: item.photo_url,
+                path: SlideImageBuilder.getImageDataUrl(item),
                 sizing: {
                     type: 'cover',
                     w: imagePosition.w,
@@ -516,7 +520,7 @@ class PptxNationalService {
 
                 const imagePosition = SLIDE_POSITIONS.tops.topThreeDouble[`photo${i}` as keyof typeof SLIDE_POSITIONS.tops.topThreeDouble]
                 SlideImageBuilder.addImage(slide, {
-                    path: item.photo_url,
+                    path: SlideImageBuilder.getImageDataUrl(item),
                     sizing: {
                         type: 'cover',
                         ...imagePosition
@@ -533,7 +537,7 @@ class PptxNationalService {
             SlideImageBuilder.addBackground(slide, bgImage)
             const imagePosition = SLIDE_POSITIONS.tsr.photo
             SlideImageBuilder.addImage(slide, {
-                path: item.photo_url,
+                path: SlideImageBuilder.getImageDataUrl(item),
                 sizing: {
                     type: 'cover',
                     ...imagePosition
@@ -552,7 +556,7 @@ class PptxNationalService {
             SlideImageBuilder.addBackground(slide, bgImage)
             const imagePosition = SLIDE_POSITIONS.cuts.photo
             SlideImageBuilder.addImage(slide, {
-                path: item.photo_url,
+                path: SlideImageBuilder.getImageDataUrl(item),
                 sizing: {
                     type: 'cover',
                     ...imagePosition
@@ -571,7 +575,7 @@ class PptxNationalService {
             SlideImageBuilder.addBackground(slide, bgImage)
             const imagePosition = SLIDE_POSITIONS.cuts.photo
             SlideImageBuilder.addImage(slide, {
-                path: item.photo_url,
+                path: SlideImageBuilder.getImageDataUrl(item),
                 sizing: {
                     type: 'cover',
                     ...imagePosition
@@ -590,7 +594,7 @@ class PptxNationalService {
             SlideImageBuilder.addBackground(slide, bgImage)
             const imagePosition = SLIDE_POSITIONS.cuts.photo
             SlideImageBuilder.addImage(slide, {
-                path: item.photo_url,
+                path: SlideImageBuilder.getImageDataUrl(item),
                 sizing: {
                     type: 'cover',
                     ...imagePosition

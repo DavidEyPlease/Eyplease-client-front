@@ -1,3 +1,4 @@
+import { IMonthlyReportResponse } from "@/interfaces/monthlyReports"
 import PptxGenJS from "pptxgenjs"
 
 class SlideImageBuilder {
@@ -21,6 +22,14 @@ class SlideImageBuilder {
 
     static addImage(slide: PptxGenJS.Slide, props: PptxGenJS.ImageProps): void {
         slide.addImage(props)
+    }
+
+    static getImageDataUrl(report: IMonthlyReportResponse): string {
+        const profilePhoto = report?.has_photo
+            ? report!.photo_url
+            : `/images/${report?.photo_filename ?? 'women-avatar.jpg'}`
+
+        return profilePhoto
     }
 }
 

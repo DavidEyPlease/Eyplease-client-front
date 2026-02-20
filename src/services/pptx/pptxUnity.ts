@@ -279,14 +279,22 @@ class PptxUnityService {
         const { name, profile_picture, client_role } = authUser
         const slide = this.pres.addSlide()
 
+        const profilePhoto = authUser.profile_picture?.has_photo
+            ? profile_picture!.url
+            : `/images/${authUser.profile_picture?.filename ?? 'women-avatar.jpg'}`
+
         SlideImageBuilder.addBackground(slide, bgImage)
-        SlideImageBuilder.addProfileImage(slide, profile_picture!.url, {
-            sizing: {
-                type: 'cover',
-                x: 0.5, y: 1.1, w: '31%', h: '56%'
-            },
-            x: 0.45, y: 1.1, w: '31%', h: '56%'
-        })
+        SlideImageBuilder.addProfileImage(
+            slide,
+            profilePhoto,
+            {
+                sizing: {
+                    type: 'cover',
+                    x: 0.5, y: 1.1, w: '31%', h: '56%'
+                },
+                x: 0.45, y: 1.1, w: '31%', h: '56%'
+            }
+        )
 
         SlideTextBuilder.addText(slide, name.toUpperCase(), {
             ...SLIDE_POSITIONS.userName,
@@ -320,7 +328,7 @@ class PptxUnityService {
         SlideImageBuilder.addBackground(slide, bgImage)
         const imagePosition = SLIDE_POSITIONS.honorRollImage
         SlideImageBuilder.addImage(slide, {
-            path: item.photo_url,
+            path: SlideImageBuilder.getImageDataUrl(item),
             sizing: {
                 type: 'cover',
                 ...imagePosition
@@ -341,7 +349,7 @@ class PptxUnityService {
         SlideImageBuilder.addBackground(slide, bgImage)
         const imagePosition = SLIDE_POSITIONS.initiationCutImage
         SlideImageBuilder.addImage(slide, {
-            path: item.photo_url,
+            path: SlideImageBuilder.getImageDataUrl(item),
             sizing: {
                 type: 'cover',
                 ...imagePosition
@@ -362,7 +370,7 @@ class PptxUnityService {
         const content = pointsSectionItems.map(item => {
             const position = allData.findIndex(i => i.sponsored_id === item.sponsored_id) + 1
             return {
-                photo: position >= 4 && position <= 10 ? item.photo_url : null,
+                photo: position >= 4 && position <= 10 ? SlideImageBuilder.getImageDataUrl(item) : null,
                 text: TextFormatter.formatPointsClubText(item, position)
             }
         })
@@ -397,7 +405,7 @@ class PptxUnityService {
         if (pointsSectionItems.length === 0) return
         const content = pointsSectionItems.map(item => {
             return {
-                photo: item.photo_url,
+                photo: SlideImageBuilder.getImageDataUrl(item),
                 text: TextFormatter.formatRoadToSuccessText(item)
             }
         })
@@ -456,7 +464,7 @@ class PptxUnityService {
         if (items.length === 0) return
         const content = items.map(item => {
             return {
-                photo: item.photo_url,
+                photo: SlideImageBuilder.getImageDataUrl(item),
                 text: TextFormatter.formatStarsText(item)
             }
         })
@@ -486,7 +494,7 @@ class PptxUnityService {
         if (items.length === 0) return
         const content = items.map(item => {
             return {
-                photo: item.photo_url,
+                photo: SlideImageBuilder.getImageDataUrl(item),
                 text: TextFormatter.formatGroupProductionText(item)
             }
         })
@@ -513,7 +521,6 @@ class PptxUnityService {
         if (items.length === 0) return
         const content = items.map(item => TextFormatter.formatPinkCircleText(item))
         const batches = generateBatches(content, 10)
-        console.log({ batches })
         batches.forEach(batch => {
             const slide = this.pres.addSlide()
             SlideImageBuilder.addBackground(slide, bgSection)

@@ -2,12 +2,17 @@ import { FileUrls } from "./common"
 import { IPlan } from "./plans"
 import { ClientRole } from "./users"
 
+type Photo = FileUrls & {
+    has_photo: boolean
+    filename: string
+}
+
 export interface IAuthUser {
     id: string
     user_id: string
     name: string
     email: string
-    profile_picture: FileUrls | null
+    profile_picture: Photo | null
     account: string
     country: string
     phone: string

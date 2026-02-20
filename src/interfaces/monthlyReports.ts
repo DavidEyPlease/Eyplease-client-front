@@ -134,6 +134,8 @@ export interface IMonthlyReportResponse<T = Record<string, unknown>> {
     report_date: string
     consultant_code: string
     photo_url: string
+    has_photo: boolean
+    photo_filename: string
     sponsored_id: string
     sponsored_name: string
     report_key_value: string
