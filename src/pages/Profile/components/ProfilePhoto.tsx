@@ -42,7 +42,7 @@ const ProfilePhoto = ({ authUser }: Props) => {
                 <>
                     <LoggedUserAvatar
                         user={authUser}
-                        sizeClasses="w-40 h-40"
+                        sizeClasses="size-24 md:size-40"
                         className="mt-[-35px] border-4 border-white"
                         loading={loading}
                     />
@@ -50,10 +50,9 @@ const ProfilePhoto = ({ authUser }: Props) => {
                         fileUploaderComponent={
                             <Button
                                 color="primary"
-                                className="absolute top-[-50px] right-[-15px]"
+                                className="absolute top-[-40px] right-[-15px] size-8 md:size-10 rounded-full"
                                 text={<IconEdit />}
                                 rounded
-                                size="icon"
                             />
                         }
                         onSelectedFile={onSubmitPhoto}

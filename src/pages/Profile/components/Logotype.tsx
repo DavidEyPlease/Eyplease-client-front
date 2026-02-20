@@ -50,10 +50,9 @@ const Logotype = ({ user }: Props) => {
                 fileUploaderComponent={
                     <Button
                         color="primary"
-                        className="absolute bottom-[-15px] left-10"
+                        className="absolute bottom-[-15px] left-12 size-8 rounded-full"
                         text={<IconEdit />}
                         rounded
-                        size="icon"
                         disabled={loading}
                     />
                 }

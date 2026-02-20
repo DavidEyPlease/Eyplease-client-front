@@ -14,7 +14,7 @@ const FilterItem = <T extends string>({ title, lock, icon, active, filterKey, se
         <button
             className={
                 clsx(
-                    "relative flex flex-col items-center justify-center w-24 px-3 py-3 transition-transform duration-300 ease-in-out transform border-none rounded-lg group hover:scale-110",
+                    "relative flex flex-col items-center justify-center w-24 py-3 transition-transform duration-300 ease-in-out transform border-none rounded-lg group hover:scale-110",
                     lock ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
                     active ? 'bg-primary text-white' : 'bg-gray dark:bg-card'
                 )
@@ -27,7 +27,7 @@ const FilterItem = <T extends string>({ title, lock, icon, active, filterKey, se
                 </div>
             }
             <div className={clsx(
-                'grid w-10 h-10 mx-auto mb-1 border rounded-full text-primary place-content-center',
+                'grid size-8 mx-auto mb-1 border rounded-full text-primary place-content-center [&>svg]:size-4',
                 active ? 'text-white bg-primary border-white' : 'group-hover:text-white group-hover:bg-primary border-primary'
             )}>
                 {icon}

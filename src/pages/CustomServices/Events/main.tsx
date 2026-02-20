@@ -78,23 +78,9 @@ const Events = () => {
         }
     }
 
-    // useEffect(() => {
-    //     if (events?.data) {
-    //         setData({
-    //             ...events.data,
-    //             items: (events?.data?.items || []).map((event) => ({
-    //                 ...event,
-    //                 start: new Date(event.start_date).toISOString().replace(/T.*$/, ''),
-    //                 // end: new Date(event.expired_at).toISOString().replace(/T.*$/, ''),
-    //                 classNames: ['border-0', 'bg-primary', 'shadow-md'],
-    //             }))
-    //         })
-    //     }
-    // }, [events?.data])
-
     return (
         <div className="grid md:grid-cols-6 gap-4">
-            <Card className='col-span-4'>
+            <Card className='md:col-span-4 py-0 order-2 md:order-1'>
                 <CardContent className='p-0'>
                     <FullCalendar
                         ref={calendarRef}
@@ -119,7 +105,7 @@ const Events = () => {
                     />
                 </CardContent>
             </Card>
-            <ScrollArea className="h-2/3 w-full col-span-2 rounded-md border py-4">
+            <ScrollArea className="h-max md:h-2/3 w-full md:col-span-2 rounded-md border py-4 order-1 md:order-2">
                 <CardContent className='space-y-4 px-3'>
                     <Button
                         className='ml-auto'

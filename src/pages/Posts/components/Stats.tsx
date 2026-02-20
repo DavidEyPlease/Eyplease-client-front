@@ -21,14 +21,14 @@ const PostsStats = () => {
     )
 
     return (
-        <div className="grid md:grid-cols-2 gap-x-4">
+        <div className="grid grid-cols-2 gap-2 min-w-52">
             <StatCard
                 title='Publicados'
                 color="cyan"
-                startContent={<FileTextIcon className="size-6 text-secondary" />}
+                startContent={<FileTextIcon className="size-4 md:size-6 text-secondary" />}
             >
                 <div className="flex items-center gap-1">
-                    <p className="text-2xl font-bold text-secondary">
+                    <p className="text-lg md:text-2xl font-bold text-secondary">
                         {response?.data?.posts_count ?? 0}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -37,12 +37,12 @@ const PostsStats = () => {
                 </div>
             </StatCard>
             <StatCard
-                title='Publicaciones Enviadas'
+                title='Enviadas'
                 color="primary"
-                startContent={<SendIcon className="size-6 text-primary" />}
+                startContent={<SendIcon className="size-4 md:size-6 text-primary" />}
             >
                 <div className="flex items-center gap-1">
-                    <p className="text-2xl font-bold text-primary">
+                    <p className="text-lg md:text-2xl font-bold text-primary">
                         {response?.data?.posts_sent_count ?? 0}
                     </p>
                     <p className="text-xs text-muted-foreground">

@@ -39,7 +39,13 @@ const GalleryPage = () => {
     return (
         <div className="grid pt-2">
             <div className="flex flex-col gap-4">
-                <div className="flex justify-between gap-x-4 ">
+                <div className="flex flex-col items-center md:flex-row justify-between gap-4">
+                    <div className="flex-1 w-full">
+                        <SearchInput
+                            placeholder="Buscar por nombre/cuenta"
+                            onSubmitSearch={(e) => setFilters({ search: e })}
+                        />
+                    </div>
                     <DynamicTabs
                         items={[
                             { value: "unity", label: "Unidad", icon: <IconBySection sectionKey={PermissionKeys.POSTS_UNITY} /> },
@@ -48,12 +54,6 @@ const GalleryPage = () => {
                         value={filters.vendorRole}
                         onValueChange={value => setFilters({ vendorRole: value as VendorFilterType })}
                     />
-                    <div className="flex-1">
-                        <SearchInput
-                            placeholder="Buscar por nombre/cuenta"
-                            onSubmitSearch={(e) => setFilters({ search: e })}
-                        />
-                    </div>
                 </div>
                 <AlphabetFilter onFilter={letter => setFilters({ letter })} />
             </div>

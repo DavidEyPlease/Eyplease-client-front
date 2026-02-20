@@ -157,14 +157,26 @@
   border: none !important;
 }
 
-.fc .fc-toolbar.fc-header-toolbar {
-  padding-inline: 1rem !important;
+.fc .fc-toolbar {
+  @apply justify-between!
 }
 
-.fc-button {
+.fc .fc-toolbar.fc-header-toolbar {
+  @apply my-2 px-4
+}
+
+.fc .fc-toolbar-title {
+  @apply text-xl md:text-2xl
+}
+
+.fc .fc-button-group {
+  @apply gap-0!
+}
+
+.fc .fc-button {
   background-color: var(--primary) !important;
   border: none !important;
-  border-radius: var(--radius) !important;
+  @apply p-1 px-1.5 text-sm rounded-full
 }
 
 .fc-button-group {

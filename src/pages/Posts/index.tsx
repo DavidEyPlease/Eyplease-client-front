@@ -11,7 +11,6 @@ import { IconPosts } from "@/components/Svg/IconPosts"
 import useInfiniteListQuery from "@/hooks/useInfiniteListQuery"
 import LoadMorePaginator from "@/components/generics/LoadMorePaginator"
 import { usePostsStore } from "@/store/posts"
-import { cn } from "@/lib/utils"
 
 const DEFAULT_POST_SECTION = {
     [MainPostSectionTypes.CLIENTS]: PostSectionTypes.CUSTOMER_BIRTHDAYS,
@@ -41,27 +40,25 @@ const PostsPage = () => {
     )
 
     return (
-        <div className="grid space-y-5">
-            <div className="flex flex-wrap gap-x-4">
-                <div className="flex-1">
-                    <PageTitle>
-                        <h1 className="text-3xl font-semibold">
-                            Seguimiento de {MAP_MAIN_POSTS_SECTIONS[filters.post_type as MainPostSectionTypes]}
-                        </h1>
-                        <p>Esté al tanto de las últimas publicaciones del equipo de su {MAP_MAIN_POSTS_SECTIONS[filters.post_type as MainPostSectionTypes]}</p>
-                    </PageTitle>
+        <div className="space-y-5">
+            <div className="grid md:grid-cols-6 gap-4">
+                <PageTitle className="md:col-span-4">
+                    <h1 className="text-xl md:text-3xl font-semibold">
+                        Seguimiento de {MAP_MAIN_POSTS_SECTIONS[filters.post_type as MainPostSectionTypes]}
+                    </h1>
+                    <p className="text-sm md:text-base">Esté al tanto de las últimas publicaciones del equipo de su {MAP_MAIN_POSTS_SECTIONS[filters.post_type as MainPostSectionTypes]}</p>
+                </PageTitle>
+                <div className="md:col-span-2">
+                    <PostsStats />
                 </div>
-                <PostsStats />
             </div>
 
-            <div className={cn(/*scrolling && 'p-2 shadow-sm bg-card rounded-sm',"sticky transition-all duration-150 top-0 z-10*/ "w-full")}>
-                <FilterPosts
-                    mainSection={filters.post_type as MainPostSectionTypes}
-                    activeFilters={filters}
-                    setMainSection={(mainSection) => setFilters({ post_type: mainSection, section: DEFAULT_POST_SECTION[mainSection] })}
-                    setPostSection={(section) => setFilters({ section })}
-                />
-            </div>
+            <FilterPosts
+                mainSection={filters.post_type as MainPostSectionTypes}
+                activeFilters={filters}
+                setMainSection={(mainSection) => setFilters({ post_type: mainSection, section: DEFAULT_POST_SECTION[mainSection] })}
+                setPostSection={(section) => setFilters({ section })}
+            />
 
             {isLoading ? (
                 <PageLoader />

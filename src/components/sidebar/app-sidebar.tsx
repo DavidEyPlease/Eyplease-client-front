@@ -21,14 +21,22 @@ import useAuthStore from "@/store/auth"
 
 import { ICONS } from "./icons"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
-import { Link } from "react-router"
+import { Link, useLocation } from "react-router"
 // import UserSubscription from "../generics/UserSubscription"
 import SidebarFooter from "./sidebar-footer"
+import { useEffect } from "react"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { user } = useAuth()
 	const { sidebarMenu } = useAuthStore(state => state)
-	const { state } = useSidebar()
+	const { state, isMobile, setOpenMobile } = useSidebar()
+	const location = useLocation()
+
+	useEffect(() => {
+		if (isMobile && state === 'expanded') {
+			setOpenMobile(false)
+		}
+	}, [location])
 
 	return (
 		<Sidebar collapsible="icon" {...props} className="shadow-[6px_0px_15px_0px_#00000024]">

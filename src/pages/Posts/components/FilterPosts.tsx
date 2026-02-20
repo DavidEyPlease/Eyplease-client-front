@@ -2,6 +2,7 @@
 import DynamicTabs from "@/components/generics/DynamicTabs"
 import FilterItem from "@/components/generics/FilterItem"
 import { IconBySection } from "@/components/generics/IconBySection"
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 import useAuth from "@/hooks/useAuth"
 import { PermissionKeys } from "@/interfaces/permissions"
 import { IPostsFilters, MainPostSectionTypes, PostSectionTypes } from "@/interfaces/posts"
@@ -45,18 +46,27 @@ const FilterPosts = ({ activeFilters, mainSection, setMainSection, setPostSectio
                 value={mainSection.toString()}
                 onValueChange={value => setMainSection(value as MainPostSectionTypes)}
             />
-            <div className="flex flex-wrap gap-2">
-                {(sections || []).map((c) => (
-                    <FilterItem
-                        key={c.key}
-                        title={c.label}
-                        icon={<IconBySection sectionKey={c.key} />}
-                        active={activeFilters.section === c.key.toString()}
-                        filterKey={c.key.toString()}
-                        setFilter={(key) => setPostSection(key.toString() as PostSectionTypes)}
-                    />
-                ))}
-            </div>
+            <Carousel
+                opts={{
+                    align: "start",
+                }}
+                className="w-full md:w-max"
+            >
+                <CarouselContent>
+                    {(sections || []).map((c) => (
+                        <CarouselItem className="basis-28">
+                            <FilterItem
+                                key={c.key}
+                                title={c.label}
+                                icon={<IconBySection sectionKey={c.key} />}
+                                active={activeFilters.section === c.key.toString()}
+                                filterKey={c.key.toString()}
+                                setFilter={(key) => setPostSection(key.toString() as PostSectionTypes)}
+                            />
+                        </CarouselItem>
+                    ))}
+                </CarouselContent>
+            </Carousel>
         </div>
     )
 }

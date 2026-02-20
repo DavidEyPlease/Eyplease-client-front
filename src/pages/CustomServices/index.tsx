@@ -12,9 +12,9 @@ const CustomServicesPage = () => {
     const { permissions } = useAuthStore(state => state)
 
     return (
-        <div className="grid pt-2 gap-y-4">
+        <div className="pt-2 space-y-4">
             <PageTitle>
-                <h1 className="text-3xl font-semibold">
+                <h1 className="text-xl md:text-3xl font-semibold">
                     Servicios personalizados
                 </h1>
                 <p>Revisa el estado de tus solicitudes, pide correcciones o marca como finalizado.</p>

@@ -25,38 +25,38 @@ const ProfilePage = () => {
 
     return (
         <div className="grid space-y-5">
-            <Card className="p-0">
-                <PageTitle className="rounded-none rounded-tr-xl rounded-tl-xl">
+            <Card className="p-0 max-w-full">
+                <PageTitle className="rounded-none rounded-tr-xl rounded-tl-xl md:py-4">
                     <h1 className="text-3xl font-semibold">
                         Perfil
                     </h1>
                 </PageTitle>
                 {/* <CardHeader className="rounded-tr-xl rounded-tl-xl pt-0 bg-gradient-to-tr from-[#231f56] via-[#3d0a6e] to-[#f0047f] h-40" /> */}
-                <CardContent>
-                    <div className="flex items-center space-x-4">
-                        {user && <ProfilePhoto authUser={user} />}
-                        <div className="flex items-center justify-between flex-1 pt-2">
-                            <div className="flex flex-col justify-end space-y-1">
-                                <p className="text-2xl">{user?.name}</p>
+                <CardContent className="p-2 md:p-5">
+                    <div className="flex flex-col md:flex-row gap-y-5 justify-between">
+                        <div className="flex items-end gap-5 md:gap-2">
+                            {user && <ProfilePhoto authUser={user} />}
+                            <div className="flex flex-col justify-end space-y-1 mb-1">
+                                <p className="text-lg md:text-2xl">{user?.name}</p>
                                 {user && <Logotype user={user} />}
                             </div>
-                            <Button
-                                text='Editar perfil'
-                                type="submit"
-                                color="primary"
-                                variant="outline"
-                                rounded
-                                onClick={() => setOpenEdit(true)}
-                            />
-                            <Modal open={openEdit} onOpenChange={setOpenEdit} title="Editar perfil">
-                                {user && <FormEditProfile user={user} onSuccess={() => setOpenEdit(false)} />}
-                            </Modal>
                         </div>
+                        <Button
+                            text='Editar perfil'
+                            type="submit"
+                            color="primary"
+                            variant="outline"
+                            rounded
+                            onClick={() => setOpenEdit(true)}
+                        />
+                        <Modal open={openEdit} onOpenChange={setOpenEdit} title="Editar perfil">
+                            {user && <FormEditProfile user={user} onSuccess={() => setOpenEdit(false)} />}
+                        </Modal>
                     </div>
                 </CardContent>
             </Card>
-            <Tabs defaultValue="user_preferences" className="w-full">
-                <TabsList>
+            <Tabs defaultValue="user_preferences">
+                <TabsList className="flex flex-wrap gap-y-2 mb-10 md:mb-0">
                     <TabsTrigger value="user_preferences">
                         <div className="flex items-center gap-x-2">
                             <IconPreferences />
