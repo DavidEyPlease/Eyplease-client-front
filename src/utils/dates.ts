@@ -6,6 +6,6 @@ export const formatDate = (date: Date | string, options?: { formatter?: Format, 
         date,
         format: options?.formatter || defaultFormat,
         locale: options?.locale,
-        // tz: 'America/Mexico_City'
+        tz: 'America/Mexico_City' // TODO: Esto debería ser dinámico dependiendo de la zona horaria del usuario, pero por ahora se fija a CDMX
     })
 }
