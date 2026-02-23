@@ -25,6 +25,8 @@ import { Link, useLocation } from "react-router"
 // import UserSubscription from "../generics/UserSubscription"
 import SidebarFooter from "./sidebar-footer"
 import { useEffect } from "react"
+import { APP_ROUTES } from "@/constants/app"
+import BirthdayBanner from "@/pages/Dashboard/components/BirthdayBanner"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { user } = useAuth()
@@ -102,6 +104,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				{/* {state === 'expanded' && <UserSubscription />} */}
 
 			</SidebarContent>
+			{state === 'expanded' && !location.pathname.startsWith(APP_ROUTES.HOME.INITIAL) && (
+				<BirthdayBanner variant="compact" />
+			)}
 			{user && <SidebarFooter user={user} />}
 			<SidebarRail />
 		</Sidebar>

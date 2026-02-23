@@ -1,7 +1,7 @@
 import Button from "@/components/common/Button"
 import CardBgImage from "@/components/generics/CardBgImage"
 import TemplateExampleOne from "@/assets/images/template-example1.png"
-import { IPost } from "@/interfaces/posts"
+import { IPost, PostTypes } from "@/interfaces/posts"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { formatDate } from "@/utils/dates"
 import { formatToTitleCase } from "@/utils"
@@ -61,23 +61,25 @@ const PostItem = ({ item }: Props) => {
                 </Carousel>
             </CardContent>
             <CardFooter className="flex flex-wrap justify-between px-4 gap-2">
-                <div className="flex items-center gap-2">
-                    <button
-                        disabled={status === "sent" || requestState.loading}
-                        className={`relative w-5 h-5 rounded border-2 transition-all duration-300 ${status === "sent" ? "bg-green-500 border-green-500 scale-110" : "border-gray-300 hover:border-green-400"
-                            }`}
-                        onClick={() => markAsSent(item.id)}
-                    >
-                        {status === "sent" && (
-                            <CheckIcon className="w-3 h-3 text-white absolute top-0.5 left-0.5 animate-in zoom-in duration-200" />
-                        )}
-                    </button>
-                    <span
-                        className={`text-sm transition-colors ${status === "sent" ? "text-green-600 font-medium" : "text-gray-600"}`}
-                    >
-                        {status === "sent" ? "Enviada" : "Marcar envío"}
-                    </span>
-                </div>
+                {item.type !== PostTypes.EYPLEASE_CLIENTS && (
+                    <div className="flex items-center gap-2">
+                        <button
+                            disabled={status === "sent" || requestState.loading}
+                            className={`relative w-5 h-5 rounded border-2 transition-all duration-300 ${status === "sent" ? "bg-green-500 border-green-500 scale-110" : "border-gray-300 hover:border-green-400"
+                                }`}
+                            onClick={() => markAsSent(item.id)}
+                        >
+                            {status === "sent" && (
+                                <CheckIcon className="w-3 h-3 text-white absolute top-0.5 left-0.5 animate-in zoom-in duration-200" />
+                            )}
+                        </button>
+                        <span
+                            className={`text-sm transition-colors ${status === "sent" ? "text-green-600 font-medium" : "text-gray-600"}`}
+                        >
+                            {status === "sent" ? "Enviada" : "Marcar envío"}
+                        </span>
+                    </div>
+                )}
                 <Button
                     text={
                         <div className="flex items-center gap-1">

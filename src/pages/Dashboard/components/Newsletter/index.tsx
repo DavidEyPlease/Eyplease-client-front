@@ -27,7 +27,7 @@ const Newsletter = () => {
     }, [user])
 
     return (
-        <Card className="grid col-span-3 rounded-xl">
+        <Card className="grid w-full rounded-xl">
             <CardHeader>
                 <CardTitle>Boletin del mes</CardTitle>
                 <CardDescription>Selecciona una plantilla para generar el boletin de unidad</CardDescription>

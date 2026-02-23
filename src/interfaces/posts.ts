@@ -1,5 +1,11 @@
 import { EypleaseFile } from "./files"
 
+export enum PostTypes {
+    NEWSLETTER = 'newsletter',
+    MY_CLIENTS = 'my_clients',
+    EYPLEASE_CLIENTS = 'eyplease_clients',
+}
+
 export enum PostSectionTypes {
     CUSTOMER_BIRTHDAYS = 'customer_birthdays',
     STARS = 'stars',
@@ -28,6 +34,7 @@ export interface IPost {
     title: string
     created_at: Date
     shared_at: Date | null
+    type: PostTypes
     user: {
         id: string
         name: string
