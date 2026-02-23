@@ -34,7 +34,7 @@ const PostItem = ({ item }: Props) => {
             <CardHeader className="px-3">
                 <div className="flex flex-col">
                     <p className="text-sm font-bold">{formatToTitleCase(item.title ?? '')}</p>
-                    <small className="text-sm">{formatDate(item.created_at, { formatter: { date: 'medium' } })}</small>
+                    <small className="text-sm">{formatDate(item.created_at, { formatter: { date: 'medium' }, dateOnly: true })}</small>
                 </div>
             </CardHeader>
             <CardContent className="relative px-0">

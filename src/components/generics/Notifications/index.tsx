@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,26 +16,17 @@ import { INotification } from "@/interfaces/notification"
 
 export function NotificationsDropdown() {
     const [isOpen, setIsOpen] = useState(false)
-    const { notifications, unreadCount } = useNotifications()
+    const { notifications, unreadCount, markAsRead } = useNotifications()
 
-    // const getNotificationIcon = (type: string) => {
-    //     const iconClass = "h-2 w-2"
-    //     switch (type) {
-    //         case "success":
-    //             return <Dot className={`${iconClass} text-success`} />
-    //         case "warning":
-    //             return <Dot className={`${iconClass} text-warning`} />
-    //         case "error":
-    //             return <Dot className={`${iconClass} text-destructive`} />
-    //         default:
-    //             return <Dot className={`${iconClass} text-info`} />
-    //     }
-    // }
+    const onOpenChange = useCallback((open: boolean) => {
+        setIsOpen(open)
+        if (open) markAsRead()
+    }, [markAsRead])
 
     const onOpenNotification = (notification: INotification) => console.log(notification)
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
@@ -73,25 +64,22 @@ export function NotificationsDropdown() {
                             {notifications.map((notification) => (
                                 <button
                                     key={notification.id}
-                                    className={`p-3 hover:bg-muted/50 cursor-pointer border-l-2 transition-colors ${notification.read_at ? "border-l-transparent opacity-70" : "border-l-primary bg-muted/20"
+                                    className={`p-3 hover:bg-muted/50 cursor-pointer text-left
+                                         border-l-2 transition-colors ${notification.read_at ? "border-l-transparent opacity-70" : "border-l-primary bg-muted/20"
                                         }`}
                                     onClick={() => onOpenNotification(notification)}
                                 >
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Bell className={`size-3 text-primary`} />
-                                                <h4
-                                                    className={`text-sm font-medium truncate ${notification.read_at ? "text-muted-foreground" : "text-foreground"
-                                                        }`}
-                                                >
-                                                    {notification.data?.title}
-                                                </h4>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground line-clamp-2 mb-1">{notification.data?.description}</p>
-                                            <p className="text-xs text-muted-foreground">{formatDate(notification.created_at, { formatter: 'DD MMMM YYYY, hh:mm A' })}</p>
-                                        </div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Bell className={`size-5 text-primary`} />
+                                        <h4
+                                            className={`text-xs font-medium ${notification.read_at ? "text-muted-foreground" : "text-foreground"
+                                                }`}
+                                        >
+                                            {notification.data?.title}
+                                        </h4>
                                     </div>
+                                    {/* <p className="text-xs text-muted-foreground mb-1">{notification.data?.description}</p> */}
+                                    <p className="text-[10px] text-muted-foreground">{formatDate(notification.created_at, { formatter: 'DD MMMM YYYY, hh:mm A' })}</p>
                                 </button>
                             ))}
                         </div>
