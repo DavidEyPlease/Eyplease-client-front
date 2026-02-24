@@ -55,7 +55,7 @@ const EventItem = ({ event, onSuccess }: EventItemProps) => {
                         {event.service && (<ServiceStatusBadge status={event.service.status} />)}
                         <div className="flex">
                             {event.service?.delivery_date &&
-                                <DateContainer date={event.service.delivery_date} label="Entrega" />
+                                <DateContainer date={event.service.delivery_date} label="Entrega" format={{ date: 'medium' }} />
                             }
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

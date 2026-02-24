@@ -24,7 +24,7 @@ const CustomServiceItem = ({ item }: Props) => {
                         {item.description.substring(0, 100)}...
                     </p>
                 }
-                <DateContainer date={item.delivery_date} label="Entrega:" />
+                <DateContainer date={item.delivery_date} label="Entrega:" format={{ date: 'medium' }} />
             </CardContent>
             <CardFooter className="flex justify-between pt-3 flex-wrap">
                 <ServiceStatusBadge status={item.status} />
