@@ -28,7 +28,7 @@ const BirthdayBanner = ({ variant = "full" }: BirthdayBannerProps) => {
         staleTime: 1000 * 60 * 60 * 24,
     })
 
-    if (loadingBirthdayPost || (!loadingBirthdayPost && !birthdayPost)) {
+    if (loadingBirthdayPost || (!loadingBirthdayPost && !birthdayPost?.data)) {
         return null
     }
 
