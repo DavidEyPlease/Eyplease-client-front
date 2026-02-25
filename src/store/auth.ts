@@ -31,6 +31,7 @@ const useAuthStore = create<State & Actions>((set) => ({
         faqs: [],
         plans: [],
         task_categories: [],
+        training_categories: [],
     },
     setAuth: (user: IAuthUser, permissionKeys: PermissionKeys[]) => set(() => {
         const sidebarMenu = SIDEBAR_ITEMS.filter(item => {

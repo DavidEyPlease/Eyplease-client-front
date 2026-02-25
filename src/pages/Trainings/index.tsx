@@ -2,11 +2,13 @@ import PageLoader from "@/components/generics/PageLoader"
 import { API_ROUTES } from "@/constants/api"
 import { ITraining, TrainingCategoryTypes, TrainingFilterTypes } from "@/interfaces/trainings"
 import TrainingSection from "./components/TrainingSection"
-import { TRANSLATE_MAP_CATEGORIES } from "@/constants/app"
 import useFetchQuery from "@/hooks/useFetchQuery"
 import { queryKeys } from "@/utils/cache"
+import useAuthStore from "@/store/auth"
 
 const TrainingsPage = () => {
+    const { utilData } = useAuthStore(state => state)
+
     const { response, loading } = useFetchQuery<{
         recently: { count: number, items: ITraining[] },
         groupByCategory: Record<TrainingCategoryTypes, ITraining[]>
@@ -39,7 +41,7 @@ const TrainingsPage = () => {
                                 <TrainingSection
                                     key={category}
                                     sectionKey={cat}
-                                    title={TRANSLATE_MAP_CATEGORIES[cat]}
+                                    title={utilData.training_categories.find(c => c.slug === cat)?.name || ''}
                                     trainings={response?.data?.groupByCategory[cat] || []}
                                     showButtonAll
                                 />

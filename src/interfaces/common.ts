@@ -319,6 +319,11 @@ export interface GlobalUtilData {
     faqs: FAQ[]
     plans: IPlan[]
     task_categories: ITaskCategory[]
+    training_categories: Array<{
+        id: string
+        name: string
+        slug: string
+    }>
 }
 
 interface MenuSubItem {
