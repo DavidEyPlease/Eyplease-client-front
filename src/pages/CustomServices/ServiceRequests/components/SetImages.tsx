@@ -43,7 +43,7 @@ const SetServiceImages = () => {
     }
 
     return (
-        <>
+        <div className="space-y-4 mt-4">
             <div className="grid md:grid-cols-6 gap-4">
                 {images.map((image, index) => {
                     return (
@@ -84,7 +84,7 @@ const SetServiceImages = () => {
                 disabled={loadingIdx !== null}
                 onClick={() => setOpenAction('none')}
             />
-        </>
+        </div>
     )
 }
 
