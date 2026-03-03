@@ -276,7 +276,7 @@ class PptxUnityService {
     }
 
     private createProfileSlide(bgImage: string, authUser: IAuthUser): void {
-        const { name, profile_picture, client_role } = authUser
+        const { name, profile_picture } = authUser
         const slide = this.pres.addSlide()
 
         const profilePhoto = authUser.profile_picture?.has_photo
@@ -301,12 +301,12 @@ class PptxUnityService {
             fontSize: FONT_SIZES.title
         })
 
-        if (client_role?.name) {
-            SlideTextBuilder.addText(slide, client_role.name.toUpperCase(), {
-                ...SLIDE_POSITIONS.userRole,
-                fontSize: FONT_SIZES.subtitle
-            })
-        }
+        // if (client_role?.name) {
+        //     SlideTextBuilder.addText(slide, client_role.name.toUpperCase(), {
+        //         ...SLIDE_POSITIONS.userRole,
+        //         fontSize: FONT_SIZES.subtitle
+        //     })
+        // }
     }
 
     private createMessageSlide(bgImage: string): void {
