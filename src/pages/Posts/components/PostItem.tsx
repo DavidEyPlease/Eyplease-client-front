@@ -4,7 +4,6 @@ import TemplateExampleOne from "@/assets/images/template-example1.png"
 import { IPost, PostTypes } from "@/interfaces/posts"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { formatDate } from "@/utils/dates"
-import { formatToTitleCase } from "@/utils"
 import {
     Carousel,
     CarouselContent,
@@ -33,7 +32,7 @@ const PostItem = ({ item }: Props) => {
         <Card className="gap-2 py-4 justify-between">
             <CardHeader className="px-3">
                 <div className="flex flex-col">
-                    <p className="text-sm font-bold">{formatToTitleCase(item.title ?? '')}</p>
+                    <p className="text-sm font-bold">{item.title}</p>
                     <small className="text-sm">{formatDate(item.created_at, { formatter: { date: 'medium' }, dateOnly: true })}</small>
                 </div>
             </CardHeader>
