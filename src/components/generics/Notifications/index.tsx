@@ -41,7 +41,7 @@ export function NotificationsDropdown() {
                 </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuContent align="end" className="w-96">
                 <div className="flex items-center justify-between p-2">
                     <DropdownMenuLabel className="p-0 font-semibold">Notificaciones</DropdownMenuLabel>
                     {/* {unreadCount > 0 && (
@@ -60,26 +60,28 @@ export function NotificationsDropdown() {
                             <p className="text-sm">No tienes notificaciones</p>
                         </div>
                     ) : (
-                        <div className="space-y-1">
+                        <div>
                             {notifications.map((notification) => (
                                 <button
                                     key={notification.id}
-                                    className={`p-3 hover:bg-muted/50 cursor-pointer text-left
-                                         border-l-2 transition-colors ${notification.read_at ? "border-l-transparent opacity-70" : "border-l-primary bg-muted/20"
+                                    className={`p-1 w-full hover:bg-muted/50 cursor-pointer text-left
+                                         border-l-2 transition-colors ${notification.read_at ? "border-l-transparent" : "border-l-primary bg-muted/20"
                                         }`}
                                     onClick={() => onOpenNotification(notification)}
                                 >
-                                    <div className="flex items-center gap-2 mb-1">
+                                    <div className="flex items-center gap-2">
                                         <Bell className={`size-5 text-primary`} />
-                                        <h4
-                                            className={`text-xs font-medium ${notification.read_at ? "text-muted-foreground" : "text-foreground"
-                                                }`}
-                                        >
-                                            {notification.data?.title}
-                                        </h4>
+                                        <div className="flex-1 flex flex-col">
+                                            <h4
+                                                className={`text-sm font-medium ${notification.read_at ? "text-muted-foreground" : "text-foreground"
+                                                    }`}
+                                            >
+                                                {notification.data?.title}
+                                            </h4>
+                                            <small className="text-muted-foreground text-xs">{notification.data?.description}</small>
+                                        </div>
                                     </div>
-                                    {/* <p className="text-xs text-muted-foreground mb-1">{notification.data?.description}</p> */}
-                                    <p className="text-[10px] text-muted-foreground">{formatDate(notification.created_at, { formatter: 'DD MMMM YYYY, hh:mm A' })}</p>
+                                    <p className="text-[11px] text-muted-foreground text-right">{formatDate(notification.created_at, { formatter: 'DD MMMM YYYY, hh:mm A' })}</p>
                                 </button>
                             ))}
                         </div>

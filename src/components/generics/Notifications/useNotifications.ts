@@ -28,7 +28,6 @@ const useNotifications = () => {
 
     const { request } = useRequestQuery({
         onSuccess: () => {
-            // Actualizar la cache marcando las notificaciones como leídas
             queryClient.setQueryData<InfiniteData<PaginationResponse<INotification>>>(
                 QUERY_KEY,
                 (oldData) => {

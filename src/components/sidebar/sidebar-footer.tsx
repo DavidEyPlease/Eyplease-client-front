@@ -105,10 +105,6 @@ const SidebarFooter = ({ user }: Props) => {
                                     <CreditCard />
                                     Suscripción
                                 </DropdownMenuItem> */}
-                                {/* <DropdownMenuItem>
-                                    <Bell />
-                                    Notificaciones
-                                </DropdownMenuItem> */}
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleLogout}>
