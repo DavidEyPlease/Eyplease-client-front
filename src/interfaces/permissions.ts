@@ -37,6 +37,7 @@ export enum PermissionKeys {
     STARS = 'stars',
     NATIONAL_STARS = 'national_stars',
     HONOR_ROLL = 'honor_roll',
+    HONOR_ROLL_NATIONAL = 'honor_roll_national',
     PINK_CIRCLE = 'pink_circle',
     BIRTHDAYS = 'birthdays',
     NATIONAL_BIRTHDAYS = 'national_birthdays',

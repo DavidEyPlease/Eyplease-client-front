@@ -13,6 +13,7 @@ export const IconBySection = ({ sectionKey }: Props) => {
         [PermissionKeys.STARS]: StarIcon,
         [PermissionKeys.NATIONAL_STARS]: StarIcon,
         [PermissionKeys.HONOR_ROLL]: AwardIcon,
+        [PermissionKeys.HONOR_ROLL_NATIONAL]: AwardIcon,
         [PermissionKeys.PINK_CIRCLE]: HeartIcon,
         [PermissionKeys.BIRTHDAYS]: CakeIcon,
         [PermissionKeys.NATIONAL_BIRTHDAYS]: CakeIcon,
