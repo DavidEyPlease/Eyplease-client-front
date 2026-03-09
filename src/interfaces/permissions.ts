@@ -48,6 +48,7 @@ export enum PermissionKeys {
     DIQ = 'diq',
     SALES_CUT = 'sales_cut',
     INITIATION_CUT = 'initiation_cut',
+    NATIONAL_INITIATION_CUT = 'national_initiation_cut',
     UNIT_CLUB = 'target_unit_club',
     CUSTOMER_BIRTHDAYS = 'customer_birthdays',
     EARLY = 'early',

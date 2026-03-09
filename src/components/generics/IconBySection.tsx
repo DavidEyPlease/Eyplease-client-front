@@ -25,6 +25,7 @@ export const IconBySection = ({ sectionKey }: Props) => {
         [PermissionKeys.DIQ]: GraduationCapIcon,
         [PermissionKeys.SALES_CUT]: TrendingUpIcon,
         [PermissionKeys.INITIATION_CUT]: RocketIcon,
+        [PermissionKeys.NATIONAL_INITIATION_CUT]: RocketIcon,
         [PermissionKeys.UNIT_CLUB]: TrophyIcon,
         [PermissionKeys.EARLY]: BookCheckIcon
     }
