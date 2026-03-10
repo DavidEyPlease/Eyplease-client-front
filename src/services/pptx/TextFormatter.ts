@@ -1,4 +1,4 @@
-import { IMonthlyReportResponse, SalesCutReport, StarReport, TargetClubReportItem } from "@/interfaces/monthlyReports"
+import { IMonthlyReportResponse, NationalInitiationCutReport, SalesCutReport, StarReport, TargetClubReportItem } from "@/interfaces/monthlyReports"
 import { divideName } from "@/utils"
 import PptxGenJS from "pptxgenjs"
 import { BASE_TEXT_STYLE, FONT_SIZES, SLIDE_POSITIONS } from "./baseConfig"
@@ -264,7 +264,7 @@ class TextFormatter {
         }
     }
 
-    static formatNationalInitiationCutText(item: IMonthlyReportResponse): { items: PptxGenJS.TextProps[], options: PptxGenJS.TextPropsOptions } {
+    static formatNationalInitiationCutText(item: NationalInitiationCutReport): { items: PptxGenJS.TextProps[], options: PptxGenJS.TextPropsOptions } {
         const baseOptions: PptxGenJS.TextPropsOptions = {
             ...BASE_TEXT_STYLE,
             fontSize: FONT_SIZES.cuts,
@@ -277,7 +277,8 @@ class TextFormatter {
         return {
             items: [
                 { text: item.sponsored_name, options: baseOptions },
-                { text: `Calificados: ${item.report_value}`, options: { ...baseOptions, fontSize: 17 } },
+                { text: `Total Iniciación Año Seminario 36/600: ${item.extra_data.total_iniciacion_ano_seminario_36600}`, options: { ...baseOptions, fontSize: 17 } },
+                { text: `Total Iniciación Año Seminario 24/1,800: ${item.extra_data.total_iniciacion_ano_seminario_241800}`, options: { ...baseOptions, fontSize: 17 } },
             ],
             options: baseOptions
         }

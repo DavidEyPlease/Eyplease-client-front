@@ -111,6 +111,11 @@ export type TopsReport = {
     group_production: TopReporItems
 }
 
+export type NationalInitiationCutReport = IMonthlyReportResponse<{
+    total_iniciacion_ano_seminario_241800: number
+    total_iniciacion_ano_seminario_36600: number
+}>
+
 export interface INationalMonthlyReport {
     year_month: string
     new_directors: IMonthlyReportResponse[]
@@ -122,7 +127,7 @@ export interface INationalMonthlyReport {
     tops: TopsReport
     tsr: TsrReport
     sales_cut: SalesCutReport[]
-    national_initiation_cut: IMonthlyReportResponse[]
+    national_initiation_cut: NationalInitiationCutReport[]
     target_unit_club: TargetClubReport
     national_birthdays: IMonthlyReportResponse[]
 }

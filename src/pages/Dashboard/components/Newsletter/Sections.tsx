@@ -1,4 +1,5 @@
 import Button from "@/components/common/Button"
+import { Button as UIButton } from "@/components/ui/button"
 import Modal from "@/components/common/Modal"
 import IconDownload from "@/components/Svg/IconDownload"
 import { API_ROUTES } from "@/constants/api"
@@ -74,6 +75,15 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
         }
     }
 
+    const onSelectAll = () => {
+        const sections = filterSectionsByType(utilData.newsletters, newsletterType)?.map(i => i.sectionKey) || []
+        if (selectedSections.length === sections.length) {
+            setSelectedSections([])
+        } else {
+            setSelectedSections(sections)
+        }
+    }
+
     useEffect(() => {
         setSelectedSections(filterSectionsByType(utilData.newsletters, newsletterType)?.map(i => i.sectionKey) || [])
     }, [utilData.newsletters, newsletterType])
@@ -138,6 +148,11 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
                         </div>
                     )
                 })}
+                <div className="text-right">
+                    <UIButton variant='ghost' className="text-primary" size='sm' onClick={onSelectAll}>
+                        {sections && sections.length > 0 && (selectedSections.length === sections.length ? 'Deseleccionar todo' : 'Seleccionar todo')}
+                    </UIButton>
+                </div>
             </div>
         </Modal>
     )

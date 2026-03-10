@@ -36,7 +36,7 @@ class PptxUnityService {
 
         this.createCoverSlide(bgCover)
 
-        const backgrounds = [bgQueens, bgFirstPrincess, bgSecondPrincess]
+        const backgrounds = [bgSecondPrincess, bgFirstPrincess, bgQueens]
         data.forEach((item, index) => {
             this.createHonorRollDetailSlide(backgrounds[index], item)
         })
@@ -79,48 +79,76 @@ class PptxUnityService {
         this.createCoverSlide(bgCover)
 
         const { club_300, club_600, club_900, club_1000, club_1500, club_2000, club_2500, club_3000 } = data
-        const allData = [...club_3000, ...club_2500, ...club_2000, ...club_1500, ...club_1000, ...club_900, ...club_600, ...club_300]
+        const positionOffset = 4
+        const mergeReport = [
+            ...club_3000,
+            ...club_2500,
+            ...club_2000,
+            ...club_1500,
+            ...club_1000,
+            ...club_900,
+            ...club_600,
+            ...club_300,
+        ]
 
-        this.createPointClubDetailSlide(
-            options.club3000,
-            allData,
-            club_3000.filter(i => !honorRollIds.includes(i.sponsored_id))
-        )
-        this.createPointClubDetailSlide(
-            options.club2500,
-            allData,
-            club_2500.filter(i => !honorRollIds.includes(i.sponsored_id))
-        )
-        this.createPointClubDetailSlide(
-            options.club2000,
-            allData,
-            club_2000.filter(i => !honorRollIds.includes(i.sponsored_id))
-        )
-        this.createPointClubDetailSlide(
-            options.club1500,
-            allData,
-            club_1500.filter(i => !honorRollIds.includes(i.sponsored_id))
-        )
-        this.createPointClubDetailSlide(
-            options.club1200,
-            allData,
-            club_1000.filter(i => !honorRollIds.includes(i.sponsored_id))
-        )
-        this.createPointClubDetailSlide(
-            options.club900,
-            allData,
-            club_900.filter(i => !honorRollIds.includes(i.sponsored_id))
-        )
-        this.createPointClubDetailSlide(
-            options.club600,
-            allData,
-            club_600.filter(i => !honorRollIds.includes(i.sponsored_id))
-        )
+        const pointsClubPositionBySponsoredId = new Map<string, number>()
+        mergeReport.forEach((reportItem, index) => {
+            pointsClubPositionBySponsoredId.set(reportItem.sponsored_id, index + positionOffset)
+        })
+
+        const sortClubByPositionDesc = (clubData: IMonthlyReportResponse[]) => {
+            return [...clubData]
+                .filter(item => !honorRollIds.includes(item.sponsored_id))
+                .sort((a, b) => (pointsClubPositionBySponsoredId.get(b.sponsored_id) ?? 0) - (pointsClubPositionBySponsoredId.get(a.sponsored_id) ?? 0))
+        }
 
         this.createPointClubDetailSlide(
             options.club300,
-            allData,
-            club_300.filter(i => !honorRollIds.includes(i.sponsored_id))
+            sortClubByPositionDesc(club_300),
+            mergeReport,
+            positionOffset
+        )
+        this.createPointClubDetailSlide(
+            options.club600,
+            sortClubByPositionDesc(club_600),
+            mergeReport,
+            positionOffset
+        )
+        this.createPointClubDetailSlide(
+            options.club900,
+            sortClubByPositionDesc(club_900),
+            mergeReport,
+            positionOffset
+        )
+        this.createPointClubDetailSlide(
+            options.club1200,
+            sortClubByPositionDesc(club_1000),
+            mergeReport,
+            positionOffset
+        )
+        this.createPointClubDetailSlide(
+            options.club1500,
+            sortClubByPositionDesc(club_1500),
+            mergeReport,
+            positionOffset
+        )
+        this.createPointClubDetailSlide(
+            options.club2000,
+            sortClubByPositionDesc(club_2000),
+            mergeReport,
+            positionOffset
+        )
+        this.createPointClubDetailSlide(
+            options.club2500,
+            sortClubByPositionDesc(club_2500),
+            mergeReport,
+            positionOffset
+        )
+        this.createPointClubDetailSlide(
+            options.club3000,
+            sortClubByPositionDesc(club_3000),
+            mergeReport,
+            positionOffset
         )
     }
 
@@ -363,14 +391,18 @@ class PptxUnityService {
 
     private createPointClubDetailSlide(
         bgSection: string,
-        allData: IMonthlyReportResponse[],
-        pointsSectionItems: IMonthlyReportResponse[]
+        pointsSectionItems: IMonthlyReportResponse[],
+        mergeReport: IMonthlyReportResponse[],
+        positionOffset: number
     ): void {
         if (pointsSectionItems.length === 0) return
+
         const content = pointsSectionItems.map(item => {
-            const position = allData.findIndex(i => i.sponsored_id === item.sponsored_id) + 1
+            const indexInMergedReport = mergeReport.findIndex(i => i.sponsored_id === item.sponsored_id)
+            const position = indexInMergedReport >= 0 ? indexInMergedReport + positionOffset : positionOffset
+
             return {
-                photo: position >= 4 && position <= 10 ? SlideImageBuilder.getImageDataUrl(item) : null,
+                photo: SlideImageBuilder.getImageDataUrl(item),
                 text: TextFormatter.formatPointsClubText(item, position)
             }
         })

@@ -193,7 +193,11 @@ class PptxNationalService {
         },
         bgSections: PptxCutsBackgrounds
     ) {
-        if (DataValidator.hasSomeData({ sales: data.sales, initiation: data.initiation }) || DataValidator.hasSomeData(data.target_unit_club)) {
+        if (
+            DataValidator.hasSomeData({ sales: data.sales }) ||
+            DataValidator.hasSomeData({ initiation: data.initiation }) ||
+            DataValidator.hasSomeData(data.target_unit_club)
+        ) {
             this.createCoverSlide(bgCover)
         }
         const { sales_cut, initiation_cut, cut_750, cut_600, cut_450 } = bgSections

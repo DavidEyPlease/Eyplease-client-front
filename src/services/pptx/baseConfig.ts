@@ -113,7 +113,7 @@ export const SLIDE_POSITIONS = {
         text: { x: 1.5, y: 6.2, w: "30%", h: 1 }
     },
     cuts: {
-        text: { x: 8, y: 5.5, w: "30%", h: 1 },
+        text: { x: 7.5, y: 5.5, w: "40%", h: 1 },
         photo: { x: 8, y: 1.2, w: "30%", h: "50%" },
     },
     tops: {

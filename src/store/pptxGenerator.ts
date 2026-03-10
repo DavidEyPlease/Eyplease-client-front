@@ -46,17 +46,6 @@ const usePptxGeneratorStore = create<State & Actions>((set) => ({
             authUser
         )
 
-        if (selectedSections.includes(NewsletterSectionKeys.HONOR_ROLL)) {
-            await updateProgress('Generando cuadro de honor...')
-            pres.slideHonorRoll({
-                bgCover: covers.honor_roll,
-                bgQueens: templateResources.bg_sections.honor_roll,
-                bgFirstPrincess: templateResources.bg_sections.honor_roll2,
-                bgSecondPrincess: templateResources.bg_sections.honor_roll3,
-                data: unityReportData.honor_roll
-            })
-        }
-
         if (selectedSections.includes(NewsletterSectionKeys.INITIATION_CUT)) {
             await updateProgress('Generando corte de iniciación...')
             pres.slideInitiationCut({
@@ -80,6 +69,17 @@ const usePptxGeneratorStore = create<State & Actions>((set) => ({
                 club2000: templateResources.bg_sections.club2000,
                 club2500: templateResources.bg_sections.club2500,
                 club3000: templateResources.bg_sections.club3000,
+            })
+        }
+
+        if (selectedSections.includes(NewsletterSectionKeys.HONOR_ROLL)) {
+            await updateProgress('Generando cuadro de honor...')
+            pres.slideHonorRoll({
+                bgCover: covers.honor_roll,
+                bgQueens: templateResources.bg_sections.honor_roll,
+                bgFirstPrincess: templateResources.bg_sections.honor_roll2,
+                bgSecondPrincess: templateResources.bg_sections.honor_roll3,
+                data: unityReportData.honor_roll.toReversed()
             })
         }
 
