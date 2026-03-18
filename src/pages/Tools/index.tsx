@@ -9,8 +9,11 @@ import { EmptySection } from "@/components/generics/EmptySection"
 import { IconTools } from "@/components/Svg/IconTools"
 import LoadMorePaginator from "@/components/generics/LoadMorePaginator"
 import { useToolsStore } from "@/store/tools"
+import useAuth from "@/hooks/useAuth"
+import { PermissionKeys } from "@/interfaces/permissions"
 
 const ToolsPage = () => {
+    const { hasAccess } = useAuth()
     const { filters, setFilters, getListQueryKey } = useToolsStore(state => state)
 
     const listQueryKey = getListQueryKey()
@@ -44,7 +47,11 @@ const ToolsPage = () => {
             ) : (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {(data?.pages.flatMap(page => page.items) ?? []).map((tool) => (
-                        <ToolItem key={tool.id} item={tool} />
+                        <ToolItem
+                            key={tool.id}
+                            item={tool}
+                            lock={!hasAccess(tool.section.toString() as PermissionKeys)}
+                        />
                     ))}
                 </div>
             )}

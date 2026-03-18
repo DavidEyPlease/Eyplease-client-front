@@ -190,3 +190,5 @@ export const BROWSER_EVENTS = {
     UPLOAD_REPORT: 'upload-report',
     CLEAR_FILE_UPLOADER: 'clear-file-uploader'
 }
+
+export const TRANSPARENT_SHIELD = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="

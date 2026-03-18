@@ -1,5 +1,6 @@
 import clsx from "clsx"
 import { IconLock } from "../Svg/IconLock"
+import { cn } from "@/lib/utils"
 
 interface FilterItemProps<T> {
     title: string;
@@ -14,15 +15,16 @@ const FilterItem = <T extends string>({ title, lock, icon, active, filterKey, se
         <button
             className={
                 clsx(
-                    "relative flex flex-col items-center justify-center w-24 py-3 border-none rounded-lg group",
-                    lock ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
+                    "relative flex flex-col items-center justify-center w-24 py-3 cursor-pointer border-none rounded-lg group",
                     active ? 'bg-primary text-white' : 'bg-gray dark:bg-card'
                 )
             }
             onClick={() => !lock && setFilter(filterKey)}
         >
             {lock &&
-                <div className={'absolute top-1 right-5 w-1 h-1 text-tertiary-light'}>
+                <div className={cn('absolute top-1 right-5 w-1 h-1 text-primary dark:text-tertiary-light', {
+                    'text-white': active,
+                })}>
                     <IconLock />
                 </div>
             }

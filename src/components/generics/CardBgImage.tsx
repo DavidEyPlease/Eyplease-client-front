@@ -7,6 +7,7 @@ interface Props {
     classImageHeight: string;
     children?: React.ReactNode;
     className?: string;
+    lock?: boolean;
     objectPosition?: 'object-contain' | 'object-cover' | 'object-fill' | 'object-none' | 'object-scale-down';
 }
 
@@ -14,7 +15,12 @@ const CardBgImage = ({ className, children, srcImage, classImageHeight, objectPo
     return (
         <Card className={cn('p-0', className)}>
             {children}
-            <img src={srcImage} alt="" className={`${objectPosition} w-full rounded-sm ${classImageHeight}`} />
+            <img
+                src={srcImage}
+                alt=""
+                loading="lazy"
+                className={`${objectPosition} w-full rounded-sm ${classImageHeight}`}
+            />
         </Card>
     )
 }
