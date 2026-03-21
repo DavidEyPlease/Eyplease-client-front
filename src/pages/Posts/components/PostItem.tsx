@@ -1,6 +1,5 @@
 import Button from "@/components/common/Button"
 import CardBgImage from "@/components/generics/CardBgImage"
-import TemplateExampleOne from "@/assets/images/template-example1.png"
 import { IPost, PostTypes } from "@/interfaces/posts"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { formatDate } from "@/utils/dates"
@@ -46,7 +45,7 @@ const PostItem = ({ item }: Props) => {
                                     <video src={file.url} className="w-full h-72" controls></video>
                                 ) : (
                                     <CardBgImage
-                                        srcImage={file.ext === 'png' ? file.url : TemplateExampleOne}
+                                        srcImage={file.url}
                                         classImageHeight="h-72"
                                         className="border-none rounded-none gap-0"
                                         objectPosition="object-contain"
