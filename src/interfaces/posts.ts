@@ -1,3 +1,4 @@
+import { NewsletterSection } from "./common"
 import { EypleaseFile } from "./files"
 
 export enum PostTypes {
@@ -35,11 +36,8 @@ export interface IPost {
     created_at: Date
     shared_at: Date | null
     type: PostTypes
-    user: {
-        id: string
-        name: string
-        avatar: string
-    }
+    newsletter_section: NewsletterSection | null
+    metadata: string | null
     files: EypleaseFile[]
 }
 

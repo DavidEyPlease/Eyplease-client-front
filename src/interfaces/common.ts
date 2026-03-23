@@ -27,6 +27,7 @@ export enum NewsletterSectionKeys {
     STARS = 'stars',
     NEW_BEGGININGS = 'new_beginnings',
     POINTS_CLUB = 'points_club',
+    EARLY = 'early',
 
     // National
     NEW_DIRECTORS = 'new_directors',

@@ -15,6 +15,7 @@ import useCarousel from "@/hooks/useCarousel"
 import useFiles from "@/hooks/useFiles"
 import { CheckIcon } from "lucide-react"
 import usePostActions from "../hooks/usePostActions"
+import { NewsletterSectionKeys } from "@/interfaces/common"
 
 interface Props {
     item: IPost
@@ -32,7 +33,14 @@ const PostItem = ({ item }: Props) => {
             <CardHeader className="px-3">
                 <div className="flex flex-col">
                     <p className="text-sm font-bold">{item.title}</p>
-                    <small className="text-sm">{formatDate(item.created_at, { formatter: { date: 'medium' }, dateOnly: true })}</small>
+                    <small className="text-sm">
+                        {
+                            formatDate(
+                                item.newsletter_section?.sectionKey === NewsletterSectionKeys.EARLY && item.metadata ? item.metadata : item.created_at,
+                                { formatter: { date: 'medium' }, dateOnly: true }
+                            )
+                        }
+                    </small>
                 </div>
             </CardHeader>
             <CardContent className="relative px-0">
