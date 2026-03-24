@@ -12,3 +12,7 @@ export const formatDate = (date: Date | string, options?: { formatter?: Format, 
         tz, // TODO: Esto debería ser dinámico dependiendo de la zona horaria del usuario, pero por ahora se fija a CDMX
     })
 }
+
+export const singleFormatDate = (date: Date, formatStyle: Format = { date: "medium", time: "short" }) => {
+    return format(date, formatStyle)
+}

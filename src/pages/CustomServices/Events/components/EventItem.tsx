@@ -19,6 +19,11 @@ import Modal from "@/components/common/Modal"
 import EventForm from "./Form"
 import { useRequestServicesStore } from "@/store/request-services"
 
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+
+dayjs.extend(utc)
+
 interface EventItemProps {
     event: IEvent
     onSuccess: (event: IEvent, action: 'update' | 'delete') => void
@@ -117,7 +122,7 @@ const EventItem = ({ event, onSuccess }: EventItemProps) => {
                         <Badge variant='outline'>
                             {EVENT_TYPES_LABEL[event.event_type]}
                         </Badge>
-                        <DateContainer date={event.start_date} label="Fecha:" />
+                        <DateContainer date={event.start_date} label="Fecha:" omitTz />
                     </div>
                 </CardContent>
             </Card>
