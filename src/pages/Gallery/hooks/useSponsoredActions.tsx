@@ -50,8 +50,7 @@ const useSponsoredActions = () => {
             const v = !sponsored.display_in_reports
             const response = await request<{ display_in_reports: boolean }, ISponsored>('PATCH', API_ROUTES.SPONSORSHIP.UPDATE.replace('{id}', sponsored.id), { display_in_reports: v })
             if (response.success) {
-                // toast.success('Datos actualizados correctamente')
-                updateCachedVendor(sponsored.id, { display_in_reports: response.data.display_in_reports })
+                updateCachedVendor(sponsored.id, { display_in_reports: v })
             }
         } catch (error) {
             console.error(error)

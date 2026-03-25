@@ -20,7 +20,7 @@ export const useToolsStore = create<ToolStore>((set, get) => ({
 
     filters: {
         cursor: null,
-        section: ToolSectionTypes.STAY_INFORMED
+        section: ToolSectionTypes.PROPOSALS
     },
 
     setFilters: (filters) => set((state) => ({ page: 1, filters: { ...state.filters, ...filters } })),
