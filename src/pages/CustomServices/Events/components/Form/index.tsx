@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button"
 import { PlusIcon, TrashIcon } from "lucide-react"
 import DatePicker from "@/components/common/Inputs/DatePicker"
 import { Input } from "@/components/ui/input"
-import { formatDate } from "@/utils/dates"
+import { formatDate, singleFormatDate } from "@/utils/dates"
 
 interface EventFormProps {
     item?: IEvent
@@ -44,7 +44,7 @@ const EventForm = ({ item, onHandleSuccess }: EventFormProps) => {
             online_data: item.online_data || undefined,
             dates: item.dates.length > 0 ? item.dates.map(date => ({
                 date: new Date(date.start_date),
-                time: formatDate(date.start_date, { formatter: 'HH:mm:ss' }),
+                time: singleFormatDate(date.start_date, 'HH:mm:ss'),
                 location: date.location
             })) : [],
             metadata: {
