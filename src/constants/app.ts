@@ -66,7 +66,7 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     },
     {
         key: MenuKeys.TOOLS,
-        label: 'Herramientas',
+        label: 'Biblioteca',
         path: APP_ROUTES.TOOLS,
         requiredPermission: true,
         permissionKeys: [PermissionKeys.TOOLS],
