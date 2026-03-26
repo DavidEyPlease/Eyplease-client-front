@@ -1,11 +1,14 @@
 import { SESSION_KEY } from "@/constants/app"
 
 const MAX_RETRIES = 1
+const BUILD_VERSION = import.meta.env.VITE_BUILD_ID || 'dev'
+const UPGRADE_REQUIRED = 426
 
 interface HttpHeaders {
     'Authorization'?: string,
     'Content-Type'?: string,
     'Accept'?: string,
+    'X-Client-Build-Version'?: string,
 }
 
 interface HttpOptions {
@@ -33,6 +36,7 @@ class HttpService {
     constructor(baseUrl: string = import.meta.env.VITE_API_URL) {
         this.#headers = {
             'Accept': 'application/json',
+            'X-Client-Build-Version': BUILD_VERSION,
         }
         this.#baseUrl = baseUrl
     }
@@ -66,6 +70,10 @@ class HttpService {
             })
 
             if (!response.ok) {
+                if (response.status === UPGRADE_REQUIRED) {
+                    window.location.reload()
+                    return new Promise(() => {}) as T
+                }
                 throw await response.json()
             }
 

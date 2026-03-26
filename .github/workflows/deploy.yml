@@ -44,6 +44,7 @@ jobs:
         env:
           VITE_WS_NUMBER: ${{ secrets.VITE_WS_NUMBER }}
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_BUILD_ID: ${{ github.run_number }}
         run: pnpm run build
 
       - name: Deploy to VPS via rsync
