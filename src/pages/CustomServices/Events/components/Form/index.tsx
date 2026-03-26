@@ -76,7 +76,7 @@ const EventForm = ({ item, onHandleSuccess }: EventFormProps) => {
             ...data,
             dates: data.dates.map(d => ({
                 ...d,
-                date: formatDate(d.date, { formatter: 'YYYY-MM-DD' })
+                date: formatDate(d.date, { formatter: 'YYYY-MM-DD', dateOnly: true })
             }))
         })
     })
