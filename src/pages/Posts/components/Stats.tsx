@@ -8,7 +8,7 @@ import { FileTextIcon, SendIcon } from "lucide-react"
 const PostsStats = () => {
     const { filters } = usePostsStore(state => state)
 
-    const { response } = useFetchQuery<{ posts_count: number, posts_sent_count: number }>(
+    const { response } = useFetchQuery<{ posts_count: number, posts_sent_count: number }[]>(
         API_ROUTES.POSTS.STATS_MONTH,
         {
             customQueryKey: queryKeys.detail('posts-stats', `${filters.post_type}-${filters.section}`),
@@ -29,7 +29,7 @@ const PostsStats = () => {
             >
                 <div className="flex items-center gap-1">
                     <p className="text-lg md:text-2xl font-bold text-secondary">
-                        {response?.data?.posts_count ?? 0}
+                        {response?.data?.[0]?.posts_count ?? 0}
                     </p>
                     <p className="text-xs text-muted-foreground">
                         En el mes
@@ -43,7 +43,7 @@ const PostsStats = () => {
             >
                 <div className="flex items-center gap-1">
                     <p className="text-lg md:text-2xl font-bold text-primary">
-                        {response?.data?.posts_sent_count ?? 0}
+                        {response?.data?.[0]?.posts_sent_count ?? 0}
                     </p>
                     <p className="text-xs text-muted-foreground">
                         En el mes
