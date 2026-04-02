@@ -1,5 +1,5 @@
 import { IMonthlyReportResponse, NationalInitiationCutReport, SalesCutReport, StarReport, TargetClubReportItem } from "@/interfaces/monthlyReports"
-import { divideName } from "@/utils"
+import { divideName, numberFormatter } from "@/utils"
 import PptxGenJS from "pptxgenjs"
 import { BASE_TEXT_STYLE, FONT_SIZES, SLIDE_POSITIONS } from "./baseConfig"
 import { formatDate } from "@/utils/dates"
@@ -99,6 +99,8 @@ class TextFormatter {
             ...BASE_TEXT_STYLE,
         }
 
+        const points = numberFormatter.format(item.points)
+
         return {
             items: [
                 {
@@ -106,11 +108,11 @@ class TextFormatter {
                     options: textBaseOptions
                 },
                 {
-                    text: item.is_quarter_end ? `Ha ganado con: ${item.points} puntos` : `Lleva: ${item.points} puntos`,
+                    text: item.is_quarter_end ? `Ha ganado con: ${points} puntos` : `Lleva: ${points} puntos`,
                     options: textBaseOptions
                 },
                 ...(item.missing_points > 0 ? [{
-                    text: `Faltan: ${item.missing_points} puntos`,
+                    text: `Faltan: ${numberFormatter.format(item.missing_points)} puntos`,
                     options: textBaseOptions
                 }] : [])
             ],
