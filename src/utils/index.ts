@@ -114,7 +114,7 @@ export const divideName = (fullname: string) => {
     }
 }
 
-export const numberFormatter = new Intl.NumberFormat('es-ES', {
+export const numberFormatter = new Intl.NumberFormat('es-MX', {
     style: 'decimal',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
