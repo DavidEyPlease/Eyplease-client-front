@@ -273,7 +273,8 @@ class PptxNationalService {
 
         SlideTextBuilder.addText(slide, name.toUpperCase(), {
             ...SLIDE_POSITIONS.userName,
-            fontSize: FONT_SIZES.title
+            fontSize: FONT_SIZES.title,
+            bold: true
         })
     }
 

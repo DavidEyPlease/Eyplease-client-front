@@ -21,7 +21,7 @@ export const SLIDE_POSITIONS = {
     honorRollText: { x: 1.2, y: 6.5, w: '35%' },
     initiationCutImage: { x: 1.9, y: 1.1, w: '30%', h: '50%' },
     initiationCutText: { x: 1.4, y: 6, w: '35%' },
-    birthdayText: { x: 0.2, y: 1.7, w: '100%', h: 2 },
+    birthdayText: { x: 0.2, y: 1.5, w: '100%', h: 5 },
     pointsClubText: {
         person0: { x: 2, y: 2.6, w: "100%", h: 1 },
         person1: { x: 2, y: 3.9, w: "100%", h: 1 },
@@ -145,15 +145,16 @@ export const SLIDE_POSITIONS = {
 } as const
 
 export const FONT_SIZES = {
-    title: 22,
+    title: 25,
     subtitle: 14,
     body: 20,
-    honorRoll: 20,
+    honorRoll: 25,
     initiationCut: 17,
     pointsClub: 28,
     roadToSuccess: 25,
     newBeginning: 17,
     stars: 29,
+    birthdays: 23,
 
     // National
     newDiq: 25,

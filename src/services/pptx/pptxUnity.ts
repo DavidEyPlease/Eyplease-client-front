@@ -327,15 +327,9 @@ class PptxUnityService {
 
         SlideTextBuilder.addText(slide, name.toUpperCase(), {
             ...SLIDE_POSITIONS.userName,
-            fontSize: FONT_SIZES.title
+            fontSize: FONT_SIZES.title,
+            bold: true
         })
-
-        // if (client_role?.name) {
-        //     SlideTextBuilder.addText(slide, client_role.name.toUpperCase(), {
-        //         ...SLIDE_POSITIONS.userRole,
-        //         fontSize: FONT_SIZES.subtitle
-        //     })
-        // }
     }
 
     private createMessageSlide(bgImage: string): void {

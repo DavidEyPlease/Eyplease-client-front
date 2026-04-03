@@ -13,12 +13,15 @@ class TextFormatter {
             align: 'center',
             breakLine: true,
             shape: 'rect',
+            bold: true,
             ...SLIDE_POSITIONS.honorRollText
         }
 
+        const points = numberFormatter.format(item.report_value)
+
         return [
             { text: item.sponsored_name, options: baseOptions },
-            { text: `${item.report_value} puntos`, options: baseOptions }
+            { text: `${points} puntos`, options: baseOptions }
         ]
     }
 
@@ -162,9 +165,9 @@ class TextFormatter {
             options: {
                 ...BASE_TEXT_STYLE,
                 bold: true,
-                fontSize: FONT_SIZES.title,
+                fontSize: FONT_SIZES.birthdays,
                 align: 'left',
-                paraSpaceAfter: 12,
+                paraSpaceAfter: 10,
                 breakLine: true,
                 ...SLIDE_POSITIONS.birthdayText
             }
