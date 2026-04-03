@@ -54,7 +54,7 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
                 }
             }
             if (reportFileType === 'pptx') {
-                const response = await request<ApiResponse<{ template_resources: ReportBackgrounds, report: IUnityMonthlyReport | INationalMonthlyReport }>, unknown>(
+                const response = await request<ApiResponse<{ template_resources: ReportBackgrounds & { font_color: string }, report: IUnityMonthlyReport | INationalMonthlyReport }>, unknown>(
                     API_ROUTES.REPORTS.GENERATE_REPORT_PPTX.replace('{templateId}', selectedTemplate).replace('{reportType}', newsletterType) + `?${q}`
                 )
                 if (response.success && response.data && user) {

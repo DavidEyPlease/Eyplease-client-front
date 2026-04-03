@@ -3,7 +3,7 @@ import PptxGenJS from "pptxgenjs"
 import { IAuthUser } from "@/interfaces/auth"
 import SlideImageBuilder from "./SlideImageBuilder"
 import SlideTextBuilder from "./SlideTextBuilder"
-import { FONT_SIZES, SLIDE_POSITIONS } from "./baseConfig"
+import { FONT_SIZES, SLIDE_POSITIONS, setFontColor } from "./baseConfig"
 import { generateBatches, sanitizeFileName } from "@/utils"
 import { IMonthlyReportResponse, INationalMonthlyReport, StarReport, TargetClubReportItem } from "@/interfaces/monthlyReports"
 import DataValidator from "./DataValidator"
@@ -13,9 +13,10 @@ import { PptxBondsBackground, PptxCutsBackgrounds, PptxStarsBackgrounds, PptxTop
 class PptxNationalService {
     private pres: PptxGenJS
 
-    constructor(private readonly config = { layout: 'LAYOUT_WIDE' as const }) {
+    constructor(private readonly config: { layout?: 'LAYOUT_WIDE'; fontColor?: string } = {}) {
         this.pres = new PptxGenJS()
-        this.pres.layout = this.config.layout
+        this.pres.layout = config.layout ?? 'LAYOUT_WIDE'
+        setFontColor(config.fontColor ?? 'FFFFFF')
     }
 
     slideInit(bgImage: string, bgInitialPhrase: string, authUser: IAuthUser): void {

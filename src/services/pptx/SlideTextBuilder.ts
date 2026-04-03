@@ -1,10 +1,13 @@
 import PptxGenJS from "pptxgenjs"
+import { getFontColor } from "./baseConfig"
 
 class SlideTextBuilder {
-    private static readonly BASE_STYLE = {
-        fontFace: 'Poppins',
-        color: 'FFFFFF',
-    } as const
+    private static get BASE_STYLE() {
+        return {
+            fontFace: 'Poppins',
+            color: getFontColor(),
+        }
+    }
 
     static addText(
         slide: PptxGenJS.Slide,

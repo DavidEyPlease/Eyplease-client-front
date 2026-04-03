@@ -1,7 +1,17 @@
+let _fontColor = 'FFFFFF'
+
+export function setFontColor(color: string): void {
+    _fontColor = color
+}
+
+export function getFontColor(): string {
+    return _fontColor
+}
+
 export const BASE_TEXT_STYLE = {
     fontFace: 'Poppins',
-    color: 'FFFFFF',
-} as const
+    get color() { return _fontColor },
+}
 
 export const SLIDE_POSITIONS = {
     profileImage: { x: 0.45, y: 1.1, w: '31%', h: '56%' },

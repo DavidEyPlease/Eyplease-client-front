@@ -7,15 +7,16 @@ import SlideImageBuilder from "./SlideImageBuilder"
 import SlideTextBuilder from "./SlideTextBuilder"
 import DataValidator from "./DataValidator"
 import { GroupProductionBackgrounds, HonorRollBackgrounds, PinkCircleBackgrounds, PointsClubBackgrounds, RoadToSuccessBackgrounds, StarsBackgrounds } from "./types"
-import { FONT_SIZES, SLIDE_POSITIONS } from "./baseConfig"
+import { FONT_SIZES, SLIDE_POSITIONS, setFontColor } from "./baseConfig"
 import TextFormatter from "./TextFormatter"
 
 class PptxUnityService {
     private pres: PptxGenJS
 
-    constructor(private readonly config = { layout: 'LAYOUT_WIDE' as const }) {
+    constructor(private readonly config: { layout?: 'LAYOUT_WIDE'; fontColor?: string } = {}) {
         this.pres = new PptxGenJS()
-        this.pres.layout = this.config.layout
+        this.pres.layout = config.layout ?? 'LAYOUT_WIDE'
+        setFontColor(config.fontColor ?? 'FFFFFF')
     }
 
     slideInit(bgImage: string, bgInitialPhrase: string, authUser: IAuthUser): void {

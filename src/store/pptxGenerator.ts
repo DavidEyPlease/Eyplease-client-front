@@ -9,15 +9,15 @@ import { IAuthUser } from '@/interfaces/auth'
 
 type State = {
     unityReportData: IUnityMonthlyReport | null
-    templateUnityResources: UnityBackgrounds | null
+    templateUnityResources: (UnityBackgrounds & { font_color: string }) | null
     nationalReportData: INationalMonthlyReport | null
-    templateNationalResources: NationalBackgrounds | null
+    templateNationalResources: (NationalBackgrounds & { font_color: string }) | null
     isExecuting: boolean
 }
 
 type Actions = {
-    startPptxUnityProcess: (templateResources: UnityBackgrounds, unityReportData: IUnityMonthlyReport, authUser: IAuthUser, selectedSections: NewsletterSectionKeys[]) => void
-    startPptxNationalProcess: (templateResources: NationalBackgrounds, nationalReportData: INationalMonthlyReport, authUser: IAuthUser, selectedSections: NewsletterSectionKeys[]) => void
+    startPptxUnityProcess: (templateResources: UnityBackgrounds & { font_color: string }, unityReportData: IUnityMonthlyReport, authUser: IAuthUser, selectedSections: NewsletterSectionKeys[]) => void
+    startPptxNationalProcess: (templateResources: NationalBackgrounds & { font_color: string }, nationalReportData: INationalMonthlyReport, authUser: IAuthUser, selectedSections: NewsletterSectionKeys[]) => void
 }
 
 const usePptxGeneratorStore = create<State & Actions>((set) => ({
@@ -29,10 +29,11 @@ const usePptxGeneratorStore = create<State & Actions>((set) => ({
     startPptxUnityProcess: async (templateResources, unityReportData, authUser: IAuthUser, selectedSections) => {
         set({ templateUnityResources: templateResources, unityReportData, isExecuting: true })
 
-        const { covers } = templateResources
+        const { covers, font_color } = templateResources
         const storeAState = useTaskProgressStore.getState()
+        const fontColor = font_color ? font_color.replace('#', '') : 'FFFFFF'
 
-        const pres = new PptxUnityService()
+        const pres = new PptxUnityService({ fontColor })
 
         const updateProgress = (text: string) => {
             storeAState.setTaskProgressText(text)
@@ -165,8 +166,9 @@ const usePptxGeneratorStore = create<State & Actions>((set) => ({
 
         const { covers } = templateResources
         const storeAState = useTaskProgressStore.getState()
+        const fontColor = templateResources.font_color ? templateResources.font_color.replace('#', '') : 'FFFFFF'
 
-        const pres = new PptxNationalService()
+        const pres = new PptxNationalService({ fontColor })
 
         const updateProgress = (text: string) => {
             storeAState.setTaskProgressText(text)
