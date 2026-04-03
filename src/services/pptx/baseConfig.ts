@@ -17,7 +17,7 @@ export const SLIDE_POSITIONS = {
     profileImage: { x: 0.45, y: 1.1, w: '31%', h: '56%' },
     userName: { x: 0.2, y: 6.1, w: '75%' },
     userRole: { x: 0.2, y: 6.4, w: '25%' },
-    honorRollImage: { x: 1.6, y: 2.2, w: '28%', h: '50%' },
+    honorRollImage: { x: 1.6, y: 2, w: '28%', h: '50%' },
     honorRollText: { x: 1.2, y: 6.5, w: '35%' },
     initiationCutImage: { x: 1.9, y: 1.1, w: '30%', h: '50%' },
     initiationCutText: { x: 1.4, y: 6, w: '35%' },
