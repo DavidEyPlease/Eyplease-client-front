@@ -58,7 +58,7 @@ export const SLIDE_POSITIONS = {
     starsText: { x: 0.7, y: 6, w: "70%", h: 1 },
     groupProductionPhotos: { x: 0.8, y: 2.5, w: "22%", h: "40%" },
     groupProductionText: { x: 0.7, y: 6, w: "70%", h: 1 },
-    pinkCircleText: { x: 0.5, y: 2.5, w: "100%", h: 4 },
+    pinkCircleText: { x: 0.3, y: 2.5, w: "100%", h: 4 },
 
     // National
     newDiqText: { x: 8, y: 5, w: "70%", h: 1 },
