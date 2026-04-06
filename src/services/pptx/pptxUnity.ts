@@ -263,9 +263,10 @@ class PptxUnityService {
 
         this.createCoverSlide(bgCover)
 
-        const { target_pink_circle, pink_circle, pink_circle_vip_gold } = bgSections
+        const { target_pink_circle, pink_circle, pink_circle_vip, pink_circle_vip_gold } = bgSections
 
         this.createPinkCircleSlide(pink_circle_vip_gold, data.gold)
+        this.createPinkCircleSlide(pink_circle_vip, data.vip)
         this.createPinkCircleSlide(pink_circle, data.pink)
         this.createPinkCircleSlide(target_pink_circle, data.pink_target)
     }
