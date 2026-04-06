@@ -282,8 +282,8 @@ class TextFormatter {
         return {
             items: [
                 { text: item.sponsored_name, options: baseOptions },
-                { text: `Total Iniciación Año Seminario 36/600: ${item.extra_data.total_iniciacion_ano_seminario_36600}`, options: { ...baseOptions, fontSize: 17 } },
-                { text: `Total Iniciación Año Seminario 24/1,800: ${item.extra_data.total_iniciacion_ano_seminario_241800}`, options: { ...baseOptions, fontSize: 17 } },
+                { text: `Total Inicios Calificados 36/600: ${item.extra_data.total_inicios_calificados_36600}`, options: { ...baseOptions, fontSize: 17 } },
+                { text: `Total Inicios Calificados 24/1,800: ${item.extra_data.total_inicios_calificados_241800}`, options: { ...baseOptions, fontSize: 17 } },
             ],
             options: baseOptions
         }

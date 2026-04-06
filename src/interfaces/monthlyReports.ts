@@ -114,6 +114,8 @@ export type TopsReport = {
 export type NationalInitiationCutReport = IMonthlyReportResponse<{
     total_iniciacion_ano_seminario_241800: number
     total_iniciacion_ano_seminario_36600: number
+    total_inicios_calificados_241800: number
+    total_inicios_calificados_36600: number
 }>
 
 export interface INationalMonthlyReport {
