@@ -23,7 +23,7 @@ const ReportItem = ({ reportSection, loadedReport, onUploadReport }: ReportItemP
 
     const getReportMonth = () => {
         if (loadedReport) {
-            return formatDate(loadedReport.year_month, { formatter: 'MMMM' })
+            return formatDate(loadedReport.year_month, { formatter: 'MMMM', dateOnly: true })
         }
         if (REPORT_SECTIONS_IN_CURRENT_MONTH.includes(reportSection.sectionKey)) {
             return CURRENT_MONTH
