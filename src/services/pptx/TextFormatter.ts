@@ -161,7 +161,7 @@ class TextFormatter {
 
     static formatBirthdayText(item: IMonthlyReportResponse): PptxGenJS.TextProps {
         return {
-            text: `${item.sponsored_name} - ${formatDate(new Date(item.report_value), { formatter: 'D MMMM' })}`,
+            text: `${item.sponsored_name} - ${formatDate(new Date(item.report_value), { formatter: 'D MMMM', dateOnly: true })}`,
             options: {
                 ...BASE_TEXT_STYLE,
                 bold: true,
