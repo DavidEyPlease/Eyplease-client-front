@@ -19,7 +19,7 @@ const FilterItem = <T extends string>({ title, lock, icon, active, filterKey, se
                     active ? 'bg-primary text-white' : 'bg-gray dark:bg-card'
                 )
             }
-            onClick={() => !lock && setFilter(filterKey)}
+            onClick={() => setFilter(filterKey)}
         >
             {lock &&
                 <div className={cn('absolute top-1 right-5 w-1 h-1 text-primary dark:text-tertiary-light', {
