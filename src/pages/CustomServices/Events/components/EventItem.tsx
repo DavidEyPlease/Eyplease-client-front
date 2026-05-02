@@ -81,7 +81,7 @@ const EventItem = ({ event, onSuccess }: EventItemProps) => {
                                     <AlertConfirm
                                         trigger={
                                             <DropdownMenuItem
-                                                disabled={requestState.loading || event.service?.status !== UserRequestStatusTypes.UNASSIGNED}
+                                                disabled={requestState.loading || (event.service?.status && event.service?.status !== UserRequestStatusTypes.UNASSIGNED)}
                                                 variant="destructive"
                                                 onSelect={(e) => e.preventDefault()}
                                             >
