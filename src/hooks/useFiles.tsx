@@ -38,11 +38,11 @@ const useFiles = () => {
         }
     }
 
-    const downloadFile = async (uri: string) => {
+    const downloadFile = async (uri: string, downloadName?: string) => {
         setExecuting(true)
         try {
             const blob = await getFileByUri(uri)
-            downloadBlob(blob, uri.split('/').pop() || 'file')
+            downloadBlob(blob, downloadName || uri.split('/').pop() || 'file')
         } catch (error) {
             console.log(error)
             toast.error('Error al descargar el archivo')

@@ -13,6 +13,7 @@ import { MAP_TOOLS_SECTIONS, TRANSPARENT_SHIELD } from "@/constants/app"
 import Ribbon from "@/components/generics/Ribbon"
 import { Card, CardContent } from "@/components/ui/card"
 import WATERMARK from "@/assets/images/watermark.png"
+import { isImage, sanitizeFileName } from "@/utils"
 
 interface Props {
     item: ITool
@@ -34,7 +35,7 @@ export const ToolItem = ({ item, lock }: Props) => {
 
     return (
         <div className="relative group">
-            {!lock && <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
+            {!lock && <div className="absolute inset-0 bg-linear-to-r from-primary/20 to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
             <Card className="w-full p-0 transition-all gap-0 duration-300 hover:shadow-xl hover:shadow-primary/10">
                 <CardContent className="p-0 relative overflow-hidden flex flex-col justify-between">
                     {isToday && <Ribbon text="Nueva" />}
@@ -58,12 +59,16 @@ export const ToolItem = ({ item, lock }: Props) => {
                         <CarouselContent>
                             {item.files.map((file) => (
                                 <CarouselItem key={file.id} className="relative">
-                                    <CardBgImage
-                                        srcImage={file.url}
-                                        classImageHeight="h-80 w-full"
-                                        className="border-none"
-                                        objectPosition="object-contain"
-                                    />
+                                    {isImage(file.ext) ? (
+                                        <CardBgImage
+                                            srcImage={file.url}
+                                            classImageHeight="h-80 w-full"
+                                            className="border-none"
+                                            objectPosition="object-contain"
+                                        />
+                                    ) : (
+                                        <video src={file.url} className="w-full h-80" controls></video>
+                                    )}
                                 </CarouselItem>
                             ))}
                         </CarouselContent>
@@ -89,7 +94,7 @@ export const ToolItem = ({ item, lock }: Props) => {
                             rounded
                             loading={executing}
                             disabled={lock}
-                            onClick={() => !lock && downloadFile(item.files[currentFile - 1].uri)}
+                            onClick={() => !lock && downloadFile(item.files[currentFile - 1].uri, `${currentFile}-${sanitizeFileName(item.title)}.${item.files[currentFile - 1].ext}`)}
                         />
                     </div>
                 </CardContent>
