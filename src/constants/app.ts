@@ -8,11 +8,13 @@ import { TrainingCategoryTypes, TrainingFilterTypes } from "@/interfaces/trainin
 export const APP_ROUTES = {
     AUTH: {
         SIGN_UP: '/auth/sign-up',
+        SIGN_UP_VERIFICATION_CODE: '/auth/sign-up/verification-code',
         SIGN_IN: '/auth/sign-in',
         FORGOT_PASSWORD: '/auth/forgot-password',
         FORGOT_PASSWORD_VERIFICATION_CODE: '/auth/forgot-password/verification-code',
         CHANGE_PASSWORD: '/auth/change-password',
         SUCCESS_REGISTER: '/auth/success-register',
+        PENDING_REVIEW: '/auth/pending-review',
     },
     HOME: {
         INITIAL: '/dashboard',
