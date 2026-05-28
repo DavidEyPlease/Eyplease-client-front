@@ -75,7 +75,7 @@ const useSignUpWizard = () => {
     const directorYears = watch('directorYears')
     const recommendedPlan = watch('recommendedPlan')
 
-    const { request, requestState } = useRequestQuery({ onError: () => {} })
+    const { request, requestState } = useRequestQuery({ onError: () => { } })
 
     const getErrorMessage = (error: unknown, fallback: string) =>
         (error as { message?: string; error?: string })?.message
@@ -194,6 +194,7 @@ const useSignUpWizard = () => {
             email: data.email,
             phone: data.phoneNumber,
             country: data.countryCode,
+            context: data.otherContext,
         }
         try {
             const response = await request('POST', API_ROUTES.SIGN_UP.REQUEST_ACCESS, payload)
