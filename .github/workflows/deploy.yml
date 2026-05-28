@@ -21,7 +21,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 11.1.1
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -44,6 +44,7 @@ jobs:
         env:
           VITE_WS_NUMBER: ${{ secrets.VITE_WS_NUMBER }}
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_WEB_URL: ${{ secrets.VITE_WEB_URL }}
           VITE_BUILD_ID: ${{ github.run_number }}
         run: pnpm run build
 

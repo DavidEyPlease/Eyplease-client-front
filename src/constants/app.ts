@@ -13,6 +13,7 @@ export const APP_ROUTES = {
         FORGOT_PASSWORD_VERIFICATION_CODE: '/auth/forgot-password/verification-code',
         CHANGE_PASSWORD: '/auth/change-password',
         SUCCESS_REGISTER: '/auth/success-register',
+        PENDING_REVIEW: '/auth/pending-review',
     },
     HOME: {
         INITIAL: '/dashboard',

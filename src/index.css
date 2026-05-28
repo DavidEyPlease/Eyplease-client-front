@@ -48,6 +48,31 @@
   --color-success: var(--success-color);
   --color-primary-light: var(--primary-light);
   --color-gray: var(--gray-color);
+
+  /* Tokens de la web pública (eyplease.com.mx) — sólo usados en sign-up wizard */
+  --color-eyp-violet: #5B47E0;
+  --color-eyp-violet-deep: #4B37C8;
+  --color-eyp-violet-mid: #6C5BE8;
+  --color-eyp-violet-pale: #EEEBFC;
+  --color-eyp-cyan: #5DD9D2;
+  --color-eyp-cyan-pale: #E8F8F6;
+  --color-eyp-ink: #1A1A24;
+  --color-eyp-ink-soft: #2B2B36;
+  --color-eyp-gray-text: #6B6B7B;
+  --color-eyp-gray-mid: #A1A1AA;
+  --color-eyp-gray-warm: #F4F4F7;
+
+  --background-image-eyp-gradient: linear-gradient(135deg, #5B47E0 0%, #6C5BE8 45%, #5DD9D2 100%);
+  --background-image-eyp-gradient-soft: linear-gradient(135deg, #EEEBFC 0%, #E8F8F6 100%);
+
+  --font-display: 'Outfit Variable', 'Inter', system-ui, sans-serif;
+
+  --animate-step-in: step-in 0.35s ease-out;
+
+  @keyframes step-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
 
 :root {
