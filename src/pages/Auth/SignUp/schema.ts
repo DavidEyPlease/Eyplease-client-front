@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import type { UnitSize, DirectorYears, PlanId, UserType as UserTypeFromPlans } from '@/constants/plans'
+import type { UnitSize, DirectorYears, UserType as UserTypeFromPlans } from '@/constants/plans'
+import { PlanKeys } from '@/interfaces/plans'
 
 export type UserType = UserTypeFromPlans
 export type MKConnectMode = 'auto' | 'manual'
@@ -24,10 +25,10 @@ export const SignUpSchema = z.object({
     password: z
         .string({ message: 'Ingresa una contraseña' })
         .min(8, 'Mínimo 8 caracteres'),
-    userType: z.enum(['directora', 'consultora', 'otro'], { message: 'Selecciona tu perfil' }),
-    unitSize: z.enum(['pequena', 'mediana', 'grande']).optional(),
+    userType: z.enum(['director', 'consultant', 'other'], { message: 'Selecciona tu perfil' }),
+    unitSize: z.enum(['small', 'medium', 'large']).optional(),
     directorYears: z.enum(['lt1', '1-3', '3-5', 'gt5']).optional(),
-    recommendedPlan: z.enum(['free', 'standard', 'basico', 'ejecutivo', 'elite', 'nacional']).optional(),
+    recommendedPlan: z.enum(Object.values(PlanKeys)).optional(),
     mkConnectMode: z.enum(['auto', 'manual']).optional(),
     mkUserId: z.string().optional(),
     mkPassword: z.string().optional(),
@@ -38,4 +39,4 @@ export const SignUpSchema = z.object({
 export type ISignUp = z.infer<typeof SignUpSchema>
 
 // Re-exports para que los steps no tengan que importar de @/constants/plans
-export type { UnitSize, DirectorYears, PlanId }
+export type { UnitSize, DirectorYears, PlanKeys }

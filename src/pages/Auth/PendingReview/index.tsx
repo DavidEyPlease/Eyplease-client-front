@@ -1,11 +1,9 @@
 import { useMemo } from "react"
-import { useNavigate } from "react-router"
 import { Clock, MessageCircle, ArrowRight } from "lucide-react"
 
 import SignUpWizardLayout from "@/layouts/SignUpWizardLayout"
 
 const PendingReviewPage = () => {
-    const navigate = useNavigate()
 
     const { email, phone } = useMemo(() => {
         const search = new URLSearchParams(window.location.search)
@@ -64,14 +62,13 @@ const PendingReviewPage = () => {
             </div>
 
             <div className="flex justify-center mt-8">
-                <button
-                    type="button"
-                    onClick={() => navigate('/')}
+                <a
+                    href={import.meta.env.VITE_WEB_URL}
                     className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors text-eyp-violet hover:text-eyp-violet-deep"
                 >
                     Volver a la página de inicio
                     <ArrowRight className="w-4 h-4" />
-                </button>
+                </a>
             </div>
         </SignUpWizardLayout>
     )

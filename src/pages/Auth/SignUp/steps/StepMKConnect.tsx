@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { type UseFormRegister, type FieldErrors, type UseFormSetValue, type UseFormWatch } from "react-hook-form"
-import { Hash, Lock, ShieldCheck, AlertTriangle } from "lucide-react"
+import { Hash, Lock, ShieldCheck, AlertTriangle, Info } from "lucide-react"
 
 import StepShell from "../components/StepShell"
 import WizardInput from "../components/WizardInput"
@@ -12,7 +12,6 @@ interface Props {
     errors: FieldErrors<ISignUp>
     watch: UseFormWatch<ISignUp>
     setValue: UseFormSetValue<ISignUp>
-    onManualConfirm: () => void
     /**
      * Modo "simple" para Consultoras: solo usuario MK, sin password,
      * sin opción manual.
@@ -20,16 +19,8 @@ interface Props {
     simple?: boolean
 }
 
-const StepMKConnect = ({ register, errors, setValue, onManualConfirm, simple = false }: Props) => {
+const StepMKConnect = ({ register, errors, simple = false }: Props) => {
     const [openManual, setOpenManual] = useState(false)
-
-    const handleManualConfirm = () => {
-        setValue('mkConnectMode', 'manual')
-        setValue('mkUserId', undefined)
-        setValue('mkPassword', undefined)
-        setOpenManual(false)
-        onManualConfirm()
-    }
 
     return (
         <>
@@ -69,14 +60,38 @@ const StepMKConnect = ({ register, errors, setValue, onManualConfirm, simple = f
                     />
 
                     {!simple && (
-                        <WizardInput
-                            type="password"
-                            placeholder="Tu contraseña Mary Kay"
-                            autoComplete="current-password"
-                            icon={<Lock className="w-5 h-5" />}
-                            register={register("mkPassword")}
-                            error={errors.mkPassword?.message}
-                        />
+                        <div className="flex flex-col gap-2">
+                            <WizardInput
+                                type="password"
+                                placeholder="Tu contraseña Mary Kay (Opcional)"
+                                autoComplete="current-password"
+                                icon={<Lock className="size-5" />}
+                                register={register("mkPassword")}
+                                error={errors.mkPassword?.message}
+                            />
+                            <div className="flex items-start gap-3 p-3 rounded-2xl border border-eyp-cyan/30 bg-eyp-gradient-soft">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-white text-eyp-violet shrink-0 shadow-sm">
+                                    <Info className="w-4 h-4" />
+                                </span>
+                                <div className="flex-1 text-left text-xs leading-relaxed text-eyp-ink-soft">
+                                    <p>
+                                        <b className="text-eyp-ink">La contraseña es opcional.</b>{' '}
+                                        Si la ingresas, descargamos tus reportes <b>automáticamente</b> cada mes.
+                                        Si la dejas vacía, tendrás que <b>subirlos manualmente</b>.
+                                    </p>
+                                    <p className="mt-1.5">
+                                        Esta <b>no es tu clave de Eyplease+</b> — es la que usas en marykayintouch.com.mx.
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setOpenManual(true)}
+                                className="self-center text-xs font-medium underline text-eyp-gray-text hover:text-eyp-violet"
+                            >
+                                Cómo subir los reportes manualmente
+                            </button>
+                        </div>
                     )}
 
                     <div className="flex items-start gap-2 px-1">
@@ -88,16 +103,6 @@ const StepMKConnect = ({ register, errors, setValue, onManualConfirm, simple = f
                                 : 'Solo se usan para leer los reportes de tu unidad y traer a tus consultoras de forma automática cada mes. Nadie las ve.'}
                         </p>
                     </div>
-
-                    {!simple && (
-                        <button
-                            type="button"
-                            onClick={() => setOpenManual(true)}
-                            className="self-center mt-1 text-sm font-medium underline text-eyp-gray-text hover:text-eyp-violet"
-                        >
-                            Prefiero hacer la conexión manual
-                        </button>
-                    )}
                 </div>
             </StepShell>
 
@@ -105,7 +110,6 @@ const StepMKConnect = ({ register, errors, setValue, onManualConfirm, simple = f
                 <ManualReportDialog
                     open={openManual}
                     onOpenChange={setOpenManual}
-                    onConfirm={handleManualConfirm}
                 />
             )}
         </>

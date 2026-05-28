@@ -47,7 +47,7 @@ const WizardPhoneInput = ({ value, onChange, error, disabled }: Props) => {
                 <Select value={selected.code} onValueChange={handleCountry} disabled={disabled}>
                     <SelectTrigger
                         aria-label="Código de país"
-                        className="w-[130px] h-full border-0 rounded-none px-4 focus:ring-0 focus:ring-offset-0 bg-eyp-gray-warm/60 text-eyp-ink"
+                        className="w-30 h-14 min-h-14 border-0 rounded-none px-4 focus:ring-0 focus:ring-offset-0 bg-eyp-gray-warm/60 text-eyp-ink"
                     >
                         <SelectValue>
                             <span className="inline-flex items-center gap-2 text-sm">

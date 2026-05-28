@@ -8,3 +8,12 @@ export interface IPlan {
     accesses: IPermission[]
     best_sell?: boolean
 }
+
+export enum PlanKeys {
+    FREE = 'free',
+    STANDARD = 'standard',
+    BASIC = 'basic',
+    EXECUTIVE = 'executive',
+    ELITE = 'elite',
+    NATIONAL = 'national'
+}

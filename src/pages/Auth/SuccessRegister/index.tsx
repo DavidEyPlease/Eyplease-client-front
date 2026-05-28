@@ -77,10 +77,10 @@ const SuccessRegisterPage = () => {
             <div className="flex justify-center mt-8">
                 <button
                     type="button"
-                    onClick={() => navigate(APP_ROUTES.AUTH.SIGN_IN)}
+                    onClick={() => navigate(APP_ROUTES.HOME.INITIAL)}
                     className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors text-eyp-violet hover:text-eyp-violet-deep"
                 >
-                    Ir a iniciar sesión
+                    Ir a mi cuenta
                     <ArrowRight className="w-4 h-4" />
                 </button>
             </div>

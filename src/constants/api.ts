@@ -1,4 +1,11 @@
 export const API_ROUTES = {
+    SIGN_UP: {
+        GET_RECOMMENDED_PLAN: '/sign-up/recommended-plan/{plan_key}',
+        VALIDATE_EMAIL: '/sign-up/validate-email',
+        VALIDATE_USERNAME: '/sign-up/validate-username',
+        REGISTER: '/sign-up/register',
+        REQUEST_ACCESS: '/sign-up/request-access',
+    },
     SIGN_IN: '/sign-in',
     LOGOUT: '/logout',
     FORGOT_PASSWORD: {

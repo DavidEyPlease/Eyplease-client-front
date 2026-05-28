@@ -15,19 +15,19 @@ interface Option {
 
 const OPTIONS: Option[] = [
     {
-        value: 'directora',
+        value: 'director',
         label: 'Soy Directora',
         desc: 'Lidero una unidad Mary Kay y quiero automatizar boletines y reconocimientos.',
         Icon: Crown,
     },
     {
-        value: 'consultora',
+        value: 'consultant',
         label: 'Soy Consultora',
         desc: 'Atiendo a mis clientas y quiero herramientas para vender más.',
         Icon: Sparkles,
     },
     {
-        value: 'otro',
+        value: 'other',
         label: 'Otro',
         desc: 'Pertenezco a otra red o industria y quiero contarles mi caso.',
         Icon: Compass,

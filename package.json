@@ -44,6 +44,7 @@
     "dayjs": "^1.11.19",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
+    "libphonenumber-js": "^1.13.3",
     "lucide-react": "^0.536.0",
     "pptxgenjs": "^4.0.1",
     "radix-ui": "^1.4.3",

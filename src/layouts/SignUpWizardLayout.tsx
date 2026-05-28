@@ -24,6 +24,10 @@ const SignUpWizardLayout = ({ children, showClose = true }: Props) => {
                 aria-hidden="true"
             />
 
+            <div className="absolute flex top-5 left-5 flex-col items-center">
+                <img src={EYPLEASE_LOGO} alt="Eyplease+" className="size-14 rounded-xl" />
+            </div>
+
             <div className="relative w-full max-w-lg">
                 <div className="relative overflow-hidden bg-white shadow-2xl rounded-3xl ring-1 ring-eyp-violet/10">
                     {showClose && (
@@ -37,11 +41,7 @@ const SignUpWizardLayout = ({ children, showClose = true }: Props) => {
                         </button>
                     )}
 
-                    <div className="flex flex-col items-center pt-8 pb-2">
-                        <img src={EYPLEASE_LOGO} alt="Eyplease+" className="w-12 h-12" />
-                    </div>
-
-                    <div className="px-6 pb-8 sm:px-10">
+                    <div className="px-6 py-8 sm:px-10">
                         {children}
                     </div>
                 </div>

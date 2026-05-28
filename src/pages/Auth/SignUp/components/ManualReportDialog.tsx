@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils"
 interface Props {
     open: boolean
     onOpenChange: (open: boolean) => void
-    onConfirm: () => void
 }
 
 const MK_PORTAL_URL = 'https://www.marykayintouch.com.mx'
@@ -44,7 +43,7 @@ const STEPS = [
     },
 ]
 
-const ManualReportDialog = ({ open, onOpenChange, onConfirm }: Props) => {
+const ManualReportDialog = ({ open, onOpenChange }: Props) => {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-3xl font-display">
@@ -111,7 +110,7 @@ const ManualReportDialog = ({ open, onOpenChange, onConfirm }: Props) => {
                 <DialogFooter className="flex-col gap-2 px-6 pb-6 sm:flex-col sm:gap-2 sm:items-stretch">
                     <button
                         type="button"
-                        onClick={onConfirm}
+                        onClick={() => onOpenChange(false)}
                         className={cn(
                             "inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-full shadow-lg shadow-eyp-violet/30 transition-all duration-200",
                             "bg-eyp-gradient hover:shadow-xl hover:shadow-eyp-violet/40 hover:-translate-y-0.5"
@@ -119,13 +118,6 @@ const ManualReportDialog = ({ open, onOpenChange, onConfirm }: Props) => {
                     >
                         Entendido, lo haré manual
                         <ArrowRight className="w-4 h-4" />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => onOpenChange(false)}
-                        className="text-sm font-medium underline text-eyp-gray-text hover:text-eyp-ink"
-                    >
-                        Mejor conecto mi cuenta Mary Kay
                     </button>
                 </DialogFooter>
             </DialogContent>

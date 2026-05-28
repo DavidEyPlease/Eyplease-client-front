@@ -4,7 +4,6 @@ import { Navigate, Route, Routes } from "react-router"
 import { APP_ROUTES } from "./constants/app"
 import SignInPage from "./pages/Auth/SignIn"
 import SignUpPage from "./pages/Auth/SignUp"
-import SignUpVerificationCodePage from "./pages/Auth/SignUp/VerificationCode"
 import SuccessRegisterPage from "./pages/Auth/SuccessRegister"
 import PendingReviewPage from "./pages/Auth/PendingReview"
 import ForgotPasswordPage from "./pages/Auth/ForgotPassword"
@@ -34,7 +33,6 @@ const Router = () => {
         <Routes>
             <Route path={APP_ROUTES.AUTH.SIGN_IN} element={isLogged ? <Navigate to='/dashboard' /> : <SignInPage />} />
             <Route path={APP_ROUTES.AUTH.SIGN_UP} element={isLogged ? <Navigate to='/dashboard' /> : <SignUpPage />} />
-            <Route path={APP_ROUTES.AUTH.SIGN_UP_VERIFICATION_CODE} element={isLogged ? <Navigate to='/dashboard' /> : <SignUpVerificationCodePage />} />
             <Route path={APP_ROUTES.AUTH.SUCCESS_REGISTER} element={<SuccessRegisterPage />} />
             <Route path={APP_ROUTES.AUTH.PENDING_REVIEW} element={<PendingReviewPage />} />
             <Route path={APP_ROUTES.AUTH.FORGOT_PASSWORD} element={isLogged ? <Navigate to='/dashboard' /> : <ForgotPasswordPage />} />
