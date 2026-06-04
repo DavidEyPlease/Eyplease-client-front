@@ -45,7 +45,7 @@ class LayoutPptxRenderer {
     build(slides: LayoutSlideSpec[], layouts: Record<string, Layout>): void {
         for (const spec of slides) {
             const slide = this.pres.addSlide()
-            slide.addImage({ path: this.bustCors(spec.bg), x: 0, y: 0, w: SLIDE_W_IN, h: SLIDE_H_IN })
+            slide.addImage({ path: this.resolveImage(spec.bg), x: 0, y: 0, w: SLIDE_W_IN, h: SLIDE_H_IN })
 
             const layout = spec.layout_key ? layouts[spec.layout_key] : undefined
             if (layout) this.renderZones(slide, layout, spec.data)
@@ -84,7 +84,7 @@ class LayoutPptxRenderer {
         const w = z.w * xs
         const h = z.h * ys
         slide.addImage({
-            path: this.bustCors(url),
+            path: this.resolveImage(url),
             x: z.x * xs,
             y: z.y * ys,
             w,
@@ -103,7 +103,7 @@ class LayoutPptxRenderer {
         const w = z.w * xs
         const h = z.h * ys
         slide.addImage({
-            path: this.bustCors(url),
+            path: this.resolveImage(url),
             x: z.x * xs,
             y: z.y * ys,
             w,
@@ -237,6 +237,20 @@ class LayoutPptxRenderer {
     private rgbToHex([r, g, b]: [number, number, number]): string {
         const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')
         return `${h(r)}${h(g)}${h(b)}`.toUpperCase()
+    }
+
+    /**
+     * Resuelve la URL final de una imagen para PptxGenJS:
+     *  - Avatar por defecto (men/women-avatar) que la API sirve desde config('app.url')
+     *    SIN CORS: se reemplaza por el asset LOCAL del front (/images/...), mismo origen,
+     *    como hacía el generador anterior. Evita el error CORS y es más rápido (cacheado).
+     *  - Cualquier otra URL externa (CDN): cache-bust para forzar una respuesta con CORS.
+     */
+    private resolveImage(url: string): string {
+        if (!url) return url
+        const m = url.match(/\/images\/(men|women)-avatar\.\w+/i)
+        if (m) return `/images/${m[1].toLowerCase()}-avatar.jpg` // asset local del front (mismo origen)
+        return this.bustCors(url)
     }
 
     /**
