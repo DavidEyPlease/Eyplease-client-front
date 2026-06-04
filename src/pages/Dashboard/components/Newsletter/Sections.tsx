@@ -14,6 +14,7 @@ import DynamicTabs from "@/components/generics/DynamicTabs"
 import { toast } from "sonner"
 import { INationalMonthlyReport, IUnityMonthlyReport } from "@/interfaces/monthlyReports"
 import usePptxGeneratorStore from "@/store/pptxGenerator"
+import { LayoutPptxPayload } from "@/services/pptx/layoutTypes"
 
 interface Props {
     open: boolean;
@@ -62,7 +63,10 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
                     setSelectedSections([])
                     const { template_resources, report } = response.data
                     if (template_resources.type === NewsletterTypes.UNITY) {
-                        startPptxUnityProcess(template_resources, report as IUnityMonthlyReport, user, selectedSections)
+                        // UNIDAD: el backend devuelve el payload de layout (slides + layouts);
+                        // el front solo lo renderiza. fileName sin extensión.
+                        const fileName = `${user.account}-Boletín-Unidad-${report.year_month}`
+                        startPptxUnityProcess(template_resources as unknown as LayoutPptxPayload, fileName)
                     }
                     if (template_resources.type === NewsletterTypes.NATIONAL) {
                         startPptxNationalProcess(template_resources, report as INationalMonthlyReport, user, selectedSections)
