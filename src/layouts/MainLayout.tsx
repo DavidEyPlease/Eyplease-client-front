@@ -6,7 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import MainContainer from "@/components/sidebar/main-container"
 import UploadToastProgress from "@/components/generics/UploadToastProgress"
-import TaskToastProgress from "@/components/generics/TaskToastProgress"
+import ReportTaskCenter from "@/components/generics/ReportTasks/ReportTaskCenter"
 
 const MainLayout = () => {
     const navigate = useNavigate()
@@ -36,7 +36,7 @@ const MainLayout = () => {
             </SidebarProvider>
 
             <UploadToastProgress />
-            <TaskToastProgress />
+            <ReportTaskCenter />
         </section>
     )
 }

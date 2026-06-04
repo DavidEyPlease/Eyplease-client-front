@@ -249,6 +249,16 @@ class PptxNationalService {
         }
     }
 
+    /** Genera el .pptx como Blob (sin descargar), para descarga diferida. */
+    async toBlob(): Promise<Blob> {
+        try {
+            return (await this.pres.write({ outputType: 'blob' })) as Blob
+        } catch (error) {
+            console.error('Failed to generate PPTX:', error)
+            throw new Error(`PPTX generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+    }
+
     private createCoverSlide(bgImage: string): void {
         const slide = this.pres.addSlide()
         SlideImageBuilder.addBackground(slide, bgImage)

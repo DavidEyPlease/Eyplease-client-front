@@ -2,19 +2,13 @@ import Button from "@/components/common/Button"
 import { Button as UIButton } from "@/components/ui/button"
 import Modal from "@/components/common/Modal"
 import IconDownload from "@/components/Svg/IconDownload"
-import { API_ROUTES } from "@/constants/api"
-import useRequest from "@/hooks/useRequest"
-import { ApiResponse, Newsletter, NewsletterSectionKeys, NewsletterTypes, ReportBackgrounds } from "@/interfaces/common"
+import { Newsletter, NewsletterSectionKeys, NewsletterTypes } from "@/interfaces/common"
 import useAuthStore from "@/store/auth"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { anchorDownload, objectToQueryParams } from "@/utils"
 import { useEffect, useState } from "react"
 import DynamicTabs from "@/components/generics/DynamicTabs"
-import { toast } from "sonner"
-import { INationalMonthlyReport, IUnityMonthlyReport } from "@/interfaces/monthlyReports"
-import usePptxGeneratorStore from "@/store/pptxGenerator"
-import { LayoutPptxPayload } from "@/services/pptx/layoutTypes"
+import { generatePdfReport, generatePptxReport } from "@/services/reports/reportGenerator"
 
 interface Props {
     open: boolean;
@@ -28,55 +22,29 @@ const filterSectionsByType = (newsletters: Newsletter[], type: NewsletterTypes) 
 }
 
 const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }: Props) => {
-    const { utilData, user } = useAuthStore(state => state)
+    const { utilData } = useAuthStore(state => state)
     const [newsletterType, setNewsletterType] = useState<NewsletterTypes>(NewsletterTypes.UNITY)
     const [selectedSections, setSelectedSections] = useState<NewsletterSectionKeys[]>(filterSectionsByType(utilData.newsletters, NewsletterTypes.UNITY)?.map(i => i.sectionKey) || [])
-    const { request, requestState } = useRequest('GET')
-    const { startPptxUnityProcess, startPptxNationalProcess } = usePptxGeneratorStore(state => state)
 
-    const onSuccessReport = () => {
-        toast.success('Boletín generado correctamente.')
-        onClose()
-    }
+    // Dispara la generación en segundo plano y cierra el modal de inmediato: el
+    // progreso y la descarga los gestiona el centro de tareas (toast), de modo que
+    // el usuario puede seguir navegando mientras el archivo se construye.
+    const generateReport = () => {
+        if (!reportFileType) return
 
-    const generateReport = async () => {
-        try {
-            const q = objectToQueryParams({
-                sections: selectedSections.join(','),
-            })
-            if (reportFileType === 'pdf') {
-                const response = await request<ApiResponse<{ url: string, filename: string }>, unknown>(
-                    API_ROUTES.REPORTS.GENERATE_REPORT_PDF.replace('{templateId}', selectedTemplate).replace('{reportType}', newsletterType) + `?${q}`
-                )
-                if (response.success && response.data) {
-                    // Download pdf
-                    anchorDownload(response.data.url, response.data.filename, '_blank')
-                    onSuccessReport()
-                }
-            }
-            if (reportFileType === 'pptx') {
-                const response = await request<ApiResponse<{ template_resources: ReportBackgrounds & { font_color: string }, report: IUnityMonthlyReport | INationalMonthlyReport }>, unknown>(
-                    API_ROUTES.REPORTS.GENERATE_REPORT_PPTX.replace('{templateId}', selectedTemplate).replace('{reportType}', newsletterType) + `?${q}`
-                )
-                if (response.success && response.data && user) {
-                    onClose()
-                    setSelectedSections([])
-                    const { template_resources, report } = response.data
-                    if (template_resources.type === NewsletterTypes.UNITY) {
-                        // UNIDAD: el backend devuelve el payload de layout (slides + layouts);
-                        // el front solo lo renderiza. fileName sin extensión.
-                        const fileName = `${user.account}-Boletín-Unidad-${report.year_month}`
-                        startPptxUnityProcess(template_resources as unknown as LayoutPptxPayload, fileName)
-                    }
-                    if (template_resources.type === NewsletterTypes.NATIONAL) {
-                        startPptxNationalProcess(template_resources, report as INationalMonthlyReport, user, selectedSections)
-                    }
-                }
-            }
-        } catch (error) {
-            console.error(error)
-            toast.error('Error al generar el boletín. Por favor, intenta de nuevo.')
+        const title = utilData.newsletters.find(n => n.code === newsletterType)?.name || 'Boletín'
+        const params = {
+            templateId: selectedTemplate,
+            reportType: newsletterType,
+            sections: selectedSections,
+            title,
         }
+
+        if (reportFileType === 'pdf') generatePdfReport(params)
+        if (reportFileType === 'pptx') generatePptxReport(params)
+
+        onClose()
+        setSelectedSections([])
     }
 
     const onSelectAll = () => {
@@ -111,7 +79,6 @@ const NewsletterSections = ({ open, selectedTemplate, onClose, reportFileType }:
                     color="primary"
                     rounded
                     disabled={!selectedTemplate}
-                    loading={requestState.loading}
                     onClick={generateReport}
                 />
             }

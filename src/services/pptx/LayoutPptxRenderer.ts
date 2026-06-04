@@ -56,6 +56,12 @@ class LayoutPptxRenderer {
         await this.pres.writeFile({ fileName: `${sanitizeFileName(fileName)}.pptx` })
     }
 
+    /** Genera el .pptx como Blob (sin descargar). El nombre de archivo se aplica
+     *  al momento de la descarga; aquí solo se devuelve el binario. */
+    async toBlob(): Promise<Blob> {
+        return (await this.pres.write({ outputType: 'blob' })) as Blob
+    }
+
     // ---- Render de zonas ----
 
     private renderZones(slide: PptxGenJS.Slide, layout: Layout, data: Record<string, unknown>): void {

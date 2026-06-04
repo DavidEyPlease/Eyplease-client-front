@@ -73,6 +73,29 @@
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* Barra de progreso indeterminada (espera del PDF, sin progreso real). */
+  --animate-indeterminate-bar: indeterminate-bar 1.4s ease-in-out infinite;
+
+  @keyframes indeterminate-bar {
+    0% { transform: translateX(-110%); }
+    100% { transform: translateX(320%); }
+  }
+
+  /* Iconos "en construcción": el icono cambia por etapa y se anima a sí mismo. */
+  --animate-hammer: hammer 0.7s ease-in-out infinite;
+
+  @keyframes hammer {
+    0%, 100% { transform: rotate(-20deg); }
+    55% { transform: rotate(8deg); }
+  }
+
+  --animate-brush: brush 0.85s ease-in-out infinite;
+
+  @keyframes brush {
+    0%, 100% { transform: translateX(-1.5px) rotate(-9deg); }
+    50% { transform: translateX(1.5px) rotate(9deg); }
+  }
 }
 
 :root {
