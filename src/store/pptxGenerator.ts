@@ -3,7 +3,8 @@ import { create } from 'zustand'
 import { useTaskProgressStore } from './task-progress'
 import { NationalBackgrounds, NewsletterSectionKeys, UnityBackgrounds } from '@/interfaces/common'
 import { INationalMonthlyReport, IUnityMonthlyReport } from '@/interfaces/monthlyReports'
-import PptxUnityService from '@/services/pptx/pptxUnity'
+import LayoutPptxRenderer from '@/services/pptx/LayoutPptxRenderer'
+import { LayoutPptxPayload } from '@/services/pptx/layoutTypes'
 import PptxNationalService from '@/services/pptx/pptxNational'
 import { IAuthUser } from '@/interfaces/auth'
 
@@ -16,7 +17,9 @@ type State = {
 }
 
 type Actions = {
-    startPptxUnityProcess: (templateResources: UnityBackgrounds & { font_color: string }, unityReportData: IUnityMonthlyReport, authUser: IAuthUser, selectedSections: NewsletterSectionKeys[]) => void
+    // UNIDAD (horizontal): el backend ya resolvió secciones/datos/paginación; el front
+    // solo renderiza el payload de layout. fileName SIN extensión (.pptx la añade el renderer).
+    startPptxUnityProcess: (payload: LayoutPptxPayload, fileName: string) => void
     startPptxNationalProcess: (templateResources: NationalBackgrounds & { font_color: string }, nationalReportData: INationalMonthlyReport, authUser: IAuthUser, selectedSections: NewsletterSectionKeys[]) => void
 }
 
@@ -26,140 +29,31 @@ const usePptxGeneratorStore = create<State & Actions>((set) => ({
     templateNationalResources: null,
     nationalReportData: null,
     isExecuting: false,
-    startPptxUnityProcess: async (templateResources, unityReportData, authUser: IAuthUser, selectedSections) => {
-        set({ templateUnityResources: templateResources, unityReportData, isExecuting: true })
+    startPptxUnityProcess: async (payload, fileName) => {
+        set({ isExecuting: true })
 
-        const { covers, font_color } = templateResources
         const storeAState = useTaskProgressStore.getState()
-        const fontColor = font_color ? font_color.replace('#', '') : 'FFFFFF'
-
-        const pres = new PptxUnityService({ fontColor })
-
         const updateProgress = (text: string) => {
             storeAState.setTaskProgressText(text)
-            return new Promise(resolve => setTimeout(resolve, 500))
+            return new Promise(resolve => setTimeout(resolve, 300))
         }
 
-        await updateProgress('Generando presentación...')
-        pres.slideInit(
-            covers.cover_main,
-            covers.start_page,
-            authUser
-        )
+        try {
+            await updateProgress('Generando presentación...')
+            // El backend (planUnityPptx) ya entregó la lista ordenada de slides y los
+            // layouts del editor; aquí solo se pintan zona por zona con PptxGenJS.
+            const renderer = new LayoutPptxRenderer({ fontColor: payload.font_color })
+            renderer.build(payload.slides, payload.layouts)
 
-        if (selectedSections.includes(NewsletterSectionKeys.INITIATION_CUT)) {
-            await updateProgress('Generando corte de iniciación...')
-            pres.slideInitiationCut({
-                bgCover: covers.initiators,
-                bgSlides: templateResources.bg_sections.initiators,
-                data: unityReportData.initiation_cut
-            })
+            await updateProgress('Descargando presentación...')
+            await renderer.download(fileName)
+        } catch (error) {
+            console.error('Failed to generate PPTX (layout):', error)
+            throw error
+        } finally {
+            await updateProgress('')
+            set({ isExecuting: false })
         }
-
-        if (selectedSections.includes(NewsletterSectionKeys.POINTS_CLUB)) {
-            await updateProgress('Generando club de puntos...')
-            pres.slidePointsClub({
-                bgCover: covers.club_pts,
-                honorRollData: unityReportData.honor_roll,
-                data: unityReportData.points_club,
-                club300: templateResources.bg_sections.club300,
-                club600: templateResources.bg_sections.club600,
-                club900: templateResources.bg_sections.club900,
-                club1200: templateResources.bg_sections.club1200,
-                club1500: templateResources.bg_sections.club1500,
-                club2000: templateResources.bg_sections.club2000,
-                club2500: templateResources.bg_sections.club2500,
-                club3000: templateResources.bg_sections.club3000,
-            })
-        }
-
-        if (selectedSections.includes(NewsletterSectionKeys.HONOR_ROLL)) {
-            await updateProgress('Generando cuadro de honor...')
-            pres.slideHonorRoll({
-                bgCover: covers.honor_roll,
-                bgQueens: templateResources.bg_sections.honor_roll,
-                bgFirstPrincess: templateResources.bg_sections.honor_roll2,
-                bgSecondPrincess: templateResources.bg_sections.honor_roll3,
-                data: unityReportData.honor_roll.toReversed()
-            })
-        }
-
-        if (selectedSections.includes(NewsletterSectionKeys.ROAD_TO_SUCCESS)) {
-            await updateProgress('Generando camino al éxito...')
-            pres.slideRoadToSuccess({
-                bgCover: covers.road_to_success,
-                data: unityReportData.road_to_success,
-                road_success_diq: templateResources.bg_sections.road_success_diq,
-                road_success_future_director: templateResources.bg_sections.road_success_future_director,
-                road_success_target_a_diq: templateResources.bg_sections.road_success_target_a_diq,
-                road_success_target_a_fd: templateResources.bg_sections.road_success_target_a_fd,
-            })
-        }
-
-        if (selectedSections.includes(NewsletterSectionKeys.NEW_BEGGININGS)) {
-            await updateProgress('Generando nuevos inicios...')
-            pres.slideNewBeginnings({
-                bgCover: covers.new_beginnings,
-                data: unityReportData.new_beginnings,
-                bgSlides: templateResources.bg_sections.new_beginnings,
-            })
-        }
-
-        if (selectedSections.includes(NewsletterSectionKeys.STARS)) {
-            await updateProgress('Generando estrellas...')
-            pres.slideStars({
-                bgCover: covers.stars,
-                data: unityReportData.stars,
-                diamond_star: templateResources.bg_sections.diamond_star,
-                pearl_star: templateResources.bg_sections.pearl_star,
-                emerald_star: templateResources.bg_sections.emerald_star,
-                ruby_star: templateResources.bg_sections.ruby_star,
-                sapphire_star: templateResources.bg_sections.sapphire_star,
-            })
-        }
-
-        if (selectedSections.includes(NewsletterSectionKeys.GROUP_PRODUCTION)) {
-            await updateProgress('Generando producción de grupo...')
-            pres.slideGroupProduction({
-                bgCover: covers.luminaires,
-                data: unityReportData.group_production,
-                diamond_luminaire: templateResources.bg_sections.diamond_luminaire,
-                pearl_luminaire: templateResources.bg_sections.pearl_luminaire,
-                emerald_luminaire: templateResources.bg_sections.emerald_luminaire,
-                ruby_luminaire: templateResources.bg_sections.ruby_luminaire,
-                sapphire_luminaire: templateResources.bg_sections.sapphire_luminaire,
-            })
-        }
-
-        if (selectedSections.includes(NewsletterSectionKeys.PINK_CIRCLES)) {
-            await updateProgress('Generando círculo rosa...')
-            pres.slidePinkCircle({
-                bgCover: covers.pink_circle,
-                data: unityReportData.pink_circle,
-                bgSections: {
-                    pink_circle: templateResources.bg_sections.pink_circle,
-                    pink_circle_vip_gold: templateResources.bg_sections.pink_circle_vip_gold,
-                    target_pink_circle: templateResources.bg_sections.target_pink_circle,
-                    pink_circle_vip: templateResources.bg_sections.pink_circle_vip,
-                }
-            })
-        }
-
-        if (selectedSections.includes(NewsletterSectionKeys.BIRTHDAYS)) {
-            await updateProgress('Generando cumpleaños...')
-            pres.slideBirthdays(
-                covers.birthdays,
-                templateResources.bg_sections.birthdays,
-                unityReportData.birthdays
-            )
-        }
-
-        pres.slideLast(covers.end_page)
-
-        await updateProgress('Descargando presentación...')
-        await pres.downloadPptx(`${authUser.account}-Boletín-Unidad-${unityReportData.year_month}.pptx`)
-
-        await updateProgress('')
     },
     startPptxNationalProcess: async (templateResources, nationalReportData, authUser, selectedSections) => {
         set({ templateNationalResources: templateResources, nationalReportData, isExecuting: true })
