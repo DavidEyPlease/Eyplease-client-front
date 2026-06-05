@@ -100,13 +100,7 @@ export const generatePptxReport = async (params: ReportParams): Promise<void> =>
             blob = await buildUnityPptx(template_resources as unknown as LayoutPptxPayload, onProgress)
         } else {
             base = `${user.account}-Boletín-Nacional-${report.year_month}`
-            blob = await buildNationalPptx(
-                template_resources as NationalBackgrounds & { font_color: string },
-                report as INationalMonthlyReport,
-                user,
-                params.sections,
-                onProgress
-            )
+            blob = await buildNationalPptx(template_resources as unknown as LayoutPptxPayload, onProgress)
         }
 
         markReady(id, { blob, filename: `${sanitizeFileName(base)}.pptx` })

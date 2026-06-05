@@ -38,9 +38,9 @@ export interface LayoutSlideSpec {
     data: Record<string, unknown>
 }
 
-/** Payload que devuelve /reports/generate-pptx para UNIDAD (mode: 'layout'). */
+/** Payload que devuelve /reports/generate-pptx para UNIDAD y NACIONAL (mode: 'layout'). */
 export interface LayoutPptxPayload {
-    type: 'unity'
+    type: 'unity' | 'national'
     mode: 'layout'
     font_color: string
     canvas: { w: number; h: number }
