@@ -2,6 +2,7 @@ import PptxGenJS from 'pptxgenjs'
 
 import { sanitizeFileName } from '@/utils'
 import { Layout, LayoutSlideSpec, LayoutZone, PhotoZone, TextZone, LogoZone } from './layoutTypes'
+import { ImageDims } from './preloadImageDims'
 
 /**
  * Renderer genérico de boletín a PowerPoint. NO conoce secciones: recibe del backend
@@ -34,6 +35,11 @@ class LayoutPptxRenderer {
     private pres: PptxGenJS
     private fallbackColor: string
     private measureCtx: CanvasRenderingContext2D | null = null
+    private imageDims: ImageDims = {}
+    // Canvas del payload (px del editor, p. ej. 1920×1080). Es el fallback de escala para
+    // los layouts que llegan SIN canvas propio: sus zonas siguen en px de este lienzo, así
+    // que hay que escalar contra él y no contra el lienzo en pulgadas (ver renderZones).
+    private canvas: { w: number; h: number } | null = null
 
     constructor(config: { fontColor?: string } = {}) {
         this.pres = new PptxGenJS()
@@ -41,8 +47,20 @@ class LayoutPptxRenderer {
         this.fallbackColor = (config.fontColor || 'FFFFFF').replace('#', '')
     }
 
-    /** Construye todas las páginas del documento desde el payload del backend. */
-    build(slides: LayoutSlideSpec[], layouts: Record<string, Layout>): void {
+    /**
+     * Construye todas las páginas del documento desde el payload del backend.
+     * imageDims (url → {w,h}, precargado por preloadImageDims) permite pasar a PptxGenJS
+     * el aspecto REAL de cada foto para que su `cover`/`contain` recorte bien. Sin él,
+     * PptxGenJS asume imagen == caja y estira la foto (ver drawPhoto).
+     */
+    build(
+        slides: LayoutSlideSpec[],
+        layouts: Record<string, Layout>,
+        imageDims: ImageDims = {},
+        canvas: { w: number; h: number } | null = null,
+    ): void {
+        this.imageDims = imageDims
+        this.canvas = canvas
         for (const spec of slides) {
             const slide = this.pres.addSlide()
             slide.addImage({ path: this.resolveImage(spec.bg), x: 0, y: 0, w: SLIDE_W_IN, h: SLIDE_H_IN })
@@ -65,8 +83,14 @@ class LayoutPptxRenderer {
     // ---- Render de zonas ----
 
     private renderZones(slide: PptxGenJS.Slide, layout: Layout, data: Record<string, unknown>): void {
-        const cw = layout.canvas?.w || SLIDE_W_IN
-        const ch = layout.canvas?.h || SLIDE_H_IN
+        // Escala px→pulgadas: canvas propio del layout > canvas del payload > lienzo del slide.
+        // OJO: NO caer a SLIDE_W_IN/SLIDE_H_IN cuando falta el canvas del layout — las zonas
+        // vienen en px del canvas del payload (p. ej. 1920×1080), y usar el lienzo en pulgadas
+        // deja xs=ys≈1 (trata px como pulgadas) → fuentes gigantes, cajas degeneradas y EMU
+        // fraccionario que corrompe el .pptx. El payload SIEMPRE trae canvas, así que este es
+        // el fallback correcto; SLIDE_* solo queda como última red de seguridad.
+        const cw = layout.canvas?.w || this.canvas?.w || SLIDE_W_IN
+        const ch = layout.canvas?.h || this.canvas?.h || SLIDE_H_IN
         const xs = SLIDE_W_IN / cw // px → pulgadas (horizontal)
         const ys = SLIDE_H_IN / ch // px → pulgadas (vertical, también escala fuente)
 
@@ -87,18 +111,29 @@ class LayoutPptxRenderer {
         const url = this.resolve(data, z.data_key)
         if (typeof url !== 'string' || !url) return // sin foto → no se dibuja
 
-        const w = z.w * xs
-        const h = z.h * ys
+        const boxW = z.w * xs
+        const boxH = z.h * ys
+        const [imgW, imgH] = this.imageSize(url, boxW, boxH)
         slide.addImage({
             path: this.resolveImage(url),
             x: z.x * xs,
             y: z.y * ys,
-            w,
-            h,
-            sizing: { type: z.fit === 'contain' ? 'contain' : 'cover', w, h },
+            // w/h de nivel superior = aspecto REAL de la imagen: es lo que PptxGenJS usa para
+            // calcular el recorte del `sizing` (luego reasigna el tamaño mostrado a sizing.w/h).
+            // Sin dimensiones reales asumiría imagen==caja y ESTIRARÍA la foto.
+            w: imgW,
+            h: imgH,
+            sizing: { type: z.fit === 'contain' ? 'contain' : 'cover', w: boxW, h: boxH },
             rounding: z.shape === 'circle', // único recorte nativo; rounded_rect → rectángulo
             ...(z.opacity != null ? { transparency: Math.round((1 - z.opacity) * 100) } : {}),
         })
+    }
+
+    /** Aspecto real de la imagen (precargado) o la caja como fallback. Solo el ratio importa:
+     *  PptxGenJS reasigna el tamaño mostrado a sizing.w/h tras calcular el recorte. */
+    private imageSize(url: string, boxW: number, boxH: number): [number, number] {
+        const d = this.imageDims[url]
+        return d ? [d.w, d.h] : [boxW, boxH]
     }
 
     private drawLogo(slide: PptxGenJS.Slide, z: LogoZone, data: Record<string, unknown>, xs: number, ys: number): void {
@@ -106,15 +141,16 @@ class LayoutPptxRenderer {
         const url = typeof dyn === 'string' && dyn ? dyn : z.src
         if (!url) return // logo dinámico vacío (cliente sin logo) → no se dibuja
 
-        const w = z.w * xs
-        const h = z.h * ys
+        const boxW = z.w * xs
+        const boxH = z.h * ys
+        const [imgW, imgH] = this.imageSize(url, boxW, boxH)
         slide.addImage({
             path: this.resolveImage(url),
             x: z.x * xs,
             y: z.y * ys,
-            w,
-            h,
-            sizing: { type: z.fit === 'cover' ? 'cover' : 'contain', w, h },
+            w: imgW,
+            h: imgH,
+            sizing: { type: z.fit === 'cover' ? 'cover' : 'contain', w: boxW, h: boxH },
             ...(z.opacity != null ? { transparency: Math.round((1 - z.opacity) * 100) } : {}),
         })
     }

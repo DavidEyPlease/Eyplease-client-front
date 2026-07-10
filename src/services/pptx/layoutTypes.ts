@@ -29,7 +29,9 @@ export interface LogoZone {
 }
 export type LayoutZone = PhotoZone | TextZone | LogoZone
 
-export interface Layout { name: string; canvas: { w: number; h: number }; zones: LayoutZone[] }
+// `canvas` puede llegar null desde el backend (layouts guardados sin lienzo propio); en ese
+// caso el renderer escala contra el canvas del payload (ver LayoutPptxRenderer.renderZones).
+export interface Layout { name: string; canvas: { w: number; h: number } | null; zones: LayoutZone[] }
 
 /** Un slide del documento: fondo full-bleed + (opcional) zonas del layout rellenas con data. */
 export interface LayoutSlideSpec {

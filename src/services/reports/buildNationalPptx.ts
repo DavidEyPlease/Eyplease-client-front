@@ -1,5 +1,6 @@
 import LayoutPptxRenderer from '@/services/pptx/LayoutPptxRenderer'
 import { LayoutPptxPayload } from '@/services/pptx/layoutTypes'
+import { preloadImageDims } from '@/services/pptx/preloadImageDims'
 import { ReportProgressFn } from './progress'
 
 // Boletín NACIONAL (horizontal): igual que Unidad, el backend (planNationalPptx) ya
@@ -12,10 +13,12 @@ export const buildNationalPptx = async (
 ): Promise<Blob> => {
     await onProgress('Preparando diapositivas...', 15)
 
+    // Precarga el aspecto real de las fotos para que el `cover` de PptxGenJS recorte bien.
+    const imageDims = await preloadImageDims(payload.slides)
     const renderer = new LayoutPptxRenderer({ fontColor: payload.font_color })
 
     await onProgress('Dibujando contenido...', 45)
-    renderer.build(payload.slides, payload.layouts)
+    renderer.build(payload.slides, payload.layouts, imageDims, payload.canvas)
 
     await onProgress('Empaquetando presentación...', 80)
     return renderer.toBlob()
