@@ -1,7 +1,6 @@
 import { API_ROUTES } from '@/constants/api'
 import {
     ApiResponse,
-    NationalBackgrounds,
     NewsletterSectionKeys,
     NewsletterTypes,
     ReportBackgrounds,
@@ -64,6 +63,67 @@ export const generatePdfReport = async (params: ReportParams): Promise<void> => 
         }
     } catch (error) {
         console.error('Failed to generate PDF report:', error)
+        markError(id, errorMessage(error))
+    }
+}
+
+interface AnnualReportParams {
+    reportType: NewsletterTypes
+    fileType: 'pdf' | 'pptx'
+    title: string
+}
+
+/**
+ * Reporte ANUAL (cierre de año). Un solo endpoint por formato: la plantilla anual la
+ * resuelve el backend (es única), así que el front solo manda tipo + formato. PDF se genera
+ * en backend (devuelve URL); PPTX se arma en el cliente con el mismo renderer de layout que
+ * el boletín mensual. Igual que el resto, corre en segundo plano vía el centro de tareas.
+ */
+export const generateAnnualReport = async ({ reportType, fileType, title }: AnnualReportParams): Promise<void> => {
+    const { addTask, setProgress, markReady, markError } = useReportTasksStore.getState()
+    const id = addTask({
+        type: fileType,
+        title,
+        statusText: fileType === 'pdf' ? 'Solicitando documento...' : 'Solicitando datos...',
+        progress: 5,
+    })
+
+    try {
+        const query = objectToQueryParams({ format: fileType, reportType })
+        const url = `${API_ROUTES.REPORTS.GENERATE_ANNUAL_REPORT}?${query}`
+
+        if (fileType === 'pdf') {
+            const response = await HttpService.get<PdfResponse>(url)
+            if (response.success && response.data) {
+                markReady(id, { url: response.data.url, filename: response.data.filename })
+            } else {
+                markError(id, response.message || 'No se recibió el documento.')
+            }
+            return
+        }
+
+        const response = await HttpService.get<PptxResponse>(url)
+        const user = useAuthStore.getState().user
+        if (!response.success || !response.data || !user) {
+            markError(id, response.message || 'No se recibieron los datos del reporte.')
+            return
+        }
+
+        const { template_resources, report } = response.data
+        const onProgress: ReportProgressFn = (statusText, progress) => {
+            setProgress(id, progress, statusText)
+            return new Promise(resolve => setTimeout(resolve, 250))
+        }
+
+        const scope = template_resources.type === NewsletterTypes.UNITY ? 'Unidad' : 'Nacional'
+        const base = `${user.account}-Reporte-Anual-${scope}-${report.year_month}`
+        const blob = template_resources.type === NewsletterTypes.UNITY
+            ? await buildUnityPptx(template_resources as unknown as LayoutPptxPayload, onProgress)
+            : await buildNationalPptx(template_resources as unknown as LayoutPptxPayload, onProgress)
+
+        markReady(id, { blob, filename: `${sanitizeFileName(base)}.pptx` })
+    } catch (error) {
+        console.error('Failed to generate annual report:', error)
         markError(id, errorMessage(error))
     }
 }

@@ -1,117 +1,159 @@
-import CardBgImage from "@/components/generics/CardBgImage"
-import { IconEye } from "@/components/Svg/IconEye"
-import useAuthStore from "@/store/auth"
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useEffect, useState } from "react"
-import Button from "@/components/common/Button"
-import Spinner from "@/components/common/Spinner"
-import NewsletterSections from "./Sections"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { CheckCheckIcon, ChevronDownIcon } from "lucide-react"
+import { useState } from 'react'
+import { Check, Download } from 'lucide-react'
+import useAuthStore from '@/store/auth'
+import Spinner from '@/components/common/Spinner'
+import Button from '@/components/common/Button'
+import { wizardStepper, WizardStepId } from './wizardSteps'
+import { useNewsletterWizard } from './useNewsletterWizard'
+import WizardStepper from './WizardStepper'
+import WizardLivePreview from './WizardLivePreview'
+import TemplatePreviewDialog from './TemplatePreviewDialog'
+import StepType from './steps/StepType'
+import StepTemplate from './steps/StepTemplate'
+import StepSections from './steps/StepSections'
+import StepFormat from './steps/StepFormat'
 
+const { useStepper, steps } = wizardStepper
+
+/** Mes actual con la primera letra en mayúscula (ej. "Julio 2026"). */
+const currentMonthLabel = () => {
+    const now = new Date()
+    const month = now.toLocaleDateString('es-MX', { month: 'long' })
+    return `${month.charAt(0).toUpperCase()}${month.slice(1)} ${now.getFullYear()}`
+}
+
+/**
+ * Generador del boletín mensual como asistente por pasos (Tipo → Plantilla →
+ * Secciones → Formato) con vista en vivo. La generación corre en segundo plano y su
+ * progreso/descarga los gestiona el centro de tareas.
+ */
 const Newsletter = () => {
-    const { user, utilData, initialLoading } = useAuthStore(state => state)
-    const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-    const [reportFileType, setReportFileType] = useState<'pdf' | 'pptx' | null>(null)
-    const [openModal, setOpenModal] = useState(false)
+    const stepper = useStepper()
+    const wizard = useNewsletterWizard()
+    const initialLoading = useAuthStore(state => state.initialLoading)
+    const [submitted, setSubmitted] = useState(false)
 
-    const onSelectReportFileType = (type: 'pdf' | 'pptx') => {
-        setReportFileType(type)
-        setOpenModal(true)
+    const currentId = stepper.current.id as WizardStepId
+    const canContinue = wizard.isStepValid(currentId)
+
+    const handleNext = () => {
+        if (!canContinue) return
+        if (stepper.isLast) {
+            wizard.generate()
+            setSubmitted(true)
+        } else {
+            stepper.next()
+        }
     }
 
-    useEffect(() => {
-        if (user && user.template_id) {
-            setSelectedTemplate(user.template_id)
+    const handleReset = () => {
+        setSubmitted(false)
+        stepper.goTo('type')
+    }
+
+    const renderStep = () => {
+        switch (currentId) {
+            case 'type':
+                return <StepType wizard={wizard} />
+            case 'template':
+                return <StepTemplate wizard={wizard} />
+            case 'sections':
+                return <StepSections wizard={wizard} />
+            case 'format':
+                return <StepFormat wizard={wizard} />
         }
-    }, [user])
+    }
+
+    const previewTemplate = wizard.templates.find(t => t.id === wizard.previewTemplateId)
 
     return (
-        <Card className="grid w-full rounded-xl">
-            <CardHeader>
-                <CardTitle>Boletin del mes</CardTitle>
-                <CardDescription>Selecciona una plantilla para generar el boletin de unidad</CardDescription>
-                <CardAction>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                text={
-                                    <div className="flex items-center gap-2">
-                                        Generar Boletín
-                                        <ChevronDownIcon className="size-5" />
-                                    </div>
-                                }
-                                color="primary"
-                                rounded
-                                disabled={!selectedTemplate}
-                            />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-popover/95 backdrop-blur-md border-border animate-slide-down">
-                            <DropdownMenuLabel className="text-foreground font-semibold">
-                                Selecciona el tipo de boletín
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator className="bg-border" />
+        <div className="overflow-hidden rounded-3xl border border-[#ecebf3] bg-card shadow-[0_10px_30px_-12px_rgba(41,27,105,0.22)]">
+            <div className="relative border-b border-[#ecebf3] bg-[radial-gradient(600px_200px_at_90%_-60%,rgba(107,79,227,0.1),transparent_70%)] p-5">
+                <h1 className="text-xl font-bold tracking-tight">Boletín del mes</h1>
+                <p className="text-sm text-muted-foreground">Un paso a la vez, con vista previa en vivo de lo que llevas elegido.</p>
+                <span className="absolute right-7.5 top-6 inline-flex items-center gap-1.75 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[13px] font-semibold text-primary">
+                    <span className="size-1.75 rounded-full bg-[#6B4FE3] shadow-[0_0_0_4px_rgba(107,79,227,0.15)]" />
+                    {currentMonthLabel()}
+                </span>
+            </div>
 
-                            <DropdownMenuItem
-                                onClick={() => onSelectReportFileType('pdf')}
-                                className="cursor-pointer hover:bg-primary/10 transition-colors duration-200"
-                            >
-                                PDF
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => onSelectReportFileType('pptx')}
-                                className="cursor-pointer hover:bg-primary/10 transition-colors duration-200"
-                            >
-                                Power Point
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    {selectedTemplate &&
-                        <NewsletterSections
-                            open={openModal}
-                            selectedTemplate={selectedTemplate}
-                            reportFileType={reportFileType}
-                            onClose={() => setOpenModal(false)}
-                        />
-                    }
-                </CardAction>
-            </CardHeader>
-
-            <CardContent>
-                {initialLoading ? (
+            {initialLoading ? (
+                <div className="grid place-content-center py-20">
                     <Spinner color="primary" />
-                ) : (
-                    <>
-                        <p className="mb-2 font-semibold">Plantillas disponibles</p>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                            {utilData.templates.map(template => (
-                                <Card className="p-0 gap-0" key={template.id}>
-                                    <button
-                                        className="relative"
-                                        key={template.id}
-                                        onClick={() => setSelectedTemplate(template.id)}
-                                    >
-                                        <CardBgImage className="h-40" srcImage={template.picture.url} objectPosition="object-cover" classImageHeight="h-40">
-                                            {selectedTemplate === template.id && <div className="absolute w-full h-40 rounded-sm opacity-65 bg-slate-700"></div>}
-                                            <div className="absolute cursor-pointer grid w-6 h-6 bg-white rounded-full text-slate-900 top-3 right-3 place-content-center">
-                                                <IconEye />
-                                            </div>
-                                        </CardBgImage>
-                                    </button>
-                                    <CardFooter className="py-3 justify-between">
-                                        <p className="text-sm font-medium">{template.name}</p>
-                                        {selectedTemplate === template.id && (
-                                            <CheckCheckIcon className="text-success" />
-                                        )}
-                                    </CardFooter>
-                                </Card>
-                            ))}
-                        </div>
-                    </>
-                )}
+                </div>
+            ) : (
+                <div className="grid lg:grid-cols-[1fr_328px]">
+                    <div className="flex flex-col border-b border-[#ecebf3] p-5 lg:border-b-0 lg:border-r">
+                        <WizardStepper
+                            steps={steps}
+                            currentIndex={stepper.index}
+                            isStepValid={wizard.isStepValid}
+                            onStepClick={id => stepper.goTo(id)}
+                        />
 
-            </CardContent>
-        </Card>
+                        <div key={currentId} className="min-h-71.5 flex-1 animate-in fade-in duration-200">
+                            {renderStep()}
+                        </div>
+
+                        {submitted ? (
+                            <div className="mt-1.5 border-t border-[#ecebf3] py-4">
+                                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#cdeed7] bg-[#ecfdf3] p-4 text-[13.5px] text-[#166534]">
+                                    <span className="grid size-6 shrink-0 place-content-center rounded-lg bg-[#d6f5e2] text-[#16a34a]">
+                                        <Check className="size-3" strokeWidth={3} />
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        Tu boletín <b className="font-semibold">{wizard.selectedNewsletterName}</b> se está generando. Míralo en el panel de
+                                        tareas para descargarlo.
+                                    </span>
+                                    <button type="button" onClick={handleReset} className="text-[12.5px] font-semibold text-primary hover:underline">
+                                        Generar otro boletín
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mt-1.5 flex items-center gap-3 border-t border-[#ecebf3] py-4">
+                                <button
+                                    type="button"
+                                    disabled={stepper.isFirst}
+                                    onClick={() => stepper.prev()}
+                                    className="rounded-xl border border-[#e2e0ee] bg-card px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors duration-150 hover:border-[#cfcbe4] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    Atrás
+                                </button>
+                                <span className="flex-1" />
+                                <Button
+                                    text={
+                                        stepper.isLast ? (
+                                            <span className="flex items-center gap-2.5">
+                                                <Download className="size-4" />
+                                                Generar boletín
+                                            </span>
+                                        ) : (
+                                            'Continuar'
+                                        )
+                                    }
+                                    className="px-6 py-3 text-[14.5px]"
+                                    disabled={!canContinue}
+                                    onClick={handleNext}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <WizardLivePreview wizard={wizard} stepNumber={stepper.index + 1} totalSteps={steps.length} />
+                </div>
+            )}
+
+            <TemplatePreviewDialog
+                template={previewTemplate}
+                open={!!wizard.previewTemplateId}
+                onOpenChange={open => !open && wizard.setPreviewTemplateId(null)}
+                onUse={() => {
+                    if (wizard.previewTemplateId) wizard.setTemplateId(wizard.previewTemplateId)
+                    wizard.setPreviewTemplateId(null)
+                }}
+            />
+        </div>
     )
 }
 

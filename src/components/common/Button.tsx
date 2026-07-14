@@ -15,6 +15,11 @@ interface Props {
     onClick?: () => void
 }
 
+const sizeClasses: Record<string, string> = {
+    sm: 'px-3 py-1.5 text-sm',
+    lg: 'px-6 py-2.5',
+}
+
 const Button = ({ text, type = 'button', loading, variant, size, disabled, rounded, className, block, color = 'primary', ...props }: Props) => {
     return (
         <UIButton
@@ -22,13 +27,15 @@ const Button = ({ text, type = 'button', loading, variant, size, disabled, round
             variant={variant}
             disabled={loading || disabled}
             size={size}
+            data-color={color}
             className={cn(
-                // variant && !['outline', 'ghost'].includes(variant) && `bg-${color}`,
-                // variant === 'outline' && `border border-primary`,
-                'bg-gradient-to-r w-max cursor-pointer from-blue-600 to-purple-600 text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center transition duration-300 transform hover:scale-105 hover:text-white active:scale-95',
+                // Botón primario del proyecto (gradiente violeta del rediseño): degradado
+                // 135deg #6B4FE3→#4E31C0, radio 13px, alto por padding y hover/active sutiles.
+                'flex h-auto w-max cursor-pointer items-center gap-2.5 rounded-[13px] bg-linear-to-br from-[#6B4FE3] to-[#4E31C0] text-[15px] font-bold text-white shadow-[0_10px_24px_-8px_rgba(78,49,192,0.6)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-px hover:text-white hover:brightness-[1.03] hover:shadow-[0_14px_30px_-8px_rgba(78,49,192,0.7)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-[0.55] disabled:shadow-none disabled:grayscale-[0.2]',
                 rounded && 'rounded-full',
                 block && 'w-full',
-                className
+                className,
+                size && sizeClasses[size],
             )}
             {...props}
         >
