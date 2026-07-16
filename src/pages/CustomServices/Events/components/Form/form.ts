@@ -1,4 +1,4 @@
-import z, { date, object, optional, string } from 'zod'
+import z, { date, nullable, object, optional, string } from 'zod'
 
 export const AddDateSchema = object({
     date: date(),
@@ -9,7 +9,7 @@ export const AddDateSchema = object({
 export const EventFormSchema = object({
     title: string('')
         .nonempty('Ingresa un título'),
-    description: string().max(500, 'La descripción no puede exceder los 500 caracteres').nullable(),
+    description: nullable(string('')),
     event_type: string().nonempty('Selecciona un tipo de evento'),
     metadata: optional(object({
         primaryColor: optional(string().nullable()),
