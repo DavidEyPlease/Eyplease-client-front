@@ -16,3 +16,16 @@ export const formatDate = (date: Date | string, options?: { formatter?: Format, 
 export const singleFormatDate = (date: Date, formatStyle: Format = { date: "medium", time: "short" }) => {
     return format(date, formatStyle)
 }
+
+/**
+ * Etiqueta del mes de reporte (siempre el mes anterior): "Junio 2026".
+ * Los reportes de un mes se cargan al mes siguiente (en julio se suben los de junio).
+ * Se fija el día a 1 antes de restar para evitar el overflow de meses cortos.
+ */
+export const reportMonthLabel = (): string => {
+    const date = new Date()
+    date.setDate(1)
+    date.setMonth(date.getMonth() - 1)
+    const month = date.toLocaleDateString('es-MX', { month: 'long' })
+    return `${month.charAt(0).toUpperCase()}${month.slice(1)} ${date.getFullYear()}`
+}

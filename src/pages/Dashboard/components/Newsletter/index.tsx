@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Check, Download } from 'lucide-react'
 import useAuthStore from '@/store/auth'
+import { reportMonthLabel } from '@/utils/dates'
 import Spinner from '@/components/common/Spinner'
 import Button from '@/components/common/Button'
 import { wizardStepper, WizardStepId } from './wizardSteps'
@@ -14,13 +15,6 @@ import StepSections from './steps/StepSections'
 import StepFormat from './steps/StepFormat'
 
 const { useStepper, steps } = wizardStepper
-
-/** Mes actual con la primera letra en mayúscula (ej. "Julio 2026"). */
-const currentMonthLabel = () => {
-    const now = new Date()
-    const month = now.toLocaleDateString('es-MX', { month: 'long' })
-    return `${month.charAt(0).toUpperCase()}${month.slice(1)} ${now.getFullYear()}`
-}
 
 /**
  * Generador del boletín mensual como asistente por pasos (Tipo → Plantilla →
@@ -71,9 +65,8 @@ const Newsletter = () => {
             <div className="relative border-b border-[#ecebf3] bg-[radial-gradient(600px_200px_at_90%_-60%,rgba(107,79,227,0.1),transparent_70%)] p-5">
                 <h1 className="text-xl font-bold tracking-tight">Boletín del mes</h1>
                 <p className="text-sm text-muted-foreground">Un paso a la vez, con vista previa en vivo de lo que llevas elegido.</p>
-                <span className="absolute right-7.5 top-6 inline-flex items-center gap-1.75 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[13px] font-semibold text-primary">
-                    <span className="size-1.75 rounded-full bg-[#6B4FE3] shadow-[0_0_0_4px_rgba(107,79,227,0.15)]" />
-                    {currentMonthLabel()}
+                <span className="absolute right-7.5 top-6 inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[13px] font-semibold text-primary">
+                    {reportMonthLabel()}
                 </span>
             </div>
 
