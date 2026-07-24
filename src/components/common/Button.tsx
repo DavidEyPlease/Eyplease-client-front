@@ -29,9 +29,8 @@ const Button = ({ text, type = 'button', loading, variant, size, disabled, round
             size={size}
             data-color={color}
             className={cn(
-                // Botón primario del proyecto (gradiente violeta del rediseño): degradado
-                // 135deg #6B4FE3→#4E31C0, radio 13px, alto por padding y hover/active sutiles.
-                'flex h-auto w-max cursor-pointer items-center gap-2.5 rounded-[13px] bg-linear-to-br from-[#6B4FE3] to-[#4E31C0] text-[15px] font-bold text-white shadow-[0_10px_24px_-8px_rgba(78,49,192,0.6)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-px hover:text-white hover:brightness-[1.03] hover:shadow-[0_14px_30px_-8px_rgba(78,49,192,0.7)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-[0.55] disabled:shadow-none disabled:grayscale-[0.2]',
+                // Botón primario del rediseño: gradiente/sombra/radio tokenizados en @theme (index.css).
+                'flex h-auto w-max cursor-pointer items-center gap-2.5 rounded-brand bg-primary-gradient text-[15px] font-bold text-white shadow-primary-glow transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-px hover:text-white hover:brightness-[1.03] hover:shadow-primary-glow-lg active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-[0.55] disabled:shadow-none disabled:grayscale-[0.2]',
                 rounded && 'rounded-full',
                 block && 'w-full',
                 className,

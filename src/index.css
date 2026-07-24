@@ -65,6 +65,22 @@
   --background-image-eyp-gradient: linear-gradient(135deg, #5B47E0 0%, #6C5BE8 45%, #5DD9D2 100%);
   --background-image-eyp-gradient-soft: linear-gradient(135deg, #EEEBFC 0%, #E8F8F6 100%);
 
+  /* Design system del panel (rediseño): gradiente violeta canónico, sombra y radio */
+  --color-primary-gradient-start: var(--primary-gradient-start);
+  --color-primary-gradient-end: var(--primary-gradient-end);
+  --color-primary-soft: var(--primary-soft);
+  --background-image-primary-gradient: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+  --background-image-primary-gradient-r: linear-gradient(90deg, var(--primary-gradient-start), var(--primary-gradient-end));
+  --shadow-primary-glow: 0 10px 24px -8px color-mix(in srgb, var(--primary-gradient-end) 60%, transparent);
+  --shadow-primary-glow-lg: 0 14px 30px -8px color-mix(in srgb, var(--primary-gradient-end) 70%, transparent);
+  --radius-brand: 13px;
+
+  /* Superficies del rediseño: tarjeta elevada sobre lienzo, fondo sutil y brillo de cabecera */
+  --color-surface-soft: var(--surface-soft);
+  --shadow-card: 0 10px 30px -12px rgba(41, 27, 105, 0.22);
+  --shadow-card-hover: 0 16px 34px -14px rgba(41, 27, 105, 0.32);
+  --background-image-hero-glow: radial-gradient(700px 240px at 88% -80%, rgba(107, 79, 227, 0.11), transparent 70%);
+
   --font-display: 'Outfit Variable', 'Inter', system-ui, sans-serif;
 
   --animate-step-in: step-in 0.35s ease-out;
@@ -108,6 +124,11 @@
   --warning-color: oklch(0.8499 0.1728 86.39);
   --gray-color: oklch(0.9707 0.0027 286.35);
 
+  --primary-gradient-start: #6B4FE3;
+  --primary-gradient-end: #4E31C0;
+  --primary-soft: #ECEAF6;
+  --surface-soft: #FAF9FE;
+
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -124,7 +145,8 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
+  /* Línea del rediseño: gris con matiz violeta, en vez del gris neutro de shadcn */
+  --border: #ECEBF3;
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -145,6 +167,7 @@
 .dark {
   /*--background: oklch(0.1684 0 0 / 80.78%); /*#0f0f0fce*/
 
+  --surface-soft: oklch(0.269 0 0);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

@@ -35,6 +35,7 @@ export interface IPost {
     title: string
     created_at: Date
     shared_at: Date | null
+    is_regenerating: boolean
     type: PostTypes
     newsletter_section: NewsletterSection | null
     metadata: string | null

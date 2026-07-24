@@ -5,6 +5,13 @@ import { QueryKey } from '@tanstack/react-query'
  */
 export const queryKeys = {
     /**
+     * Generate a queryKey prefix that matches every query of an entity (list and detail)
+     */
+    entity: (entityName: string): QueryKey => {
+        return ['entity', entityName]
+    },
+
+    /**
      * Generate a queryKey for a specific entity detail
      */
     detail: (entityName: string, id: string | number): QueryKey => {

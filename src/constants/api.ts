@@ -52,6 +52,7 @@ export const API_ROUTES = {
         MY_BIRTHDAY: '/posts/my-birthday',
         STATS_MONTH: '/posts/stats/month',
         MARK_AS_SENT: '/posts/{id}/sent',
+        REGENERATE: '/posts/{id}/regenerate',
     },
     SPONSORED: {
         GALLERY: '/sponsored',

@@ -36,7 +36,7 @@ const BirthdayBanner = ({ variant = "full" }: BirthdayBannerProps) => {
 
     if (variant === "compact") {
         return (
-            <div className="relative mx-2 mb-2 overflow-hidden rounded-xl bg-gradient-to-br from-purple-600/90 via-indigo-600/90 to-blue-500/90 p-3 shadow-lg">
+            <div className="relative mx-2 mb-2 overflow-hidden rounded-xl border border-white/15 bg-white/10 p-3 shadow-lg">
                 {/* Decorative glow */}
                 <div className="pointer-events-none absolute -top-4 -right-4 h-16 w-16 rounded-full bg-yellow-300/20 blur-xl" />
                 <div className="pointer-events-none absolute -bottom-3 -left-3 h-12 w-12 rounded-full bg-pink-400/20 blur-xl" />

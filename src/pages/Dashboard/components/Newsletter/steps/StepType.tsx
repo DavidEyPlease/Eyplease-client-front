@@ -23,7 +23,7 @@ const StepType = ({ wizard }: { wizard: NewsletterWizard }) => (
                             'flex items-start gap-3.5 rounded-2xl border-[1.5px] bg-card p-5 text-left transition-all duration-200',
                             selected
                                 ? 'border-primary shadow-[0_0_0_3px_rgba(78,49,192,0.14),0_1px_3px_rgba(26,23,48,0.06)]'
-                                : 'border-[#e2e0ee] hover:-translate-y-0.5 hover:border-[#d7d3ec] hover:shadow-[0_10px_30px_-12px_rgba(41,27,105,0.22)]'
+                                : 'border-[#e2e0ee] hover:-translate-y-0.5 hover:border-[#d7d3ec] hover:shadow-card'
                         )}
                     >
                         <span className="grid size-11 shrink-0 place-content-center rounded-xl bg-primary/10 text-primary">

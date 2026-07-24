@@ -8,7 +8,7 @@ interface PageTitleProps {
 const PageTitle = ({ children, className }: PageTitleProps) => {
     return (
         <div className={cn(
-            "grid place-content-center rounded-2xl py-4 md:py-2 text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white px-2",
+            "grid place-content-center rounded-2xl py-4 md:py-2 text-center bg-primary-gradient text-white px-2",
             className
         )}>
             {children}

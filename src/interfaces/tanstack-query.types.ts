@@ -8,6 +8,7 @@ export interface UseQueryFetchOptions {
     enabled?: boolean
     refetchOnWindowFocus?: boolean
     refetchOnMount?: boolean
+    refetchInterval?: number | false
 }
 
 export type QueryParams = { paginationToken?: string | null, perPage?: number, search?: string, page?: number } | Record<string, any>

@@ -22,7 +22,7 @@ const ReportsProgressCard = ({ loaded, total, failed }: ReportsSummary) => {
 	}
 
 	return (
-		<div className="flex flex-wrap items-center gap-4 rounded-3xl border border-[#ecebf3] bg-card px-5.5 py-4 shadow-[0_10px_30px_-12px_rgba(41,27,105,0.22)]">
+		<div className="flex flex-wrap items-center gap-4 rounded-3xl border bg-card px-5.5 py-4 shadow-card">
 			<span className="grid size-9 shrink-0 place-content-center rounded-[10px] bg-[#ecfdf3] text-[#16a34a]">
 				<ClipboardCheck className="size-[18px]" />
 			</span>
@@ -35,8 +35,8 @@ const ReportsProgressCard = ({ loaded, total, failed }: ReportsSummary) => {
 			<div className="ml-auto w-full min-w-45 sm:w-auto sm:max-w-80 sm:flex-1">
 				<Progress
 					value={percent}
-					className="h-1.5 bg-[#eceaf6]"
-					indicatorClassName="bg-gradient-to-r from-[#6B4FE3] to-[#4E31C0]"
+					className="h-1.5 bg-primary-soft"
+					indicatorClassName="bg-primary-gradient-r"
 				/>
 			</div>
 		</div>

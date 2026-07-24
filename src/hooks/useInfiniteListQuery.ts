@@ -19,6 +19,7 @@ export default function useInfiniteListQuery<T, F = unknown>(apiEndpoint: string
         enabled = true,
         refetchOnWindowFocus = false,
         refetchOnMount = false,
+        refetchInterval = false,
     } = options
 
     const queryClient = useQueryClient()
@@ -54,6 +55,7 @@ export default function useInfiniteListQuery<T, F = unknown>(apiEndpoint: string
         enabled,
         refetchOnWindowFocus,
         refetchOnMount,
+        refetchInterval,
     })
 
     const handleRefresher = async () => {

@@ -72,7 +72,7 @@ const ReportsPage = () => {
 		<div className="mx-auto w-full max-w-6xl">
 			<header className="mb-6 flex flex-wrap items-center justify-between gap-4">
 				<div className="flex items-center gap-3.5">
-					<span className="grid size-11 shrink-0 place-content-center rounded-[13px] bg-gradient-to-br from-[#6B4FE3] to-[#4E31C0] text-white shadow-[0_10px_24px_-8px_rgba(78,49,192,0.55)]">
+					<span className="grid size-11 shrink-0 place-content-center rounded-brand bg-primary-gradient text-white shadow-primary-glow">
 						<Upload className="size-[22px]" />
 					</span>
 					<div>

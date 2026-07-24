@@ -1,57 +1,60 @@
-import { StatCard } from "@/components/generics/StatCard"
-import { API_ROUTES } from "@/constants/api"
-import useFetchQuery from "@/hooks/useFetchQuery"
-import { usePostsStore } from "@/store/posts"
-import { queryKeys } from "@/utils/cache"
-import { FileTextIcon, SendIcon } from "lucide-react"
+import StatTile from '@/components/generics/StatTile'
+import { API_ROUTES } from '@/constants/api'
+import useFetchQuery from '@/hooks/useFetchQuery'
+import { usePostsStore } from '@/store/posts'
+import { queryKeys } from '@/utils/cache'
+import { CalendarIcon, FileTextIcon, SendIcon } from 'lucide-react'
+
+interface PostsStatsResponse {
+	posts_count: number
+	posts_sent_count: number
+}
 
 const PostsStats = () => {
-    const { filters } = usePostsStore(state => state)
+	const { filters } = usePostsStore(state => state)
 
-    const { response } = useFetchQuery<{ posts_count: number, posts_sent_count: number }[]>(
-        API_ROUTES.POSTS.STATS_MONTH,
-        {
-            customQueryKey: queryKeys.detail('posts-stats', `${filters.post_type}-${filters.section}`),
-            enabled: !!filters.section,
-            queryParams: {
-                section: filters.section,
-                post_type: filters.post_type
-            }
-        }
-    )
+	const { response } = useFetchQuery<PostsStatsResponse[]>(
+		API_ROUTES.POSTS.STATS_MONTH,
+		{
+			customQueryKey: queryKeys.detail('posts-stats', `${filters.post_type}-${filters.section}`),
+			enabled: !!filters.section,
+			queryParams: {
+				section: filters.section,
+				post_type: filters.post_type,
+			},
+		},
+	)
 
-    return (
-        <div className="grid grid-cols-2 gap-2 min-w-52">
-            <StatCard
-                title='Publicados'
-                color="cyan"
-                startContent={<FileTextIcon className="size-4 md:size-6 text-secondary" />}
-            >
-                <div className="flex items-center gap-1">
-                    <p className="text-lg md:text-2xl font-bold text-secondary">
-                        {response?.data?.[0]?.posts_count ?? 0}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                        En el mes
-                    </p>
-                </div>
-            </StatCard>
-            <StatCard
-                title='Enviadas'
-                color="primary"
-                startContent={<SendIcon className="size-4 md:size-6 text-primary" />}
-            >
-                <div className="flex items-center gap-1">
-                    <p className="text-lg md:text-2xl font-bold text-primary">
-                        {response?.data?.[0]?.posts_sent_count ?? 0}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                        En el mes
-                    </p>
-                </div>
-            </StatCard>
-        </div>
-    )
+	const stats = response?.data?.[0]
+	const published = stats?.posts_count ?? 0
+	const sent = stats?.posts_sent_count ?? 0
+	const pending = Math.max(published - sent, 0)
+
+	return (
+		<div className="flex flex-wrap gap-2.5">
+			<StatTile
+				tone="cyan"
+				icon={<FileTextIcon />}
+				label="Publicados"
+				value={published}
+				hint="En el mes"
+			/>
+			<StatTile
+				tone="success"
+				icon={<SendIcon />}
+				label="Enviadas"
+				value={sent}
+				hint="En el mes"
+			/>
+			<StatTile
+				tone="primary"
+				icon={<CalendarIcon />}
+				label="Por enviar"
+				value={pending}
+				hint="Pendientes"
+			/>
+		</div>
+	)
 }
 
 export default PostsStats

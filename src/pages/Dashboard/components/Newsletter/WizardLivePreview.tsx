@@ -35,7 +35,7 @@ const WizardLivePreview = ({ wizard, stepNumber, totalSteps }: Props) => {
                 </span>
             </div>
 
-            <div className="mb-4 grid h-52 place-content-center overflow-hidden rounded-[14px] border border-[#ecebf3] shadow-sm">
+            <div className="mb-4 grid h-52 place-content-center overflow-hidden rounded-[14px] border shadow-sm">
                 {cover ? (
                     <img src={cover.picture.url} alt={cover.name} className="h-52 w-full object-cover" />
                 ) : (
@@ -47,7 +47,7 @@ const WizardLivePreview = ({ wizard, stepNumber, totalSteps }: Props) => {
                 {rows.map(row => {
                     const Icon = row.icon
                     return (
-                        <div key={row.label} className="flex items-center gap-3 border-b border-dashed border-[#ecebf3] py-3 last:border-b-0">
+                        <div key={row.label} className="flex items-center gap-3 border-b border-dashed py-3 last:border-b-0">
                             <span
                                 className={cn(
                                     'grid size-7 shrink-0 place-content-center rounded-[9px] transition-all duration-200',
@@ -68,8 +68,8 @@ const WizardLivePreview = ({ wizard, stepNumber, totalSteps }: Props) => {
                 })}
             </div>
 
-            <div className="h-1.5 overflow-hidden rounded-full bg-[#eceaf6]">
-                <div className={cn('h-full rounded-full bg-gradient-to-r from-[#6B4FE3] to-[#4E31C0] transition-[width] duration-300', PROGRESS_WIDTH[wizard.completedCount] ?? 'w-0')} />
+            <div className="h-1.5 overflow-hidden rounded-full bg-primary-soft">
+                <div className={cn('h-full rounded-full bg-primary-gradient-r transition-[width] duration-300', PROGRESS_WIDTH[wizard.completedCount] ?? 'w-0')} />
             </div>
         </aside>
     )

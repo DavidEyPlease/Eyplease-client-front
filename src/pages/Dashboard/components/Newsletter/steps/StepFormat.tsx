@@ -14,7 +14,7 @@ const StepFormat = ({ wizard }: { wizard: NewsletterWizard }) => (
         <h3 className="text-[16.5px] font-bold">Formato y confirmación</h3>
         <p className="mb-[18px] text-[13px] text-muted-foreground">Elige cómo descargarlo. Revisa el resumen en la vista en vivo.</p>
 
-        <div className="mb-[18px] inline-flex gap-1 rounded-[14px] border border-[#ecebf3] bg-[#f4f3f9] p-[5px]">
+        <div className="mb-[18px] inline-flex gap-1 rounded-[14px] border bg-[#f4f3f9] p-[5px]">
             {FORMATS.map(({ value, label, icon: Icon }) => {
                 const selected = wizard.format === value
                 return (
