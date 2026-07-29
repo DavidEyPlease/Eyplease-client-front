@@ -7,7 +7,6 @@ import { formatDate } from '@/utils/dates'
 import { CalendarIcon, CheckIcon, DownloadIcon, ImageIcon, RefreshCwIcon, VideoIcon } from 'lucide-react'
 import usePostActions from '../../hooks/usePostActions'
 import { canMarkPostAsSent, getPostDate, getPostMediaFile, getPostMediaLabel, isPostRegenerating, isPostSent, PostMedia, PostMediaType } from '../../lib'
-import useAuth from '@/hooks/useAuth'
 
 const PILL_CLASSES = 'inline-flex items-center gap-1.5 rounded-full border bg-surface-soft px-2.5 py-1 text-[11px] font-bold text-muted-foreground [&_svg]:size-3'
 const ACTION_CLASSES = 'h-auto rounded-xl py-2.5 text-[12.5px] font-semibold text-muted-foreground hover:bg-surface-soft hover:text-primary'
@@ -20,7 +19,6 @@ interface Props {
 
 /** Título, metadatos y acciones de una publicación. Compartido por la tarjeta lateral y el drawer. */
 const PostDetailInfo = ({ post, media, mediaType }: Props) => {
-	const { user } = useAuth()
 	const { requestState, markAsSent, regenerate } = usePostActions()
 	const { executing, downloadFile } = useFiles()
 
@@ -61,17 +59,15 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 				)}
 
 				<div className="flex gap-2">
-					{user?.account === '028616' && (
-						<Button
-							variant="outline"
-							disabled={regenerating}
-							onClick={() => regenerate(post.id, mediaType)}
-							className={cn(ACTION_CLASSES, 'flex-1')}
-						>
-							<RefreshCwIcon className={cn(regenerating && 'animate-spin')} />
-							{regenerating ? 'Generando…' : 'Volver a generar'}
-						</Button>
-					)}
+					<Button
+						variant="outline"
+						disabled={regenerating}
+						onClick={() => regenerate(post.id, mediaType)}
+						className={cn(ACTION_CLASSES, 'flex-1')}
+					>
+						<RefreshCwIcon className={cn(regenerating && 'animate-spin')} />
+						{regenerating ? 'Generando…' : 'Volver a generar'}
+					</Button>
 					<PrimaryButton
 						text={
 							<>
