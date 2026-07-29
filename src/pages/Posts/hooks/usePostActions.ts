@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 const markAsSentUrl = (postId: string) => API_ROUTES.POSTS.MARK_AS_SENT.replace('{id}', postId)
 
 const usePostActions = () => {
-    const { getListQueryKey } = usePostsStore(state => state)
+    const { getListQueryKey, setRegeneratingArtifact } = usePostsStore(state => state)
     const queryClient = useQueryClient()
     const [markingMany, setMarkingMany] = useState(false)
 
@@ -55,6 +55,7 @@ const usePostActions = () => {
 
     /** Reencola la generación del artefacto (imagen o video) que está viendo la persona. */
     const regenerate = async (itemId: string, artifact: PostMediaType) => {
+        setRegeneratingArtifact(itemId, artifact)
         updateCachedPost(itemId, { is_regenerating: true })
         try {
             await request('POST', API_ROUTES.POSTS.REGENERATE.replace('{id}', itemId), { artifact })

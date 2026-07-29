@@ -1,6 +1,8 @@
 import { NewsletterSection } from "./common"
 import { EypleaseFile } from "./files"
 
+export type PostArtifactType = 'image' | 'video'
+
 export enum PostTypes {
     NEWSLETTER = 'newsletter',
     MY_CLIENTS = 'my_clients',

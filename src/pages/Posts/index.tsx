@@ -10,12 +10,13 @@ import PostsHeader from './components/PostsHeader'
 import PostsTray from './components/PostsTray'
 import usePostSections from './hooks/usePostSections'
 
-/** Cada cuánto se re-consulta la lista mientras haya publicaciones regenerándose. */
+/** Ritmo del sondeo mientras haya regeneraciones: las imágenes salen rápido, los videos tardan mucho más. */
 const REGENERATE_POLL_MS = 4000
+const REGENERATE_VIDEO_POLL_MS = 25000
 
 const PostsPage = () => {
-	const { filters, setFilters, getListQueryKey } = usePostsStore(state => state)
-	const [isPolling, setIsPolling] = useState(false)
+	const { filters, setFilters, getListQueryKey, regeneratingArtifacts } = usePostsStore(state => state)
+	const [pollInterval, setPollInterval] = useState<number | false>(false)
 
 	const mainSection = filters.post_type as MainPostSectionTypes
 	const { sections, getDefaultSection } = usePostSections(mainSection)
@@ -40,7 +41,7 @@ const PostsPage = () => {
 			customQueryKey: getListQueryKey(),
 			enabled: true,
 			staleTime: 5000,
-			refetchInterval: isPolling ? REGENERATE_POLL_MS : false,
+			refetchInterval: pollInterval,
 		},
 	)
 
@@ -49,9 +50,16 @@ const PostsPage = () => {
 	const sectionLabel = sections.find(section => section.key.toString() === filters.section.toString())?.label ?? ''
 
 	// Mientras alguna publicación se esté regenerando, se sondea la lista para reflejar el artefacto nuevo.
+	// El ritmo lo marca lo pendiente: si hay imágenes (o no se sabe qué es) manda el rápido; solo-videos, el lento.
 	useEffect(() => {
-		setIsPolling(posts.some(isPostRegenerating))
-	}, [posts])
+		const regenerating = posts.filter(isPostRegenerating)
+		if (!regenerating.length) {
+			setPollInterval(false)
+			return
+		}
+		const hasFastArtifact = regenerating.some(post => regeneratingArtifacts[post.id] !== 'video')
+		setPollInterval(hasFastArtifact ? REGENERATE_POLL_MS : REGENERATE_VIDEO_POLL_MS)
+	}, [posts, regeneratingArtifacts])
 
 	return (
 		<div className="flex flex-col gap-4">

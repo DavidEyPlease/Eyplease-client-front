@@ -1,6 +1,6 @@
 import { NewsletterSectionKeys } from '@/interfaces/common'
 import { EypleaseFile } from '@/interfaces/files'
-import { IPost, PostTypes } from '@/interfaces/posts'
+import { IPost, PostArtifactType, PostTypes } from '@/interfaces/posts'
 
 const VIDEO_EXTS = ['mp4']
 const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'webp']
@@ -10,7 +10,7 @@ export const POST_MEDIA_TYPES = {
 	VIDEO: 'video',
 } as const
 
-export type PostMediaType = (typeof POST_MEDIA_TYPES)[keyof typeof POST_MEDIA_TYPES]
+export type PostMediaType = PostArtifactType
 
 export interface PostMedia {
 	image?: EypleaseFile
