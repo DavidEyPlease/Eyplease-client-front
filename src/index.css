@@ -80,6 +80,11 @@
   --shadow-card: 0 10px 30px -12px rgba(41, 27, 105, 0.22);
   --shadow-card-hover: 0 16px 34px -14px rgba(41, 27, 105, 0.32);
   --background-image-hero-glow: radial-gradient(700px 240px at 88% -80%, rgba(107, 79, 227, 0.11), transparent 70%);
+  /* Panel de marca del login: brillos sobre el gradiente violeta (una sola utilidad para no colisionar con bg-*) */
+  --background-image-auth-panel:
+    radial-gradient(820px 520px at 90% -12%, rgba(255, 255, 255, 0.14), transparent 58%),
+    radial-gradient(620px 480px at -8% 112%, rgba(93, 217, 210, 0.22), transparent 55%),
+    linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
 
   --font-display: 'Outfit Variable', 'Inter', system-ui, sans-serif;
 

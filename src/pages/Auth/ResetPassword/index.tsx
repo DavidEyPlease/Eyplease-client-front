@@ -35,14 +35,14 @@ const ResetPasswordPage = () => {
     return (
         <AuthLayout>
             <div className="w-full text-center">
-                <div className="mb-5">
-                    <h2 className="mb-4 text-3xl font-bold text-gray-800">Crea una nueva contraseña</h2>
-                    <p className="text-sm text-gray-600">
+                <div className="mb-7">
+                    <h2 className="text-[26px] font-extrabold tracking-tight">Crea una nueva contraseña</h2>
+                    <p className="mt-1.5 text-sm font-medium text-muted-foreground">
                         Ingresa tu nueva contraseña y confírmala para poder acceder a tu cuenta
                     </p>
                 </div>
 
-                <div className="grid gap-y-10">
+                <div className="grid gap-y-7">
                     <img src={CHANGE_PASSWORD_ICON} className="w-32 mx-auto" />
                     <form onSubmit={onSubmit}>
                         <div className="flex flex-col gap-5 mx-auto mb-8">

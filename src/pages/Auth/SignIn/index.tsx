@@ -13,6 +13,7 @@ import { API_ROUTES } from "@/constants/api"
 import useAuth from "@/hooks/useAuth"
 import { useState } from "react"
 import { toast } from "sonner"
+import { LockIcon, UserIcon } from "lucide-react"
 
 type FormData = {
     username: string
@@ -52,27 +53,25 @@ const SignInPage = () => {
     return (
         <AuthLayout>
             <div className="w-full text-center">
-                <div className="mb-5">
-                    <h2 className="mb-4 text-3xl font-bold text-gray-800">¡Bienvenid@ de nuevo!</h2>
-                    <p className="text-gray-600">Inicia sesión para continuar</p>
-                </div>
+                <h2 className="text-[26px] font-extrabold tracking-tight">¡Bienvenid@ de nuevo!</h2>
+                <p className="mt-1.5 text-sm font-medium text-muted-foreground">Inicia sesión para continuar</p>
 
-                <form onSubmit={onSubmit}>
-                    <div className="flex flex-col gap-5 mx-auto mb-16">
+                <form onSubmit={onSubmit} className="mt-7">
+                    <div className="flex flex-col gap-4">
                         <TextInput
                             label="Usuario"
+                            placeholder="Tu usuario o cuenta"
                             register={register("username")}
                             error={errors.username?.message}
-                            labelClassName="text-primary"
-                            className="text-primary border border-primary"
+                            startContent={<UserIcon />}
                         />
                         <TextInput
                             type="password"
-                            label="Password"
+                            label="Contraseña"
+                            placeholder="••••••••"
                             register={register("password")}
                             error={errors.password?.message}
-                            labelClassName="text-primary"
-                            className="text-primary  border border-primary"
+                            startContent={<LockIcon />}
                         />
                         <div className="flex justify-end">
                             <Link text="Olvidé mi contraseña" to={APP_ROUTES.AUTH.FORGOT_PASSWORD} />
@@ -83,7 +82,9 @@ const SignInPage = () => {
                         text='Entrar'
                         type="submit"
                         color="primary"
+                        className="mt-7"
                         rounded
+                        size="lg"
                         block
                         loading={loading}
                     />

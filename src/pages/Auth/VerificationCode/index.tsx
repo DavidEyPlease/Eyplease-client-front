@@ -42,14 +42,14 @@ const VerificationCodePage = () => {
     return (
         <AuthLayout>
             <div className="w-full text-center">
-                <div className="mb-5">
-                    <h2 className="mb-4 text-xl font-bold text-gray-800">Revisa tu correo electrónico</h2>
-                    <p className="text-sm text-gray-600">
+                <div className="mb-7">
+                    <h2 className="text-xl font-extrabold tracking-tight">Revisa tu correo electrónico</h2>
+                    <p className="mt-1.5 text-sm font-medium text-muted-foreground">
                         Por favor ingresa el código de 6 dígitos que hemos enviado al correo <b className="text-primary">{email}</b>
                     </p>
                 </div>
 
-                <div className="grid gap-y-10">
+                <div className="grid gap-y-7">
                     <img src={IMG_VERIFICATION_CODE} className="w-32 mx-auto" />
                     <form onSubmit={(e) => {
                         e.preventDefault()

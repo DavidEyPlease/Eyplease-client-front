@@ -27,12 +27,12 @@ const SearchInput = ({ value, placeholder, onSubmitSearch }: Props) => {
                 label=''
                 value={text}
                 placeholder={placeholder}
-                className='px-8 border border-b rounded-3xl border-input'
+                className='rounded-full pr-9 text-sm font-medium'
                 startContent={<IconSearch />}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
             />
-            {text && <button className='absolute text-primary dark:text-white cursor-pointer top-[6px] right-[10px]' onClick={onClearSearch}><IconClear /></button>}
+            {text && <button className='absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-primary dark:text-white' onClick={onClearSearch}><IconClear /></button>}
         </div>
     )
 }

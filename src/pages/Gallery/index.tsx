@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 
 import { API_ROUTES } from "@/constants/api"
 import { ISponsored, VendorFilterType } from "@/interfaces/sponsored"
@@ -5,7 +6,6 @@ import VendorItem from "./components/Item"
 
 import SearchInput from "@/components/generics/SearchInput"
 import PageLoader from "@/components/generics/PageLoader"
-import VendorEdit from "./components/VendorEdit"
 import LoadMorePaginator from "@/components/generics/LoadMorePaginator"
 import AlphabetFilter from "@/components/generics/AlphabetFilter"
 import DynamicTabs from "@/components/generics/DynamicTabs"
@@ -36,13 +36,22 @@ const GalleryPage = () => {
         }
     )
 
+    const vendors = sponsoredList?.pages.flatMap(page => page.items) ?? []
+    const total = sponsoredList?.pages[0]?.total_items
+
+    // Al cambiar de tab la query se vacía un instante: se retiene el último total para que el chip no parpadee
+    const [displayTotal, setDisplayTotal] = useState<number | null>(null)
+    useEffect(() => {
+        if (total !== undefined) setDisplayTotal(total)
+    }, [total])
+
     return (
-        <div className="grid pt-2">
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col items-center md:flex-row justify-between gap-4">
-                    <div className="flex-1 w-full">
+        <div className="flex flex-col gap-4 pt-2">
+            <div className="flex flex-col gap-3.5 rounded-3xl border bg-card bg-hero-glow px-5 py-4 shadow-card">
+                <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center">
+                    <div className="min-w-60 flex-1">
                         <SearchInput
-                            placeholder="Buscar por nombre/cuenta"
+                            placeholder="Buscar por nombre o cuenta…"
                             onSubmitSearch={(e) => setFilters({ search: e })}
                         />
                     </div>
@@ -54,46 +63,38 @@ const GalleryPage = () => {
                         value={filters.vendorRole}
                         onValueChange={value => setFilters({ vendorRole: value as VendorFilterType })}
                     />
+                    {displayTotal !== null && (
+                        <Badge
+                            variant="outline"
+                            className="rounded-full border-primary/20 bg-primary/[0.07] px-3.5 py-1.5 text-[13px] font-bold text-primary"
+                        >
+                            {displayTotal} {displayTotal === 1 ? 'vendedora' : 'vendedoras'}
+                        </Badge>
+                    )}
                 </div>
                 <AlphabetFilter onFilter={letter => setFilters({ letter })} />
             </div>
-            {isLoading && !isFetchingNextPage ? (
-                <PageLoader />
-            ) : (
-                <div className="grid mt-10 gap-x-5 gap-y-14 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {(sponsoredList?.pages.flatMap(page => page.items) ?? []).map(sponsored => (
-                        <VendorItem
-                            key={sponsored.id}
-                            item={sponsored}
-                            cardBody={
-                                <div className="text-center space-y-4 pt-4 relative">
-                                    <div>
-                                        <p className='text-sm'>{sponsored.name}</p>
-                                        <p className='text-base font-semibold text-primary'>{sponsored.account}</p>
-                                    </div>
 
-                                    {!sponsored.display_in_reports && (
-                                        <Badge
-                                            className="dark:text-white absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                                            color="secondary"
-                                        >
-                                            Oculta en reportes
-                                        </Badge>
-                                    )}
-                                    <VendorEdit sponsored={sponsored} />
-                                </div>
-                            }
-                        />
+            {isLoading && !isFetchingNextPage ? (
+                <div className="relative grid min-h-64 place-content-center">
+                    <PageLoader />
+                </div>
+            ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {vendors.map(sponsored => (
+                        <VendorItem key={sponsored.id} item={sponsored} />
                     ))}
                 </div>
             )}
-            {(sponsoredList?.pages.flatMap(page => page.items) ?? []).length === 0 && !isLoading && (
+
+            {vendors.length === 0 && !isLoading && (
                 <EmptySection
                     title="No hay resultados"
                     description="Intenta ajustar los filtros o buscar con otras palabras clave."
                     media={<IconGallery />}
                 />
             )}
+
             {hasNextPage &&
                 <LoadMorePaginator disabled={!hasNextPage} loading={isFetchingNextPage} onLoadMore={() => fetchNextPage()} />
             }

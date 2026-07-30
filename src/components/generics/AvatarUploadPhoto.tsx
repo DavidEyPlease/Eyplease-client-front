@@ -35,13 +35,12 @@ const AvatarUploadPhoto = ({ uri, src, alt, loading, sizeClasses = 'size-32', on
                                     className='rounded-full'
                                 />
                             }
+                            {/* Mini-FAB de editar foto, anclado al borde del avatar */}
                             <Button
                                 color="primary"
-                                className="absolute top-0 -right-3 rounded-full"
+                                className="absolute -right-1 bottom-0 size-7 justify-center rounded-full border-2 border-card p-0 [&_svg]:size-3.5"
                                 text={<IconEdit />}
                                 disabled={loading}
-                                rounded
-                                size="sm"
                                 type="button"
                             />
                         </div>

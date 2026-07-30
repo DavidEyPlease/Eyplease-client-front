@@ -1,42 +1,43 @@
-import Button from "@/components/common/Button"
-import Modal from "@/components/common/Modal"
-import { ISponsored } from "@/interfaces/sponsored"
 import { useState } from "react"
-import VendorForm from "./VendorForm"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { ChevronDownIcon } from "lucide-react"
-import AlertConfirm from "@/components/generics/AlertConfirm"
+import { EllipsisIcon, EyeIcon, EyeOffIcon, PencilIcon, Trash2Icon } from "lucide-react"
+
+import Modal from "@/components/common/Modal"
 import Spinner from "@/components/common/Spinner"
+import AlertConfirm from "@/components/generics/AlertConfirm"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ISponsored } from "@/interfaces/sponsored"
 import useSponsoredActions from "../hooks/useSponsoredActions"
+import VendorForm from "./VendorForm"
 
 interface Props {
     sponsored: ISponsored
 }
 
-const DROPDOWN_ITEM_STYLES = 'cursor-pointer hover:bg-primary/10 transition-colors duration-200'
+const DROPDOWN_ITEM_STYLES = 'cursor-pointer rounded-lg py-2 font-medium transition-colors'
 
 const VendorEdit = ({ sponsored }: Props) => {
     const [openEdit, setOpenEdit] = useState(false)
     const { actionLoading, onRemoveVendor, onDisplayVendor } = useSponsoredActions()
+
+    const DisplayIcon = sponsored.display_in_reports ? EyeOffIcon : EyeIcon
 
     return (
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button
-                        text={
-                            <div className="flex items-center gap-2">
-                                Acciones
-                                <ChevronDownIcon className="size-5" />
-                            </div>
-                        }
-                        rounded
-                        block
-                    />
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Acciones"
+                        className="absolute top-2.5 right-2.5 cursor-pointer rounded-[10px] border border-transparent text-muted-foreground hover:border-border hover:bg-surface-soft hover:text-primary"
+                    >
+                        <EllipsisIcon />
+                    </Button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent side='top' className="w-80 bg-popover/95 backdrop-blur-md border-border animate-slide-down">
-                    <DropdownMenuLabel className="text-foreground font-semibold">
+                <DropdownMenuContent align="end" className="w-60 rounded-2xl border-border bg-popover/95 p-1.5 shadow-card-hover backdrop-blur-md">
+                    <DropdownMenuLabel className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
                         Acciones disponibles
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-border" />
@@ -45,6 +46,7 @@ const VendorEdit = ({ sponsored }: Props) => {
                         onClick={() => setOpenEdit(true)}
                         className={DROPDOWN_ITEM_STYLES}
                     >
+                        <PencilIcon />
                         Editar
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -55,34 +57,24 @@ const VendorEdit = ({ sponsored }: Props) => {
                             onDisplayVendor(sponsored)
                         }}
                     >
-                        <div className="flex items-center justify-between w-full">
-                            {sponsored.display_in_reports ? 'Ocultar en reportes' : 'Mostrar en reportes'}
-                            {actionLoading === 'update' && (
-                                <div className="ml-2">
-                                    <Spinner />
-                                </div>
-                            )}
-                        </div>
+                        <DisplayIcon />
+                        {sponsored.display_in_reports ? 'Ocultar en reportes' : 'Mostrar en reportes'}
+                        {actionLoading === 'update' && <Spinner size="xs" className="ml-auto w-auto" />}
                     </DropdownMenuItem>
                     <AlertConfirm
                         trigger={
                             <DropdownMenuItem
+                                variant="destructive"
                                 disabled={actionLoading === 'remove'}
                                 className={DROPDOWN_ITEM_STYLES}
                                 onSelect={(e) => e.preventDefault()}
                             >
-                                <div className="flex items-center justify-between w-full">
-                                    Remover de mi lista
-                                    {actionLoading === 'remove' && (
-                                        <div className="ml-2">
-                                            <Spinner />
-                                        </div>
-                                    )}
-                                </div>
+                                <Trash2Icon />
+                                Remover de mi lista
+                                {actionLoading === 'remove' && <Spinner size="xs" className="ml-auto w-auto" />}
                             </DropdownMenuItem>
                         }
                         description='La vendedora dejara de pertenecer a tu lista de vendedoras'
-                        // loading={requestState.loading}
                         onConfirm={() => onRemoveVendor(sponsored.id)}
                     />
                 </DropdownMenuContent>
