@@ -1,30 +1,39 @@
-import { CalendarIcon, CheckIcon, ChevronDownIcon, FileTextIcon } from 'lucide-react'
-
-import { ITraining } from "@/interfaces/trainings"
-import { Card, CardContent } from "@/components/ui/card"
-// import { IconStar } from "@/components/Svg/IconStar"
-import { formatDate } from "@/utils/dates"
-import CardBgImage from '@/components/generics/CardBgImage'
-import IconDownload from '@/components/Svg/IconDownload'
-import Button from '@/components/common/Button'
-import { getTrainingFileByType, TRAINING_FILE_NAME } from '../utils'
-import { FileTypes } from '@/interfaces/files'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
-import useFiles from '@/hooks/useFiles'
 import { useState } from 'react'
+import { CalendarIcon, DownloadIcon, Maximize2Icon } from 'lucide-react'
 import { toast } from 'sonner'
+
+import Modal from '@/components/common/Modal'
 import Spinner from '@/components/common/Spinner'
-import Ribbon from '@/components/generics/Ribbon'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import useFiles from '@/hooks/useFiles'
+import { FileTypes } from '@/interfaces/files'
+import { ITraining } from '@/interfaces/trainings'
+import useAuthStore from '@/store/auth'
+import { formatDate } from '@/utils/dates'
+import {
+    getDownloadableFiles,
+    getTrainingFileByType,
+    TRAINING_FILE_ICON,
+    TRAINING_FILE_NAME,
+    TRAINING_FILE_SHORT_NAME,
+} from '../utils'
 
 interface Props {
     training: ITraining
     showRibbon?: boolean
+    showCategory?: boolean
 }
 
-const TrainingItem = ({ training, showRibbon }: Props) => {
+const TrainingItem = ({ training, showRibbon, showCategory }: Props) => {
     const { downloadFile } = useFiles()
+    const { utilData } = useAuthStore(state => state)
     const [fileIdDownloading, setFileIdDownloading] = useState('')
+    const [showCover, setShowCover] = useState(false)
+
+    const files = getDownloadableFiles(training.files)
+    const cover = getTrainingFileByType(training.files, FileTypes.TRAINING_COVER)?.url
+    const categoryName = utilData.training_categories.find(category => category.slug === training.category)?.name
 
     const onDownloadClick = async (fileId: string, fileUri: string) => {
         try {
@@ -38,102 +47,95 @@ const TrainingItem = ({ training, showRibbon }: Props) => {
         }
     }
 
-    const files = training.files.filter(i => i.type !== FileTypes.TRAINING_COVER)
-
     return (
-        <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-            <Card className="w-full p-0 transition-all gap-0 duration-300 hover:shadow-xl hover:shadow-primary/10">
-                <CardContent className="p-0 relative overflow-hidden flex flex-col justify-between">
-                    {showRibbon && (
-                        <Ribbon text="Nueva" />
+        <Card className="flex flex-col gap-0 overflow-hidden rounded-[20px] p-0 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-card-hover">
+            <div className="relative">
+                {/* La portada se recorta a 16:10 en la tarjeta: al pulsarla se abre completa */}
+                <button
+                    type="button"
+                    disabled={!cover}
+                    onClick={() => setShowCover(true)}
+                    aria-label={`Ver portada de ${training.title}`}
+                    className="group/cover block w-full cursor-zoom-in disabled:cursor-default"
+                >
+                    {cover ? (
+                        <img src={cover} alt="" loading="lazy" className="aspect-16/10 w-full object-cover" />
+                    ) : (
+                        <div className="aspect-16/10 w-full bg-surface-soft" />
                     )}
-                    <CardBgImage
-                        srcImage={getTrainingFileByType(training.files, FileTypes.TRAINING_COVER)?.url || ''}
-                        classImageHeight="h-64 w-full"
-                        className="border-none"
-                        objectPosition="object-cover"
-                    />
 
-                    <div className="flex flex-col px-4 pb-4 space-y-3 my-3">
-                        <p className='text-sm'>{training.title}</p>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <CalendarIcon className="h-4 w-4" aria-hidden />
-                            <span>Publicada: {formatDate(training.created_at)}</span>
-                        </div>
+                    {cover && (
+                        <span className="absolute inset-0 grid place-content-center bg-black/25 opacity-0 transition-opacity duration-200 group-hover/cover:opacity-100 group-focus-visible/cover:opacity-100">
+                            <span className="grid size-9 place-content-center rounded-full bg-card text-primary shadow-card">
+                                <Maximize2Icon className="size-4" />
+                            </span>
+                        </span>
+                    )}
+                </button>
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    disabled={files.length === 0}
-                                    text={
-                                        <div className="flex items-center gap-2">
-                                            <IconDownload className="size-5 group-hover:animate-bounce" />
-                                            Descargar ({files.length})
-                                            <ChevronDownIcon className="size-5" />
-                                        </div>
-                                    }
-                                    rounded
-                                    block
-                                // loading={executing}
-                                // onClick={() => downloadFile(item.files[currentFile - 1].uri)}
-                                />
-                            </DropdownMenuTrigger>
+                {/* pointer-events-none: los badges no deben tragarse el click de la portada */}
+                {showRibbon && (
+                    <Badge className="pointer-events-none absolute top-2.5 left-2.5 rounded-full bg-primary-gradient px-2.5 text-[10px] font-extrabold tracking-wide shadow-primary-glow">
+                        Nueva
+                    </Badge>
+                )}
+                {showCategory && categoryName && (
+                    <Badge className="pointer-events-none absolute top-2.5 right-2.5 rounded-full border border-white/25 bg-black/40 px-2.5 text-[10px] font-extrabold tracking-wide text-white uppercase backdrop-blur-sm">
+                        {categoryName}
+                    </Badge>
+                )}
+            </div>
 
-                            <DropdownMenuContent side='top' className="w-80 bg-popover/95 backdrop-blur-md border-border animate-slide-down">
-                                <DropdownMenuLabel className="text-foreground font-semibold">
-                                    Archivos disponibles ({training.files.length})
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-border" />
+            <div className="flex flex-1 flex-col gap-2.5 p-3.5">
+                <h3 className="line-clamp-2 min-h-9 text-sm font-bold leading-snug tracking-tight">
+                    {training.title}
+                </h3>
 
-                                {files.map((file) => {
-                                    const isDownloading = fileIdDownloading === file.id // Replace with actual downloading state
-                                    const isDownloaded = false // Replace with actual downloaded state
-                                    return (
-                                        <DropdownMenuItem
-                                            key={file.id}
-                                            disabled={isDownloading}
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                onDownloadClick(file.id, file.uri)
-                                            }}
-                                            className="cursor-pointer hover:bg-primary/10 transition-colors duration-200"
-                                        >
-                                            <div className="flex items-center justify-between w-full">
-                                                <div className="flex items-center flex-1 min-w-0">
-                                                    <div className={cn(
-                                                        "w-10 h-10 rounded-lg flex items-center justify-center mr-3 transition-all duration-300",
-                                                        isDownloaded ? "bg-accent/20" : "bg-primary/10",
-                                                        isDownloading && "animate-pulse"
-                                                    )}>
-                                                        {isDownloaded ? (
-                                                            <CheckIcon className="w-5 h-5 text-accent animate-fade-in" />
-                                                        ) : (
-                                                            <FileTextIcon className="w-5 h-5 text-primary" />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-foreground truncate">
-                                                            {TRAINING_FILE_NAME[file.type as keyof typeof TRAINING_FILE_NAME]}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                {isDownloading && (
-                                                    <div className="ml-2">
-                                                        <Spinner />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </DropdownMenuItem>
-                                    )
-                                })}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                <p className="flex items-center gap-1.5 text-[11.5px] font-semibold text-muted-foreground">
+                    <CalendarIcon className="size-3" aria-hidden />
+                    {formatDate(training.created_at, { formatter: { date: 'medium' } })}
+                    <span aria-hidden>·</span>
+                    {files.length} {files.length === 1 ? 'archivo' : 'archivos'}
+                </p>
+
+                {!!files.length && (
+                    <div className="mt-auto grid grid-cols-2 gap-1.5 border-t border-dashed pt-2.5">
+                        {files.map(file => {
+                            const fileType = file.type as keyof typeof TRAINING_FILE_SHORT_NAME
+                            const Icon = TRAINING_FILE_ICON[file.type]
+                            const isDownloading = fileIdDownloading === file.id
+
+                            return (
+                                <button
+                                    key={file.id}
+                                    type="button"
+                                    disabled={isDownloading}
+                                    title={TRAINING_FILE_NAME[fileType]}
+                                    onClick={() => onDownloadClick(file.id, file.uri)}
+                                    className="group flex cursor-pointer items-center gap-2 rounded-xl border bg-card px-2.5 py-2 text-left transition-colors hover:border-primary/30 hover:bg-primary/5 disabled:pointer-events-none disabled:opacity-60"
+                                >
+                                    <span className="grid size-6.5 shrink-0 place-content-center rounded-lg bg-primary/10 text-primary">
+                                        {isDownloading
+                                            ? <Spinner size="xs" color="primary" className="w-auto" />
+                                            : Icon && <Icon className="size-3.5" />}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate text-[11.5px] font-bold tracking-tight">
+                                        {TRAINING_FILE_SHORT_NAME[fileType]}
+                                    </span>
+                                    <DownloadIcon className="size-3 shrink-0 text-primary opacity-30 transition-opacity group-hover:opacity-100" />
+                                </button>
+                            )
+                        })}
                     </div>
-                </CardContent>
-            </Card>
-        </div>
+                )}
+            </div>
+
+            {cover && (
+                <Modal open={showCover} onOpenChange={setShowCover} title={training.title} size="xxl">
+                    <img src={cover} alt={training.title} className="w-full rounded-xl object-contain" />
+                </Modal>
+            )}
+        </Card>
     )
 }
 

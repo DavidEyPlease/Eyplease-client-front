@@ -2,6 +2,7 @@ import { API_ROUTES } from "@/constants/api"
 import { ITraining, ITrainingListFilters, TrainingFilterTypes } from "@/interfaces/trainings"
 import { useLocation, useParams } from "react-router"
 import TrainingItem from "./components/TrainingItem"
+import { TRAININGS_GRID } from "./components/TrainingSection"
 import PageLoader from "@/components/generics/PageLoader"
 import useInfiniteListQuery from "@/hooks/useInfiniteListQuery"
 import { queryKeys } from "@/utils/cache"
@@ -33,24 +34,28 @@ const TrainingsFilterPage = () => {
         }
     )
 
+    const isRecent = sectionKey === TrainingFilterTypes.RECENT
+
     return (
-        <div>
-            <div className="flex items-center mb-3 ">
-                <Button variant='ghost' size='icon' onClick={() => history.back()}>
+        <div className="pt-2">
+            <div className="mb-4 flex items-center gap-1">
+                <Button variant='ghost' size='icon' className="cursor-pointer" onClick={() => history.back()}>
                     <ChevronLeftIcon />
                 </Button>
-                <p className="text-xl font-semibold text-dark">{searchParams.get('title')}</p>
-                {/* <Link text="Ver todos" to={APP_ROUTES.TRAININGS.LIST} /> */}
+                <h1 className="text-lg font-extrabold tracking-tight">{searchParams.get('title')}</h1>
             </div>
             {isLoading ? (
-                <PageLoader />
+                <div className="relative grid min-h-64 place-content-center">
+                    <PageLoader />
+                </div>
             ) : (
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+                <div className={TRAININGS_GRID}>
                     {(data?.pages.flatMap(page => page.items) || []).map(training => (
                         <TrainingItem
                             key={training.id}
                             training={training}
-                            showRibbon={sectionKey === TrainingFilterTypes.RECENT}
+                            showRibbon={isRecent}
+                            showCategory={isRecent}
                         />
                     ))}
                 </div>
