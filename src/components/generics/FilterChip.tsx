@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils'
 interface Props {
 	label: string
 	icon?: React.ReactNode
+	/** Icono al final del chip (p. ej. candado de sección bloqueada) */
+	endIcon?: React.ReactNode
 	active?: boolean
 	disabled?: boolean
 	className?: string
@@ -10,7 +12,7 @@ interface Props {
 }
 
 /** Chip de filtro en píldora: icono + etiqueta, con estado activo del sistema de diseño. */
-const FilterChip = ({ label, icon, active, disabled, className, onClick }: Props) => {
+const FilterChip = ({ label, icon, endIcon, active, disabled, className, onClick }: Props) => {
 	return (
 		<button
 			type="button"
@@ -27,6 +29,7 @@ const FilterChip = ({ label, icon, active, disabled, className, onClick }: Props
 		>
 			{icon}
 			{label}
+			{endIcon}
 		</button>
 	)
 }

@@ -24,5 +24,6 @@ export const useToolsStore = create<ToolStore>((set, get) => ({
     },
 
     setFilters: (filters) => set((state) => ({ page: 1, filters: { ...state.filters, ...filters } })),
-    getListQueryKey: () => queryKeys.list('tools', { section: get().filters.section }),
+    /* search incluido en la key: sin él, react-query sirve la caché de la sección y buscar no refetchea */
+    getListQueryKey: () => queryKeys.list('tools', { section: get().filters.section, search: get().filters.search }),
 }))
