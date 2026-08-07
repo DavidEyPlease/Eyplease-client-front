@@ -115,35 +115,36 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     },
 ]
 
+/* Chips suaves del rediseño: cada estado con color propio (antes Pendiente y En proceso compartían el warning) */
 export const MAP_USER_REQUEST_STATUS: Record<UserRequestStatusTypes, { label: string; classes: string, bgBorder: string }> = {
     [UserRequestStatusTypes.UNASSIGNED]: {
         label: 'Pendiente',
-        classes: 'bg-warning text-white',
-        bgBorder: 'bg-warning',
+        classes: 'border-amber-200 bg-amber-50 text-amber-700',
+        bgBorder: 'bg-amber-500',
     },
     [UserRequestStatusTypes.IN_PROGRESS]: {
         label: 'En proceso',
-        classes: 'bg-warning text-white',
-        bgBorder: 'bg-warning',
+        classes: 'border-primary/25 bg-primary/[0.07] text-primary',
+        bgBorder: 'bg-primary',
     },
     [UserRequestStatusTypes.COMPLETED]: {
         label: 'Entregado',
-        classes: 'bg-primary text-white',
-        bgBorder: 'bg-primary',
+        classes: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        bgBorder: 'bg-emerald-500',
     },
     [UserRequestStatusTypes.PENDING_CORRECTION]: {
-        label: 'En correción',
-        classes: 'bg-red-500 text-white',
-        bgBorder: 'bg-red-500',
+        label: 'En corrección',
+        classes: 'border-rose-200 bg-rose-50 text-rose-700',
+        bgBorder: 'bg-rose-500',
     },
     [UserRequestStatusTypes.READY_FOR_REVIEW]: {
         label: 'Para revisión',
-        classes: 'bg-secondary text-white',
-        bgBorder: 'bg-secondary',
+        classes: 'border-teal-200 bg-teal-50 text-teal-700',
+        bgBorder: 'bg-teal-500',
     },
     [UserRequestStatusTypes.READY_FOR_PUBLISH]: {
         label: 'Publicada',
-        classes: 'bg-blue-500 text-white',
+        classes: 'border-blue-200 bg-blue-50 text-blue-700',
         bgBorder: 'bg-blue-500',
     }
 }

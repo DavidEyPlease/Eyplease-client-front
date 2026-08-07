@@ -1,118 +1,72 @@
-import { useState } from "react"
+import { VideoIcon, MapPinIcon, XIcon } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
+import MetaPill from '@/components/generics/MetaPill'
+import { Separator } from '@/components/ui/separator'
+import { EVENT_TYPES_LABEL } from '@/constants/app'
+import { EventType, IEvent } from '@/interfaces/events'
+import ServiceWorkspace from '../../../components/ServiceWorkspace'
+import CorrectionComposer from '../../../components/ServiceWorkspace/CorrectionComposer'
+import ServiceStatusBadge from '../../../ServiceRequests/components/StatusBadge'
+import EventFacts from '../EventFacts'
 
-import Modal from "@/components/common/Modal"
-import DateContainer from "@/components/generics/DateContainer"
-import { Badge } from "@/components/ui/badge"
-import DynamicTabs from "@/components/generics/DynamicTabs"
-// import ServiceActions from "./Actions"
-import { Separator } from "@/components/ui/separator"
-import { EventType, IEvent } from "@/interfaces/events"
-import ServiceActions from "@/pages/CustomServices/ServiceRequests/components/Detail/Actions"
-import CustomServiceFiles from "@/pages/CustomServices/ServiceRequests/components/Detail/Files"
-import ServiceStatusBadge from "@/pages/CustomServices/ServiceRequests/components/StatusBadge"
-import BasicDetails from "@/pages/CustomServices/ServiceRequests/components/Detail/BasicDetails"
-import { EVENT_TYPES_LABEL } from "@/constants/app"
-import { ONLINE_DATA_LABELS_MAP } from "../../utils"
-import { Button } from "@/components/ui/button"
-import { CopyIcon } from "lucide-react"
-
-interface ModalDetailProps {
-    item: IEvent
+interface Props {
+    item: IEvent | null
     open: boolean
     onOpenChange: (open: boolean) => void
 }
 
-export const SummaryDetails = ({ item }: { item: IEvent }) => {
+/** Expediente del evento en drawer: datos del evento + workspace del servicio de diseño ligado. */
+const EventDetail = ({ item, open, onOpenChange }: Props) => {
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-x-2">
-                    <Badge variant="outline">{EVENT_TYPES_LABEL[item.event_type]}</Badge>
-                    {item.service?.delivery_date && <DateContainer date={item.service.delivery_date} label="Entrega:" />}
-                </div>
-                {item.service && <ServiceStatusBadge status={item.service.status} />}
-            </div>
+        <Drawer direction="right" open={open && !!item} onOpenChange={onOpenChange}>
+            <DrawerContent className="w-full data-[vaul-drawer-direction=right]:sm:max-w-xl">
+                {item && (
+                    <>
+                        <DrawerHeader className="flex flex-row items-center gap-2.5 border-b p-3.5">
+                            <DrawerTitle className="min-w-0 flex-1 truncate text-left text-sm font-extrabold tracking-tight">
+                                {item.title}
+                            </DrawerTitle>
+                            {item.service && <ServiceStatusBadge status={item.service.status} />}
+                            <DrawerClose asChild>
+                                <Button variant="ghost" size="icon-sm" className="shrink-0 cursor-pointer text-muted-foreground" aria-label="Cerrar">
+                                    <XIcon />
+                                </Button>
+                            </DrawerClose>
+                        </DrawerHeader>
 
-            {item.service && <BasicDetails item={item.service} />}
-        </div>
-    )
-}
-
-const EventInfo = ({ item }: { item: IEvent }) => {
-    return (
-        <div className="grid md:grid-cols-2">
-            {item.event_type === EventType.ONLINE && item.online_data && (
-                <div>
-                    <h3 className="text-sm font-semibold text-dark mb-3">Links del evento</h3>
-                    {(item.online_data.platforms || []).map((platform, index) => {
-                        const labelData = ONLINE_DATA_LABELS_MAP[platform]
-                        return (
-                            <div className="mb-3" key={`${platform}-${index}`}>
-                                <div className="flex items-center gap-2">
-                                    <div className="[&>svg]:size-4.5 [&>svg]:text-primary">
-                                        <labelData.icon />
-                                    </div>
-                                    <p className="text-sm font-medium">{labelData.title}</p>
-                                </div>
-                                {item?.online_data && (
-                                    <div className="flex items-center gap-5">
-                                        <p className="text-sm text-tertiary">{item?.online_data[labelData.value]}</p>
-                                        <Button variant='ghost' className="text-primary" size='icon' onClick={() => console.log(item?.online_data?.[labelData.value]?.toString() || '')}>
-                                            <CopyIcon />
-                                        </Button>
-                                    </div>
-                                )}
+                        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                                <MetaPill icon={item.event_type === EventType.ONLINE ? <VideoIcon aria-hidden /> : <MapPinIcon aria-hidden />}>
+                                    {EVENT_TYPES_LABEL[item.event_type]}
+                                </MetaPill>
                             </div>
-                        )
-                    })}
-                </div>
-            )}
-            <div>
-                <h3 className="text-sm font-semibold text-dark mb-3">Fechas del evento</h3>
-                {item.dates.map((date, index) => (
-                    <div className="mb-2" key={`${index}_${date.id}`}>
-                        <DateContainer date={date.start_date} label={`Fecha ${index + 1}: `} />
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-}
 
-const EventDetail = ({ item, open, onOpenChange }: ModalDetailProps) => {
-    const [activeContent, setActiveContent] = useState('files')
+                            {item.description && (
+                                <p className="text-[12.5px] leading-relaxed font-medium text-muted-foreground">{item.description}</p>
+                            )}
 
-    return (
-        <Modal
-            open={open}
-            onOpenChange={onOpenChange}
-            title={item.title}
-            size="2xl"
-        >
-            <div className="grid md:grid-cols-2 gap-4">
-                <SummaryDetails item={item} />
-                <EventInfo item={item} />
-            </div>
+                            <EventFacts event={item} />
 
-            <Separator />
+                            {item.service && (
+                                <>
+                                    <Separator />
+                                    <ServiceWorkspace item={item.service} showHeader={false} showComposer={false} />
+                                </>
+                            )}
+                        </div>
 
-            <DynamicTabs
-                items={[
-                    { value: 'files', label: "Archivos" },
-                    { value: 'actions', label: "Corrección" }
-                ]}
-                value={activeContent}
-                onValueChange={value => setActiveContent(value)}
-            />
-
-            {activeContent === 'files' && item.service && (
-                <CustomServiceFiles
-                    itemId={item.service.id}
-                />
-            )}
-            {activeContent === 'actions' && item.service && <ServiceActions itemId={item.service.id} />}
-        </Modal>
+                        {/* El redactor de corrección queda fijo al pie: siempre a mano, sin buscarlo al final del scroll */}
+                        {item.service && (
+                            <div className="border-t bg-surface-soft p-3">
+                                <CorrectionComposer itemId={item.service.id} />
+                            </div>
+                        )}
+                    </>
+                )}
+            </DrawerContent>
+        </Drawer>
     )
 }
 

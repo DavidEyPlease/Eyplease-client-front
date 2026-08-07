@@ -1,4 +1,20 @@
-import { z } from "zod";
+import { z } from "zod"
+
+/** Fuerza de la nueva contraseña (0-4): solo orientativa, la validación real es el schema. */
+export const getPasswordStrength = (password: string): number => {
+    if (!password) return 0
+
+    let score = 0
+    if (password.length >= 8) score++
+    if (password.length >= 12) score++
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
+    if (/\d/.test(password)) score++
+    if (/[^a-zA-Z0-9]/.test(password)) score++
+
+    return Math.min(score, 4)
+}
+
+export const PASSWORD_STRENGTH_LABELS = ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Excelente']
 
 export const EditProfileSchema = z.object({
     name: z
@@ -12,7 +28,7 @@ export const EditProfileSchema = z.object({
         .string()
         .min(1, 'Ingresa el número de teléfono')
         .nullable(),
-});
+})
 
 
 export const ChangePasswordSchema = z
@@ -35,4 +51,4 @@ export const ChangePasswordSchema = z
             path: ['confirmPassword'],
             message: 'Las contraseñas no coinciden',
         }
-    );
+    )

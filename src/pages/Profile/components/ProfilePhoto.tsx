@@ -1,19 +1,20 @@
-import Button from "@/components/common/Button"
+import { useState } from "react"
+import { PencilIcon } from "lucide-react"
+
 import FileSelector from "@/components/generics/FileSelector"
 import LoggedUserAvatar from "@/components/generics/LoggedUserAvatar"
-import { IconEdit } from "@/components/Svg/IconEdit"
 import { BROWSER_EVENTS } from "@/constants/app"
 import useAuth from "@/hooks/useAuth"
 import { IAuthUser } from "@/interfaces/auth"
 import { FileTypes } from "@/interfaces/files"
 import { getFileType } from "@/utils"
 import { publishEvent } from "@/utils/events"
-import { useState } from "react"
 
 interface Props {
     authUser: IAuthUser
 }
 
+/** Foto de perfil con su mini-FAB para cambiarla. */
 const ProfilePhoto = ({ authUser }: Props) => {
     const { uploadUserPhoto } = useAuth()
     const [loading, setLoading] = useState(false)
@@ -38,27 +39,23 @@ const ProfilePhoto = ({ authUser }: Props) => {
 
     return (
         <div className="relative">
-            {authUser &&
-                <>
-                    <LoggedUserAvatar
-                        user={authUser}
-                        sizeClasses="size-24 md:size-40"
-                        className="mt-[-35px] border-4 border-white"
-                        loading={loading}
-                    />
-                    <FileSelector
-                        fileUploaderComponent={
-                            <Button
-                                color="primary"
-                                className="absolute top-[-40px] right-[-15px] size-8 md:size-10 rounded-full"
-                                text={<IconEdit />}
-                                rounded
-                            />
-                        }
-                        onSelectedFile={onSubmitPhoto}
-                    />
-                </>
-            }
+            {/* Anillo y recorte circular en el envoltorio: el genérico Avatar trae rounded-lg fijo */}
+            <div className="overflow-hidden rounded-full border-4 border-card bg-card shadow-card">
+                <LoggedUserAvatar user={authUser} sizeClasses="size-20" loading={loading} />
+            </div>
+            <FileSelector
+                fileUploaderComponent={
+                    <button
+                        type="button"
+                        title="Cambiar foto"
+                        disabled={loading}
+                        className="absolute right-0 bottom-0.5 grid size-7.5 cursor-pointer place-content-center rounded-full border-2 border-card bg-primary-gradient text-white shadow-primary-glow transition-transform hover:scale-108 disabled:pointer-events-none"
+                    >
+                        <PencilIcon className="size-3.5" aria-hidden />
+                    </button>
+                }
+                onSelectedFile={onSubmitPhoto}
+            />
         </div>
     )
 }

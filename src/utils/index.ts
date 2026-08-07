@@ -91,6 +91,10 @@ export const isImage = (fileExtension: string) => {
     return imageExtensions.includes(fileExtension.toLowerCase())
 }
 
+/** Normaliza texto para búsquedas locales: minúsculas y sin tildes. */
+export const normalizeSearchText = (value: string) =>
+    value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
+
 export const generateBatches = <T>(list: T[], batchSize: number) => {
     return list.reduce((acc, operation, i) => {
         const batchIndex = Math.floor(i / batchSize)
@@ -121,5 +125,5 @@ export const numberFormatter = new Intl.NumberFormat('es-MX', {
 })
 
 export const sanitizeFileName = (fileName: string): string => {
-    return fileName.replace(/[^a-z0-9_\-]/gi, '_')
+    return fileName.replace(/[^a-z0-9_-]/gi, '_')
 }

@@ -1,45 +1,36 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { EVENT_TYPES_LABEL, MAP_USER_REQUEST_STATUS } from "@/constants/app"
+import { useState } from "react"
+import { CalendarIcon, EllipsisVerticalIcon } from "lucide-react"
+
+import Modal from "@/components/common/Modal"
+import Spinner from "@/components/common/Spinner"
+import AlertConfirm from "@/components/generics/AlertConfirm"
+import MetaPill from "@/components/generics/MetaPill"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { API_ROUTES } from "@/constants/api"
+import { EVENT_TYPES_LABEL } from "@/constants/app"
+import useRequestQuery from "@/hooks/useRequestQuery"
 import { IEvent } from "@/interfaces/events"
 import { UserRequestStatusTypes } from "@/interfaces/requestService"
+import { formatDate } from "@/utils/dates"
 import ServiceStatusBadge from "../../ServiceRequests/components/StatusBadge"
-import DateContainer from "@/components/generics/DateContainer"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { EllipsisVerticalIcon } from "lucide-react"
-import AlertConfirm from "@/components/generics/AlertConfirm"
-import Spinner from "@/components/common/Spinner"
-import useRequestQuery from "@/hooks/useRequestQuery"
-import { API_ROUTES } from "@/constants/api"
-import { useState } from "react"
-import EventDetail from "./Detail"
-import Modal from "@/components/common/Modal"
 import EventForm from "./Form"
-import { useRequestServicesStore } from "@/store/request-services"
-
-import dayjs from "dayjs"
-import utc from "dayjs/plugin/utc"
-
-dayjs.extend(utc)
 
 interface EventItemProps {
     event: IEvent
     onSuccess: (event: IEvent, action: 'update' | 'delete') => void
+    onOpenDetail: (event: IEvent) => void
 }
 
-const EventItem = ({ event, onSuccess }: EventItemProps) => {
-    const { setSelectedItem } = useRequestServicesStore(state => state)
-    const [openAction, setOpenAction] = useState<'detail' | 'edit'>()
-    const STATUS_STYLE_PROPERTIES = MAP_USER_REQUEST_STATUS[event.service?.status || UserRequestStatusTypes.UNASSIGNED]
+/** Tarjeta de agenda: bloque de fecha, título, estado del servicio ligado y acciones. */
+const EventItem = ({ event, onSuccess, onOpenDetail }: EventItemProps) => {
+    const [openEdit, setOpenEdit] = useState(false)
 
     const { request, requestState } = useRequestQuery()
 
-    const onOpenDetail = () => {
-        setOpenAction('detail')
-        setSelectedItem(event.service || null)
-    }
+    /* Misma regla de siempre: solo se elimina si el servicio ligado sigue pendiente */
+    const deleteDisabled = requestState.loading ||
+        (!!event.service?.status && event.service.status !== UserRequestStatusTypes.UNASSIGNED)
 
     const onRemoveEvent = async () => {
         try {
@@ -54,104 +45,97 @@ const EventItem = ({ event, onSuccess }: EventItemProps) => {
 
     return (
         <>
-            <Card className='py-3' key={event.id}>
-                <CardContent className='px-2'>
-                    <div className="flex items-center justify-between mb-1">
-                        {event.service && (<ServiceStatusBadge status={event.service.status} />)}
-                        <div className="flex">
-                            {event.service?.delivery_date &&
-                                <DateContainer date={event.service.delivery_date} label="Entrega" format={{ date: 'medium' }} />
-                            }
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-                                        size="icon"
-                                    >
-                                        <EllipsisVerticalIcon />
-                                        <span className="sr-only">Open menu</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-32">
-                                    <DropdownMenuItem onClick={() => setOpenAction('edit')}>
-                                        Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <AlertConfirm
-                                        trigger={
-                                            <DropdownMenuItem
-                                                disabled={requestState.loading || (event.service?.status && event.service?.status !== UserRequestStatusTypes.UNASSIGNED)}
-                                                variant="destructive"
-                                                onSelect={(e) => e.preventDefault()}
-                                            >
-                                                <div className="flex items-center justify-between w-full">
-                                                    Eliminar
-                                                    {requestState.loading && (
-                                                        <div className="ml-2">
-                                                            <Spinner />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </DropdownMenuItem>
-                                        }
-                                        description='El evento será eliminado permanentemente'
-                                        loading={requestState.loading}
-                                        onConfirm={() => onRemoveEvent()}
-                                    />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className={cn('w-1 h-16 rounded-sm', STATUS_STYLE_PROPERTIES.bgBorder)}></div>
-                        <div>
-                            <button
-                                className="text-sm font-bold text-dark underline cursor-pointer"
-                                onClick={() => onOpenDetail()}
-                            >
-                                {event.title}
-                            </button>
-                            <p className="text-xs text-tertiary">
-                                {event.description && event.description.substring(0, 100)}...
-                            </p>
-                        </div>
-                    </div>
+            <article className="flex items-start gap-2 rounded-2xl border bg-card p-3 shadow-card transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-card-hover">
+                <button
+                    type="button"
+                    onClick={() => onOpenDetail(event)}
+                    className="flex min-w-0 flex-1 cursor-pointer items-start gap-3 text-left"
+                >
+                    <span className="w-11 shrink-0 overflow-hidden rounded-xl border bg-surface-soft text-center">
+                        <span className="block pt-1 pb-0.5 text-[17px] leading-none font-extrabold tracking-tight">
+                            {formatDate(event.start_date, { formatter: 'D', dateOnly: true })}
+                        </span>
+                        <span className="block bg-primary-gradient py-0.5 text-[9px] font-extrabold tracking-widest text-white uppercase">
+                            {formatDate(event.start_date, { formatter: 'MMM', dateOnly: true })}
+                        </span>
+                    </span>
 
-                    <div className="flex items-center justify-between mt-2">
-                        <Badge variant='outline'>
-                            {EVENT_TYPES_LABEL[event.event_type]}
-                        </Badge>
-                        <DateContainer date={event.start_date} label="Fecha:" omitTz />
-                    </div>
-                </CardContent>
-            </Card>
+                    <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                        <span className="line-clamp-1 text-[13px] leading-snug font-bold tracking-tight">{event.title}</span>
+                        <span className="flex flex-wrap items-center gap-1.5">
+                            {event.service && <ServiceStatusBadge status={event.service.status} />}
+                            <MetaPill>{EVENT_TYPES_LABEL[event.event_type]}</MetaPill>
+                        </span>
+                        {event.description && (
+                            <span className="line-clamp-1 text-[11.5px] font-medium text-muted-foreground">{event.description}</span>
+                        )}
+                        {event.service?.delivery_date && (
+                            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
+                                <CalendarIcon className="size-3 shrink-0" aria-hidden />
+                                Entrega: {formatDate(event.service.delivery_date, { formatter: { date: 'medium' } })}
+                            </span>
+                        )}
+                    </span>
+                </button>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="shrink-0 cursor-pointer text-muted-foreground data-[state=open]:bg-muted"
+                        >
+                            <EllipsisVerticalIcon />
+                            <span className="sr-only">Abrir menú</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-32">
+                        <DropdownMenuItem onClick={() => setOpenEdit(true)}>
+                            Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <AlertConfirm
+                            trigger={
+                                <DropdownMenuItem
+                                    disabled={deleteDisabled}
+                                    variant="destructive"
+                                    onSelect={(e) => e.preventDefault()}
+                                >
+                                    <div className="flex w-full items-center justify-between">
+                                        Eliminar
+                                        {requestState.loading && (
+                                            <div className="ml-2">
+                                                <Spinner />
+                                            </div>
+                                        )}
+                                    </div>
+                                </DropdownMenuItem>
+                            }
+                            description="El evento será eliminado permanentemente"
+                            loading={requestState.loading}
+                            onConfirm={() => onRemoveEvent()}
+                        />
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </article>
+
             <Modal
-                open={openAction === 'edit'}
-                onOpenChange={() => setOpenAction(undefined)}
+                open={openEdit}
+                onOpenChange={() => setOpenEdit(false)}
                 title={`Editar evento: ${event.title}`}
                 size="xl"
             >
-                {openAction === 'edit' && (
+                {openEdit && (
                     <EventForm
                         item={event}
-                        onHandleSuccess={(event) => {
-                            onSuccess(event, 'update')
-                            setOpenAction(undefined)
+                        onHandleSuccess={(updatedEvent) => {
+                            onSuccess(updatedEvent, 'update')
+                            setOpenEdit(false)
                         }}
                     />
                 )}
             </Modal>
-            <EventDetail
-                item={event}
-                open={openAction === 'detail'}
-                onOpenChange={() => {
-                    setOpenAction(undefined)
-                    setSelectedItem(null)
-                }}
-            />
         </>
-
     )
 }
 

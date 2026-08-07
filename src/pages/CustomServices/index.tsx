@@ -1,6 +1,5 @@
 import { useState } from "react"
 
-import PageTitle from "@/components/generics/PageTitle"
 import DynamicTabs from "@/components/generics/DynamicTabs"
 import { PermissionKeys } from "@/interfaces/permissions"
 import useAuthStore from "@/store/auth"
@@ -12,20 +11,13 @@ const CustomServicesPage = () => {
     const { permissions } = useAuthStore(state => state)
 
     return (
-        <div className="pt-2 space-y-4">
-            <PageTitle>
-                <h1 className="text-xl md:text-3xl font-semibold">
-                    Servicios personalizados
-                </h1>
-                <p>Revisa el estado de tus solicitudes, pide correcciones o marca como finalizado.</p>
-            </PageTitle>
-
+        <div className="space-y-4">
             <DynamicTabs
                 items={[
                     { value: PermissionKeys.SERVICES, label: "Personalizados" },
                     { value: PermissionKeys.EVENTS, label: "Eventos" },
                 ].filter(i => permissions.includes(i.value))}
-                value={PermissionKeys.SERVICES}
+                value={tab}
                 onValueChange={(value) => setTab(value as PermissionKeys)}
             />
 

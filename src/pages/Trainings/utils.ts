@@ -2,6 +2,7 @@ import { BookOpenIcon, EyeIcon, FileTextIcon, PresentationIcon, type LucideIcon 
 
 import { EypleaseFile, FileTypes } from "@/interfaces/files"
 import { ITraining } from "@/interfaces/trainings"
+import { normalizeSearchText } from "@/utils"
 
 export const getTrainingFileByType = (files: EypleaseFile[], type: FileTypes) => {
     return files.find(file => file.type === type) || null
@@ -45,7 +46,5 @@ export const getDownloadableFiles = (files: EypleaseFile[]): EypleaseFile[] =>
         .sort((a, b) => TRAINING_FILE_ORDER.indexOf(a.type) - TRAINING_FILE_ORDER.indexOf(b.type))
 
 /** Comparación sin tildes ni mayúsculas: buscar "guia" encuentra "guía". */
-const normalize = (value: string) => value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
-
 export const matchesTrainingSearch = (training: ITraining, search: string): boolean =>
-    !search.trim() || normalize(training.title).includes(normalize(search))
+    !search.trim() || normalizeSearchText(training.title).includes(normalizeSearchText(search))

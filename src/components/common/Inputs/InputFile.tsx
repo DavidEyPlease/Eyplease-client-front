@@ -1,3 +1,5 @@
+import { PlusIcon } from "lucide-react"
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -13,7 +15,8 @@ interface InputFileProps {
 export function InputFile({ id, accept = '*', multiple, disabled, label = 'Seleccionar archivo', onChange }: InputFileProps) {
     return (
         <Label htmlFor={id} className="cursor-pointer">
-            <span className="text-sm flex-1 mb-2 font-medium px-3 py-2 border border-primary rounded-lg text-indigo-600 hover:text-indigo-500">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-primary/40 bg-card px-3.5 py-2 text-[12.5px] font-bold text-primary transition-colors hover:bg-primary/5">
+                <PlusIcon className="size-3.5" aria-hidden />
                 {label}
             </span>
             <Input
