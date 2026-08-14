@@ -73,6 +73,12 @@ export const API_ROUTES = {
         GENERATE_REPORT_PPTX: '/reports/generate-pptx/{templateId}/{reportType}',
         GENERATE_ANNUAL_REPORT: '/reports/generate-annual-report',
     },
+    CHAT: {
+        SEND_SERVICES_MESSAGE: '/chat/services',
+        CONVERSATIONS: '/chat/conversations',
+        CONVERSATION_MESSAGES: '/chat/conversations/{id}/messages',
+        DELETE_CONVERSATION: '/chat/conversations/{id}',
+    },
     VERIFICATION_TEMPORARY_CODE: '/verification-temporary-code',
     DASHBOARD: '/dashboard',
     CANVA: {

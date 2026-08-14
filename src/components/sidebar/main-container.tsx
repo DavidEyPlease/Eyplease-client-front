@@ -1,6 +1,7 @@
 // import ButtonBack from "@/components/generics/ButtonBack";
+import AssistantLauncher from "@/components/assistant/AssistantLauncher"
 import { DarkModeSelector } from "@/components/common/DarkModeSelector"
-import { SIDEBAR_ITEMS } from "@/constants/app"
+import { APP_ROUTES, SIDEBAR_ITEMS } from "@/constants/app"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
@@ -40,6 +41,8 @@ const MainContainer = ({ children, page }: Props) => {
                             </BreadcrumbList>
                         </Breadcrumb>
                     </div>
+                    {/* El asistente IA responde sobre servicios: solo tiene sentido en esa page */}
+                    {page === APP_ROUTES.SERVICES && <AssistantLauncher />}
                     <div className="ml-auto px-3">
                         <DarkModeSelector />
                     </div>
