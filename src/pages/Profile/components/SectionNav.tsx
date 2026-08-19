@@ -1,14 +1,15 @@
-import { ChevronRightIcon, UserRoundIcon } from 'lucide-react'
+import { ChevronRightIcon, FileTextIcon, UserRoundIcon } from 'lucide-react'
 
 import { IconHelpCenter } from '@/components/Svg/IconHelpCenter'
 import { IconLock } from '@/components/Svg/IconLock'
 import { IconPreferences } from '@/components/Svg/IconPreferences'
 import { cn } from '@/lib/utils'
 
-export type ProfileSectionKey = 'personal' | 'preferences' | 'security' | 'help'
+export type ProfileSectionKey = 'personal' | 'reports' | 'preferences' | 'security' | 'help'
 
 const SECTIONS: { key: ProfileSectionKey, label: string, icon: React.ReactNode }[] = [
     { key: 'personal', label: 'Datos personales', icon: <UserRoundIcon /> },
+    { key: 'reports', label: 'Mis boletines', icon: <FileTextIcon /> },
     { key: 'preferences', label: 'Preferencias', icon: <IconPreferences /> },
     { key: 'security', label: 'Seguridad', icon: <IconLock /> },
     { key: 'help', label: 'Centro de ayuda', icon: <IconHelpCenter /> },

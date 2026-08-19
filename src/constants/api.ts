@@ -67,6 +67,7 @@ export const API_ROUTES = {
         LIST: '/tools',
     },
     REPORTS: {
+        PREFERENCES: '/reports/preferences',
         LIST_UPLOADS: '/reports/uploads',
         UPLOAD: '/reports/upload',
         GENERATE_REPORT_PDF: '/reports/generate-pdf/{templateId}/{reportType}',

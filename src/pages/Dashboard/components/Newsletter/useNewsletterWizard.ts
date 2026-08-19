@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import useAuthStore from '@/store/auth'
+import { useReportPreferences } from '@/components/reportPreferences/useReportPreferences'
+import { countHidden, isSectionHidden } from '@/components/reportPreferences/utils'
 import { generatePdfReport, generatePptxReport } from '@/services/reports/reportGenerator'
 import { Newsletter, NewsletterSection, NewsletterSectionKeys, NewsletterTypes, Template } from '@/interfaces/common'
 import { ReportFileType, WizardStepId } from './wizardSteps'
@@ -19,6 +21,11 @@ export interface NewsletterWizard {
     newsletters: Newsletter[]
     templates: Template[]
     availableSections: NewsletterSection[]
+    /** Secciones que el cliente ocultó en su configuración: se muestran, pero no se generan. */
+    hiddenSectionKeys: Set<string>
+    /** Cuántas secciones y bloques oculta su configuración en el boletín elegido. */
+    hiddenSummary: { sections: number, blocks: number }
+    preferences: ReturnType<typeof useReportPreferences>
     selectedNewsletterName: string
     selectedTemplate?: Template
     /** Plantilla a mostrar en la vista en vivo (hover > seleccionada). */
@@ -48,6 +55,7 @@ export interface NewsletterWizard {
 export const useNewsletterWizard = (): NewsletterWizard => {
     const { newsletters, templates } = useAuthStore(state => state.utilData)
     const user = useAuthStore(state => state.user)
+    const preferences = useReportPreferences()
 
     const sectionsOf = useCallback(
         (type: NewsletterTypes | null): NewsletterSection[] =>
@@ -87,14 +95,52 @@ export const useNewsletterWizard = (): NewsletterWizard => {
 
     const availableSections = useMemo(() => sectionsOf(type), [sectionsOf, type])
 
+    /* Configuración permanente del cliente aplicada al boletín elegido */
+    const preferredNewsletter = useMemo(
+        () => preferences.catalog?.newsletters.find(item => item.code === type),
+        [preferences.catalog, type]
+    )
+
+    const hiddenSectionKeys = useMemo(() => {
+        const keys = new Set<string>()
+        if (!type || !preferredNewsletter) return keys
+
+        preferredNewsletter.sections.forEach(section => {
+            if (isSectionHidden(preferences.saved, type, section)) keys.add(section.section_key)
+        })
+
+        return keys
+    }, [preferences.saved, preferredNewsletter, type])
+
+    const hiddenSummary = useMemo(
+        () => countHidden(preferences.saved, preferredNewsletter),
+        [preferences.saved, preferredNewsletter]
+    )
+
+    /* Las ocultas siguen listadas (para poder explicarlas) pero nunca se generan */
+    const selectableSections = useMemo(
+        () => availableSections.filter(section => !hiddenSectionKeys.has(section.sectionKey)),
+        [availableSections, hiddenSectionKeys]
+    )
+
     const toggleSection = useCallback((key: NewsletterSectionKeys) => {
+        if (hiddenSectionKeys.has(key)) return
         setSections(prev => (prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]))
-    }, [])
+    }, [hiddenSectionKeys])
 
     const toggleAllSections = useCallback(() => {
-        const all = availableSections.map(s => s.sectionKey)
+        const all = selectableSections.map(s => s.sectionKey)
         setSections(prev => (prev.length === all.length ? [] : all))
-    }, [availableSections])
+    }, [selectableSections])
+
+    /* Si la configuración cambia (o llega tarde), lo oculto sale de la selección */
+    useEffect(() => {
+        if (!hiddenSectionKeys.size) return
+        setSections(prev => {
+            const next = prev.filter(key => !hiddenSectionKeys.has(key))
+            return next.length === prev.length ? prev : next
+        })
+    }, [hiddenSectionKeys])
 
     const selectedTemplate = templates.find(t => t.id === templateId)
     const livePreviewTemplate = templates.find(t => t.id === (hoverTemplateId ?? templateId))
@@ -140,6 +186,9 @@ export const useNewsletterWizard = (): NewsletterWizard => {
         newsletters,
         templates,
         availableSections,
+        hiddenSectionKeys,
+        hiddenSummary,
+        preferences,
         selectedNewsletterName,
         selectedTemplate,
         livePreviewTemplate,
