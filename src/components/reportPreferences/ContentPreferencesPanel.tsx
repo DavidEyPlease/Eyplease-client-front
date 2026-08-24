@@ -18,7 +18,7 @@ interface Props {
  * que son quienes deciden dónde va el guardado.
  */
 const ContentPreferencesPanel = ({ preferences, newsletterCode, className }: Props) => {
-    const { catalog, loading, draft, onToggleSection, onToggleSubSection } = preferences
+    const { catalog, loading, draft, thresholds, onToggleSection, onToggleSubSection, onChangeThreshold } = preferences
 
     const newsletters = (catalog?.newsletters ?? []).filter(
         item => !newsletterCode || item.code === newsletterCode
@@ -59,8 +59,11 @@ const ContentPreferencesPanel = ({ preferences, newsletterCode, className }: Pro
                             code={newsletter.code}
                             section={section}
                             hidden={draft}
+                            thresholds={thresholds}
                             onToggleSection={() => onToggleSection(newsletter.code, section)}
                             onToggleSubSection={subKey => onToggleSubSection(newsletter.code, section, subKey)}
+                            onChangeThreshold={(position, minPoints) =>
+                                onChangeThreshold(newsletter.code, section.section_key, position, minPoints)}
                         />
                     ))}
                 </section>

@@ -1,28 +1,44 @@
 import { useState } from 'react'
 import { ChevronDownIcon } from 'lucide-react'
 
+import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { IReportSectionPreference } from '@/interfaces/reportPreferences'
 import { cn } from '@/lib/utils'
-import { isSectionHidden, subSectionId } from './utils'
+import { isSectionHidden, positionId, subSectionId, ThresholdDraft } from './utils'
 
 interface Props {
     code: string
     section: IReportSectionPreference
     hidden: Set<string>
+    thresholds: ThresholdDraft
     onToggleSection: () => void
     onToggleSubSection: (subKey: string) => void
+    onChangeThreshold: (position: string, minPoints: number | null) => void
 }
 
 const SUB_ITEM_CLASSES = 'flex items-center justify-between gap-3 rounded-xl border bg-surface-soft px-3 py-2 text-[12.5px] font-medium'
 
 /** Sección del boletín: interruptor propio y, si los tiene, sus bloques desplegables. */
-const SectionRow = ({ code, section, hidden, onToggleSection, onToggleSubSection }: Props) => {
+const SectionRow = ({ code, section, hidden, thresholds, onToggleSection, onToggleSubSection, onChangeThreshold }: Props) => {
     const [open, setOpen] = useState(false)
 
     const sectionHidden = isSectionHidden(hidden, code, section)
     const subSections = section.sub_sections
+    const positions = section.positions
     const visibleSubs = subSections.filter(sub => !hidden.has(subSectionId(code, section.section_key, sub.key))).length
+    const withMinimum = positions.filter(position => thresholds[positionId(code, section.section_key, position.key)] !== undefined).length
+    const expandable = subSections.length > 0 || positions.length > 0
+
+    /** Vacío borra el mínimo; el resto se acota a enteros no negativos. */
+    const onMinPointsChange = (position: string, value: string) => {
+        if (value.trim() === '') return onChangeThreshold(position, null)
+
+        const parsed = Number(value)
+        if (!Number.isFinite(parsed) || parsed < 0) return
+
+        onChangeThreshold(position, Math.floor(parsed))
+    }
 
     return (
         <div className="border-b border-border/60 last:border-b-0">
@@ -42,11 +58,15 @@ const SectionRow = ({ code, section, hidden, onToggleSection, onToggleSubSection
                             ? 'Oculta en tus boletines'
                             : subSections.length
                                 ? `${visibleSubs} de ${subSections.length} bloques visibles`
-                                : 'Sin bloques configurables'}
+                                : positions.length
+                                    ? withMinimum
+                                        ? `${withMinimum} de ${positions.length} puestos con mínimo`
+                                        : 'Sin mínimo de puntos'
+                                    : 'Sin bloques configurables'}
                     </p>
                 </div>
 
-                {subSections.length > 0 && (
+                {expandable && (
                     <button
                         type="button"
                         aria-expanded={open}
@@ -58,6 +78,34 @@ const SectionRow = ({ code, section, hidden, onToggleSection, onToggleSubSection
                     </button>
                 )}
             </div>
+
+            {open && positions.length > 0 && (
+                <div className={cn('px-4 pb-4 pl-14', sectionHidden && 'pointer-events-none opacity-45')}>
+                    <p className="mb-2 text-[11px] font-semibold text-muted-foreground">
+                        Mínimo de puntos por puesto · déjalo vacío para no exigir mínimo
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                        {positions.map(position => {
+                            const value = thresholds[positionId(code, section.section_key, position.key)]
+
+                            return (
+                                <label key={position.key} className="flex flex-col gap-1">
+                                    <span className="text-[11.5px] font-semibold">{position.name}</span>
+                                    <Input
+                                        type="number"
+                                        min={0}
+                                        inputMode="numeric"
+                                        placeholder="Sin mínimo"
+                                        className="h-9 text-[13px]"
+                                        value={value ?? ''}
+                                        onChange={event => onMinPointsChange(position.key, event.target.value)}
+                                    />
+                                </label>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
 
             {open && subSections.length > 0 && (
                 <div

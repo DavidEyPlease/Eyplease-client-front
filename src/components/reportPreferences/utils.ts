@@ -3,6 +3,7 @@ import {
     IReportPreferenceEntry,
     IReportPreferencesCatalog,
     IReportSectionPreference,
+    IReportThresholdEntry,
 } from '@/interfaces/reportPreferences'
 import { queryKeys } from '@/utils/cache'
 
@@ -126,3 +127,59 @@ export const hiddenSummaryLabel = ({ sections, blocks }: { sections: number, blo
 
     return parts.join(' y ')
 }
+
+/* ─── Mínimos de puntos por puesto ─── */
+
+/** Igual que las claves ocultas: "code|section|position". */
+export const positionId = (code: string, sectionKey: string, position: string) =>
+    `${code}|${sectionKey}|${position}`
+
+/** Borrador de mínimos: clave → puntos. Ausente = sin mínimo. */
+export type ThresholdDraft = Record<string, number>
+
+export const thresholdsFromCatalog = (catalog?: IReportPreferencesCatalog): ThresholdDraft => {
+    const thresholds: ThresholdDraft = {}
+
+    catalog?.newsletters.forEach(newsletter => {
+        newsletter.sections.forEach(section => {
+            section.positions.forEach(position => {
+                if (position.min_points !== null) {
+                    thresholds[positionId(newsletter.code, section.section_key, position.key)] = position.min_points
+                }
+            })
+        })
+    })
+
+    return thresholds
+}
+
+/**
+ * El PUT manda TODOS los puestos configurables, con null los que no tienen mínimo:
+ * así el backend borra los que el cliente quitó (reemplazo completo, idempotente).
+ */
+export const thresholdsToEntries = (
+    catalog: IReportPreferencesCatalog | undefined,
+    draft: ThresholdDraft,
+): IReportThresholdEntry[] => {
+    const entries: IReportThresholdEntry[] = []
+
+    catalog?.newsletters.forEach(newsletter => {
+        newsletter.sections.forEach(section => {
+            section.positions.forEach(position => {
+                const key = positionId(newsletter.code, section.section_key, position.key)
+                entries.push({
+                    newsletter_code: newsletter.code,
+                    section_key: section.section_key,
+                    position: position.key,
+                    min_points: draft[key] ?? null,
+                })
+            })
+        })
+    })
+
+    return entries
+}
+
+/** Cuántos puestos de una sección tienen mínimo (para el resumen de la fila). */
+export const countThresholds = (draft: ThresholdDraft, code: string, section: IReportSectionPreference) =>
+    section.positions.filter(position => draft[positionId(code, section.section_key, position.key)] !== undefined).length
