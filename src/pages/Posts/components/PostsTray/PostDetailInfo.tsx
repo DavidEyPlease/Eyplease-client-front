@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import PrimaryButton from '@/components/common/Button'
 import { Button } from '@/components/ui/button'
 import useFiles from '@/hooks/useFiles'
@@ -6,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { formatDate } from '@/utils/dates'
 import { CalendarIcon, CheckIcon, DownloadIcon, ImageIcon, RefreshCwIcon, VideoIcon } from 'lucide-react'
 import usePostActions from '../../hooks/usePostActions'
+import RegeneratePhotoDialog from './RegeneratePhotoDialog'
 import { canMarkPostAsSent, getPostDate, getPostMediaFile, getPostMediaLabel, isPostRegenerating, isPostSent, PostMedia, PostMediaType } from '../../lib'
 
 const PILL_CLASSES = 'inline-flex items-center gap-1.5 rounded-full border bg-surface-soft px-2.5 py-1 text-[11px] font-bold text-muted-foreground [&_svg]:size-3'
@@ -19,8 +22,26 @@ interface Props {
 
 /** Título, metadatos y acciones de una publicación. Compartido por la tarjeta lateral y el drawer. */
 const PostDetailInfo = ({ post, media, mediaType }: Props) => {
-	const { requestState, markAsSent, regenerate } = usePostActions()
+	const { requestState, markAsSent, regenerate, updateCachedPost } = usePostActions()
 	const { executing, downloadFile } = useFiles()
+	const [photoDialogOpen, setPhotoDialogOpen] = useState(false)
+
+	/* Sin foto propia el render repetiría la pieza con el avatar por defecto: primero
+	   se pide la foto y solo después se encola. */
+	const needsPhoto = post.has_photo === false && !!post.vendorable
+
+	const onRegenerate = () => {
+		if (needsPhoto) {
+			setPhotoDialogOpen(true)
+			return
+		}
+		regenerate(post.id, mediaType)
+	}
+
+	const onPhotoUploaded = () => {
+		updateCachedPost(post.id, { has_photo: true })
+		regenerate(post.id, mediaType)
+	}
 
 	const sent = isPostSent(post)
 	const regenerating = isPostRegenerating(post)
@@ -62,7 +83,7 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 					<Button
 						variant="outline"
 						disabled={regenerating}
-						onClick={() => regenerate(post.id, mediaType)}
+						onClick={onRegenerate}
 						className={cn(ACTION_CLASSES, 'flex-1')}
 					>
 						<RefreshCwIcon className={cn(regenerating && 'animate-spin')} />
@@ -82,6 +103,15 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 					/>
 				</div>
 			</div>
+
+			{needsPhoto && post.vendorable && (
+				<RegeneratePhotoDialog
+					open={photoDialogOpen}
+					person={post.vendorable}
+					onUploaded={onPhotoUploaded}
+					onOpenChange={setPhotoDialogOpen}
+				/>
+			)}
 		</div>
 	)
 }

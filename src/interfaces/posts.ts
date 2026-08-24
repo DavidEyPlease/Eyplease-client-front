@@ -32,6 +32,13 @@ export enum MainPostSectionTypes {
     UNITY = 'unity',
 }
 
+/** Persona del diseño: lo mínimo para poder subirle la foto desde la publicación. */
+export interface IPostVendorable {
+    id: string
+    name: string
+    type: 'sponsored' | 'customer'
+}
+
 export interface IPost {
     id: string
     title: string
@@ -41,6 +48,12 @@ export interface IPost {
     type: PostTypes
     newsletter_section: NewsletterSection | null
     metadata: string | null
+    /**
+     * Si la persona no tiene foto propia, el diseño sale con el avatar por defecto:
+     * volver a generarlo sin subirla antes daría exactamente la misma pieza.
+     */
+    has_photo?: boolean
+    vendorable?: IPostVendorable | null
     files: EypleaseFile[]
 }
 
