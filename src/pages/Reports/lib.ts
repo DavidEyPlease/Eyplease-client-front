@@ -4,7 +4,7 @@ import { Newsletter, NewsletterSection, NewsletterSectionKeys, NewsletterTypes }
 import { formatDate } from "@/utils/dates"
 
 /** Estado derivado de una sección de reporte: el upload más relevante o la ausencia de él. */
-export type ReportStatus = 'completed' | 'processing' | 'failed' | 'pending'
+export type ReportStatus = 'completed' | 'processing' | 'failed' | 'pending' | 'empty'
 
 interface ReportStatusMeta {
 	label: string
@@ -41,6 +41,12 @@ export const REPORT_STATUS_META: Record<ReportStatus, ReportStatusMeta> = {
 		chipClass: 'bg-primary/10 text-primary',
 		badgeClass: 'border-[#ecebf3] bg-[#faf9fe] text-muted-foreground',
 	},
+	empty: {
+		label: 'Sin datos',
+		icon: Upload,
+		chipClass: 'bg-[#f3f4f6] text-[#6b7280]',
+		badgeClass: 'border-[#ecebf3] bg-[#faf9fe] text-muted-foreground',
+	}
 }
 
 /** Etiqueta corta del boletín para el tag del panel. */
