@@ -1,6 +1,7 @@
 import { useState } from "react"
 
 import useAuth from "@/hooks/useAuth"
+import Billing from "./components/Billing"
 import ChangePassword from "./components/ChangePassword"
 import Faqs from "./components/Faq"
 import FormEditProfile from "./components/FormEditProfile"
@@ -25,6 +26,7 @@ const ProfilePage = () => {
             <div>
                 {section === 'personal' && <FormEditProfile user={user} />}
                 {section === 'reports' && <ReportContent />}
+                {section === 'billing' && <Billing />}
                 {section === 'preferences' && <Preferences user={user} />}
                 {section === 'security' && <ChangePassword />}
                 {section === 'help' && <Faqs />}

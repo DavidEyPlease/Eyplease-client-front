@@ -1,3 +1,5 @@
+import { toast } from "sonner"
+
 import { IGenericFilter } from "@/interfaces/common"
 
 export const convertFiltersToQueryString = (filters: IGenericFilter): string => {
@@ -123,6 +125,16 @@ export const numberFormatter = new Intl.NumberFormat('es-MX', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
 })
+
+/** Copia al portapapeles avisando del resultado. */
+export const copyToClipboard = async (value: string) => {
+    try {
+        await navigator.clipboard.writeText(value)
+        toast.success('Copiado al portapapeles')
+    } catch {
+        toast.error('No se pudo copiar')
+    }
+}
 
 export const sanitizeFileName = (fileName: string): string => {
     return fileName.replace(/[^a-z0-9_-]/gi, '_')

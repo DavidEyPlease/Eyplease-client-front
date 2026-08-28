@@ -80,6 +80,11 @@ export const API_ROUTES = {
         CONVERSATION_MESSAGES: '/chat/conversations/{id}/messages',
         DELETE_CONVERSATION: '/chat/conversations/{id}',
     },
+    BILLING: {
+        OVERVIEW: '/billing/overview',
+        PAYMENTS: '/billing/payments',
+        UPLOAD_RECEIPT: '/billing/payments/{period}/receipt',
+    },
     VERIFICATION_TEMPORARY_CODE: '/verification-temporary-code',
     DASHBOARD: '/dashboard',
     CANVA: {

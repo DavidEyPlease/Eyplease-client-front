@@ -1,8 +1,8 @@
 import { CalendarIcon, CopyIcon, MapPinIcon } from 'lucide-react'
-import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { EventType, IEvent } from '@/interfaces/events'
+import { copyToClipboard } from '@/utils'
 import { singleFormatDate } from '@/utils/dates'
 import { ONLINE_DATA_LABELS_MAP } from '../utils'
 
@@ -11,15 +11,6 @@ interface FactProps {
     value: string
     label: string
     copyable?: boolean
-}
-
-const onCopy = async (value: string) => {
-    try {
-        await navigator.clipboard.writeText(value)
-        toast.success('Copiado al portapapeles')
-    } catch {
-        toast.error('No se pudo copiar')
-    }
 }
 
 const Fact = ({ icon, value, label, copyable }: FactProps) => (
@@ -37,7 +28,7 @@ const Fact = ({ icon, value, label, copyable }: FactProps) => (
                 size="icon-sm"
                 title="Copiar"
                 className="shrink-0 cursor-pointer text-muted-foreground/60 hover:text-primary"
-                onClick={() => onCopy(value)}
+                onClick={() => copyToClipboard(value)}
             >
                 <CopyIcon />
             </Button>

@@ -1,4 +1,5 @@
 import { DropdownMenu } from "@/components/ui/dropdown-menu"
+import { Skeleton } from "@/components/ui/skeleton"
 import { SidebarHeader as UISidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 
 import EYPLEASE_LOGO_WHITE from "@/assets/images/icon-white.png"
@@ -13,7 +14,8 @@ import { IAuthUser } from "@/interfaces/auth"
 // } from "lucide-react"
 
 interface Props {
-    user: IAuthUser
+    /** Sin usuario todavía: la marca se pinta igual y solo se finge la cuenta. */
+    user?: IAuthUser | null
 }
 
 const SidebarHeader = ({ user }: Props) => {
@@ -34,9 +36,10 @@ const SidebarHeader = ({ user }: Props) => {
                                 <span className="font-semibold truncate">
                                     Eyplease
                                 </span>
-                                <span className="text-sm truncate">
-                                    {user?.account}
-                                </span>
+                                {user
+                                    ? <span className="text-sm truncate">{user.account}</span>
+                                    : <Skeleton className="w-24 h-3.5 mt-1 bg-white/15" />
+                                }
                             </div>
                         </SidebarMenuButton>
                     </DropdownMenu>

@@ -32,7 +32,7 @@ const useFiles = () => {
             }
         } catch (error) {
             console.log(error)
-            toast.error('Error al subir la portada de la plantilla')
+            toast.error('Error al subir el archivo')
         } finally {
             setExecuting(false)
         }

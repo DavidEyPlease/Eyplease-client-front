@@ -11,6 +11,7 @@ export enum FileTypes {
     CUSTOMER_CLIENT = 'customer_client',
     SPONSORED_PHOTO = 'sponsored_photo',
     SPONSOR_PHOTO = 'sponsor_photo',
+    PAYMENT_RECEIPT = 'payment_receipt',
 }
 
 export interface EypleaseFile {
