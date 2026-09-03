@@ -10,12 +10,12 @@ import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/utils'
 import PaymentAccounts from './PaymentAccounts'
 import useReceiptUpload from './useReceiptUpload'
-import { periodLabel, RECEIPT_ACCEPTED_FILES, RECEIPT_METHODS } from './utils'
+import { periodsLabel, RECEIPT_ACCEPTED_FILES, RECEIPT_METHODS } from './utils'
 
 interface Props {
     open: boolean
-    /** Periodo al que se le sube el comprobante y cuánto queda por cubrir. */
-    period: string
+    /** Periodos que cubre el comprobante y cuánto queda por cubrir entre todos. */
+    periods: string[]
     amount: number
     currency: string
     /** Se muestran las cuentas de cobro cuando el pago es manual, para transferir sin salir. */
@@ -30,7 +30,7 @@ const isImage = (file: File) => file.type.startsWith('image/')
  * referencia. El pago queda en revisión hasta que un administrador lo valide,
  * y así se le dice al cliente para que no lo dé por saldado.
  */
-const UploadReceiptDialog = ({ open, period, amount, currency, paymentMethod, onOpenChange }: Props) => {
+const UploadReceiptDialog = ({ open, periods, amount, currency, paymentMethod, onOpenChange }: Props) => {
     const [file, setFile] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
     const [reference, setReference] = useState('')
@@ -60,7 +60,7 @@ const UploadReceiptDialog = ({ open, period, amount, currency, paymentMethod, on
     const onSubmit = async () => {
         if (!file) return
 
-        await upload(period, file, reference, method)
+        await upload(periods, file, reference, method)
     }
 
     return (
@@ -69,7 +69,7 @@ const UploadReceiptDialog = ({ open, period, amount, currency, paymentMethod, on
             onOpenChange={onOpenChange}
             size="md"
             title="Subir comprobante"
-            description={`Pago de ${periodLabel(period)} · ${formatCurrency(amount, currency)}`}
+            description={`Pago de ${periodsLabel(periods)} · ${formatCurrency(amount, currency)}`}
             footer={
                 <>
                     <button

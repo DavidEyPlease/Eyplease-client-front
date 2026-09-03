@@ -8,7 +8,7 @@ import { formatCurrency } from '@/utils'
 import { formatDate } from '@/utils/dates'
 import UploadReceiptDialog from './UploadReceiptDialog'
 import useBilling from './useBilling'
-import { periodLabel, shouldOfferReceipt } from './utils'
+import { periodLabel, periodsLabel, receiptTargetFrom, shouldOfferReceipt } from './utils'
 
 /** Cómo se anuncia el estado de cobro: título, color del borde e icono. */
 const TONE = {
@@ -46,6 +46,7 @@ const SidebarBillingCard = () => {
 
     const { current_payment: payment, payment_method: paymentMethod } = overview
     const canUpload = shouldOfferReceipt(overview)
+    const receiptTarget = receiptTargetFrom(overview)
     const inReview = payment?.status === PaymentStatus.IN_REVIEW
 
     const tone = payment?.is_overdue
@@ -65,7 +66,10 @@ const SidebarBillingCard = () => {
                 ? 'Toca pagar'
                 : 'Próximo pago'
 
-    const amount = payment ? payment.remaining : overview.next_amount
+    const owedPeriods = overview.debt?.periods ?? []
+    const multiple = owedPeriods.length > 1
+    /* Con varios meses de deuda manda el total; si no, el periodo en curso o el próximo cobro */
+    const amount = multiple ? overview.debt.total : payment ? payment.remaining : overview.next_amount
     const dueDate = dateLabel(payment?.due_date ?? overview.next_charge_date)
     const card = paymentMethod.type === 'automatic' ? paymentMethod.card : null
 
@@ -88,16 +92,18 @@ const SidebarBillingCard = () => {
                     {formatCurrency(amount, overview.currency)}
                 </p>
                 <p className="mt-1 text-[10.5px] font-semibold text-white/70">
-                    {payment
-                        ? `${periodLabel(payment.period)}${dueDate ? ` · vence el ${dueDate}` : ''}`
-                        : dueDate
-                            ? `Se cobra el ${dueDate}`
-                            : 'Sin fecha de cobro asignada'}
+                    {multiple
+                        ? periodsLabel(owedPeriods.map(item => item.period))
+                        : payment
+                            ? `${periodLabel(payment.period)}${dueDate ? ` · vence el ${dueDate}` : ''}`
+                            : dueDate
+                                ? `Se cobra el ${dueDate}`
+                                : 'Sin fecha de cobro asignada'}
                 </p>
 
-                {overview.unpaid_periods > 1 && (
+                {multiple && (
                     <p className="mt-1 text-[10.5px] font-bold text-white/90">
-                        {overview.unpaid_periods} periodos pendientes · {formatCurrency(overview.balance, overview.currency)} en total
+                        {owedPeriods.length} periodos pendientes{dueDate ? ` · el primero venció el ${dueDate}` : ''}
                     </p>
                 )}
 
@@ -107,24 +113,24 @@ const SidebarBillingCard = () => {
                     </p>
                 )}
 
-                {canUpload && payment && (
+                {canUpload && receiptTarget && (
                     <button
                         type="button"
                         onClick={() => setUploadOpen(true)}
                         className="mt-3 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-white px-3 py-2 text-[12px] font-bold text-primary transition-all hover:-translate-y-px hover:shadow-lg [&>svg]:size-3.5"
                     >
                         <UploadCloudIcon aria-hidden />
-                        {payment.has_receipt ? 'Reemplazar comprobante' : 'Subir comprobante'}
+                        {receiptTarget.hasReceipt ? 'Reemplazar comprobante' : 'Subir comprobante'}
                     </button>
                 )}
             </div>
 
-            {payment && (
+            {receiptTarget && (
                 <UploadReceiptDialog
                     open={uploadOpen}
-                    period={payment.period}
-                    amount={payment.remaining}
-                    currency={payment.currency}
+                    periods={receiptTarget.periods}
+                    amount={receiptTarget.amount}
+                    currency={receiptTarget.currency}
                     paymentMethod={paymentMethod}
                     onOpenChange={setUploadOpen}
                 />

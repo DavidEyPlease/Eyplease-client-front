@@ -2,14 +2,15 @@ import { LockIcon, LogOutIcon, UploadCloudIcon } from 'lucide-react'
 
 import Button from '@/components/common/Button'
 import useAuth from '@/hooks/useAuth'
-import { IBillingPaymentMethod, ICurrentPayment } from '@/interfaces/billing'
+import { IBillingDebt, IBillingPaymentMethod, ICurrentPayment } from '@/interfaces/billing'
 import { formatCurrency } from '@/utils'
 import PaymentAccounts from '../PaymentAccounts'
-import { periodLabel } from '../utils'
+import { periodLabel, periodsLabel } from '../utils'
 
 interface Props {
     /** Puede faltar si el 403 llegó antes que el overview: se pinta sin importe. */
     payment: ICurrentPayment | null
+    debt: IBillingDebt | null
     paymentMethod?: IBillingPaymentMethod
     onUpload: () => void
 }
@@ -19,8 +20,15 @@ interface Props {
  * salir. La API ya responde 403 a todo lo demás, así que esto es la cara de
  * ese bloqueo, no el bloqueo en sí.
  */
-const AccountBlockedWall = ({ payment, paymentMethod, onUpload }: Props) => {
+const AccountBlockedWall = ({ payment, debt, paymentMethod, onUpload }: Props) => {
     const { handleLogout } = useAuth()
+
+    /* Lo que debe en total y qué meses; si el overview aún no llegó, el periodo suelto */
+    const owedLabel = debt?.periods.length
+        ? periodsLabel(debt.periods.map(item => item.period))
+        : payment && periodLabel(payment.period)
+    const owedTotal = debt?.periods.length ? debt.total : payment?.remaining
+    const currency = debt?.currency ?? payment?.currency ?? 'MXN'
 
     return (
         <div className="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto bg-background/95 p-6 backdrop-blur-sm">
@@ -31,15 +39,15 @@ const AccountBlockedWall = ({ payment, paymentMethod, onUpload }: Props) => {
 
                 <h2 className="mt-4 text-xl font-extrabold tracking-tight">Tu cuenta está bloqueada</h2>
                 <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                    {payment
-                        ? <>No hemos recibido el pago de <strong className="text-foreground">{periodLabel(payment.period)}</strong>.</>
+                    {owedLabel
+                        ? <>No hemos recibido el pago de <strong className="text-foreground">{owedLabel}</strong>.</>
                         : 'No hemos recibido tu pago.'}
                     {' '}En cuanto lo confirmemos recuperas el acceso a todo tu plan.
                 </p>
 
-                {payment && (
+                {owedTotal !== undefined && (
                     <p className="mt-5 text-3xl font-extrabold tracking-tight">
-                        {formatCurrency(payment.remaining, payment.currency)}
+                        {formatCurrency(owedTotal, currency)}
                     </p>
                 )}
 

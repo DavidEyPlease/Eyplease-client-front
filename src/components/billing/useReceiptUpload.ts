@@ -36,7 +36,7 @@ const useReceiptUpload = ({ onUploaded }: Options = {}) => {
     })
 
     /** @returns true si el comprobante quedó registrado */
-    const upload = async (period: string, file: File, reference: string, method: PaymentMethod): Promise<boolean> => {
+    const upload = async (periods: string[], file: File, reference: string, method: PaymentMethod): Promise<boolean> => {
         if (file.size > RECEIPT_MAX_SIZE_MB * BYTES_PER_MB) {
             toast.error(`El archivo supera los ${RECEIPT_MAX_SIZE_MB} MB`)
             return false
@@ -51,8 +51,8 @@ const useReceiptUpload = ({ onUploaded }: Options = {}) => {
             await onUploadFile({
                 file,
                 fileType: FileTypes.PAYMENT_RECEIPT,
-                /* Nombre propio por periodo: dos comprobantes del mismo mes no se pisan */
-                filename: `${sanitizeFileName(period)}-${Date.now()}.${extension}`,
+                /* Nombre propio por carga: dos comprobantes del mismo mes no se pisan */
+                filename: `${sanitizeFileName(periods[0])}${periods.length > 1 ? `-x${periods.length}` : ''}-${Date.now()}.${extension}`,
                 callback: async (uri: string) => {
                     receiptUri = uri
                 },
@@ -61,12 +61,13 @@ const useReceiptUpload = ({ onUploaded }: Options = {}) => {
             if (!receiptUri) return false
 
             const payload: IUploadReceiptPayload = {
+                periods,
                 receipt_uri: receiptUri,
                 ...(reference.trim() ? { reference_number: reference.trim() } : {}),
                 ...(method === PaymentMethod.TRANSFER || method === PaymentMethod.CASH ? { method } : {}),
             }
 
-            await request('POST', API_ROUTES.BILLING.UPLOAD_RECEIPT.replace('{period}', period), payload)
+            await request('POST', API_ROUTES.BILLING.UPLOAD_RECEIPTS, payload)
 
             return true
         } catch {

@@ -141,7 +141,7 @@ const BillingHistory = ({ years = [], paymentMethod }: Props) => {
             {uploadTarget && (
                 <UploadReceiptDialog
                     open
-                    period={uploadTarget.period}
+                    periods={[uploadTarget.period]}
                     amount={uploadTarget.remaining}
                     currency={uploadTarget.currency}
                     paymentMethod={paymentMethod}

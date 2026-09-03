@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react'
 
-import { BillingRestrictedFeature, IBillingEnforcement, IBillingPaymentMethod, ICurrentPayment } from '@/interfaces/billing'
+import { BillingRestrictedFeature, IBillingDebt, IBillingEnforcement, IBillingPaymentMethod, ICurrentPayment } from '@/interfaces/billing'
 import { NO_ENFORCEMENT } from './utils'
 
 export interface BillingEnforcementValue {
     enforcement: IBillingEnforcement
     payment: ICurrentPayment | null
+    /** Total y meses que debe: es lo que enseñan los avisos, no el periodo suelto. */
+    debt: IBillingDebt | null
     paymentMethod?: IBillingPaymentMethod
     isFeatureRestricted: (feature: BillingRestrictedFeature) => boolean
     /**
@@ -24,6 +26,7 @@ export const BillingEnforcementContext = createContext<BillingEnforcementValue |
 const EMPTY_VALUE: BillingEnforcementValue = {
     enforcement: NO_ENFORCEMENT,
     payment: null,
+    debt: null,
     paymentMethod: undefined,
     isFeatureRestricted: () => false,
     requestFeature: () => true,

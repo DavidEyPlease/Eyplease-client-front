@@ -2,7 +2,7 @@ import { AlertTriangleIcon, UploadCloudIcon } from 'lucide-react'
 
 import { formatCurrency } from '@/utils'
 import { formatDate } from '@/utils/dates'
-import { periodLabel } from '../utils'
+import { periodLabel, periodsLabel } from '../utils'
 import { useBillingEnforcement } from './context'
 import { daysLabel } from './utils'
 
@@ -12,9 +12,13 @@ import { daysLabel } from './utils'
  * Con la cuenta atrás activa deja de hablar del atraso y avisa del bloqueo.
  */
 const GlobalPaymentBanner = () => {
-    const { enforcement, payment, openPaymentDialog, openUploadReceipt } = useBillingEnforcement()
+    const { enforcement, payment, debt, openPaymentDialog, openUploadReceipt } = useBillingEnforcement()
 
     if (!payment || !enforcement.show_global_banner || enforcement.account_blocked) return null
+
+    const multiple = (debt?.periods.length ?? 0) > 1
+    const owedTotal = multiple ? debt!.total : payment.remaining
+    const owedLabel = multiple ? periodsLabel(debt!.periods.map(item => item.period)) : periodLabel(payment.period)
 
     const countdown = enforcement.days_until_block
     const blockDate = enforcement.block_date
@@ -32,11 +36,11 @@ const GlobalPaymentBanner = () => {
                 {countdown !== null ? (
                     <>
                         Tu cuenta se bloqueará en <strong>{daysLabel(countdown)}</strong>
-                        {blockDate && ` (${blockDate})`}. Paga {formatCurrency(payment.remaining, payment.currency)} de {periodLabel(payment.period)} para evitarlo.
+                        {blockDate && ` (${blockDate})`}. Paga {formatCurrency(owedTotal, payment.currency)} de {owedLabel} para evitarlo.
                     </>
                 ) : (
                     <>
-                        Pago pendiente de <strong>{periodLabel(payment.period)}</strong> · {formatCurrency(payment.remaining, payment.currency)} · {daysLabel(enforcement.days_overdue)} de atraso
+                        Pago pendiente de <strong>{owedLabel}</strong> · {formatCurrency(owedTotal, payment.currency)} · {daysLabel(enforcement.days_overdue)} de atraso
                     </>
                 )}
             </p>

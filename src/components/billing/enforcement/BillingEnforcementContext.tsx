@@ -6,7 +6,7 @@ import { BillingRestrictedFeature, IBillingRestrictedEvent } from '@/interfaces/
 import { BrowserEvent, subscribeEvent, unsubscribeEvent } from '@/utils/events'
 import UploadReceiptDialog from '../UploadReceiptDialog'
 import useBilling from '../useBilling'
-import { billingOverviewKey } from '../utils'
+import { billingOverviewKey, receiptTargetFrom } from '../utils'
 import AccountBlockedWall from './AccountBlockedWall'
 import { BillingEnforcementContext, BillingEnforcementValue } from './context'
 import PaymentPendingDialog, { PendingDialogKind } from './PaymentPendingDialog'
@@ -46,7 +46,10 @@ export const BillingEnforcementProvider = ({ children, fallback }: Props) => {
     const [blockedSignal, setBlockedSignal] = useState(0)
 
     const payment = overview?.current_payment ?? null
+    const debt = overview?.debt ?? null
     const paymentMethod = overview?.payment_method
+    /* El comprobante cubre todo lo que debe, no solo el mes más viejo */
+    const receiptTarget = receiptTargetFrom(overview)
     const enforcement = payment?.enforcement ?? NO_ENFORCEMENT
 
     const isFeatureRestricted = useCallback(
@@ -120,12 +123,13 @@ export const BillingEnforcementProvider = ({ children, fallback }: Props) => {
     const value = useMemo<BillingEnforcementValue>(() => ({
         enforcement,
         payment,
+        debt,
         paymentMethod,
         isFeatureRestricted,
         requestFeature,
         openPaymentDialog,
         openUploadReceipt,
-    }), [enforcement, payment, paymentMethod, isFeatureRestricted, requestFeature, openPaymentDialog, openUploadReceipt])
+    }), [enforcement, payment, debt, paymentMethod, isFeatureRestricted, requestFeature, openPaymentDialog, openUploadReceipt])
 
     return (
         <BillingEnforcementContext.Provider value={value}>
@@ -142,14 +146,16 @@ export const BillingEnforcementProvider = ({ children, fallback }: Props) => {
                         onOpenChange={open => !open && setDialog(null)}
                     />
 
-                    <UploadReceiptDialog
-                        open={uploadOpen}
-                        period={payment.period}
-                        amount={payment.remaining}
-                        currency={payment.currency}
-                        paymentMethod={paymentMethod}
-                        onOpenChange={setUploadOpen}
-                    />
+                    {receiptTarget && (
+                        <UploadReceiptDialog
+                            open={uploadOpen}
+                            periods={receiptTarget.periods}
+                            amount={receiptTarget.amount}
+                            currency={receiptTarget.currency}
+                            paymentMethod={paymentMethod}
+                            onOpenChange={setUploadOpen}
+                        />
+                    )}
                 </>
             )}
 
@@ -158,6 +164,7 @@ export const BillingEnforcementProvider = ({ children, fallback }: Props) => {
                 <AccountBlockedWall
                     key={blockedSignal}
                     payment={payment}
+                    debt={debt}
                     paymentMethod={paymentMethod}
                     onUpload={openUploadReceipt}
                 />

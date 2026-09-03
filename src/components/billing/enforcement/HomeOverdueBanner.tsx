@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 
 import Button from '@/components/common/Button'
 import { formatCurrency } from '@/utils'
-import { periodLabel } from '../utils'
+import { periodLabel, periodsLabel } from '../utils'
 import { useBillingEnforcement } from './context'
 import { daysLabel, PROFILE_BILLING_PATH } from './utils'
 
@@ -12,9 +12,13 @@ import { daysLabel, PROFILE_BILLING_PATH } from './utils'
  * barra global, que ya se ve desde cualquier pantalla.
  */
 const HomeOverdueBanner = () => {
-    const { enforcement, payment, openUploadReceipt } = useBillingEnforcement()
+    const { enforcement, payment, debt, openUploadReceipt } = useBillingEnforcement()
 
     if (!payment || !enforcement.show_home_banner) return null
+
+    const multiple = (debt?.periods.length ?? 0) > 1
+    const owedTotal = multiple ? debt!.total : payment.remaining
+    const owedLabel = multiple ? periodsLabel(debt!.periods.map(item => item.period)) : periodLabel(payment.period)
 
     return (
         <section className="flex flex-wrap items-center gap-4 rounded-3xl border border-red-200 bg-card p-5 shadow-card dark:border-red-500/30">
@@ -25,7 +29,7 @@ const HomeOverdueBanner = () => {
             <div className="min-w-0 flex-1">
                 <h3 className="text-[15px] font-extrabold tracking-tight">Tienes un pago atrasado</h3>
                 <p className="text-[12.5px] font-semibold text-muted-foreground">
-                    {formatCurrency(payment.remaining, payment.currency)} de {periodLabel(payment.period)} · {daysLabel(enforcement.days_overdue)} de atraso
+                    {formatCurrency(owedTotal, payment.currency)} de {owedLabel} · {daysLabel(enforcement.days_overdue)} de atraso
                 </p>
             </div>
 

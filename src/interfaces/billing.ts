@@ -85,6 +85,13 @@ export interface ICurrentPayment {
     enforcement: IBillingEnforcement
 }
 
+/** Lo que tiene que pagar ahora, periodo a periodo. Excluye lo que ya está en revisión. */
+export interface IBillingDebt {
+    total: number
+    currency: string
+    periods: { period: string, remaining: number, status: PaymentStatus | null }[]
+}
+
 export interface IBillingOverview {
     billing_type: BillingType
     plan: { name: string, price: number } | null
@@ -97,6 +104,7 @@ export interface IBillingOverview {
     unpaid_periods: number
     payment_method: IBillingPaymentMethod
     current_payment: ICurrentPayment | null
+    debt: IBillingDebt
     /** Años con movimientos, del más reciente al más antiguo. */
     payment_years: number[]
 }
@@ -119,6 +127,8 @@ export interface IBillingPayment {
 }
 
 export interface IUploadReceiptPayload {
+    /** Un mismo comprobante puede cubrir varios periodos. */
+    periods: string[]
     receipt_uri: string
     reference_number?: string
     method?: PaymentMethod.TRANSFER | PaymentMethod.CASH

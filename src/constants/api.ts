@@ -83,7 +83,7 @@ export const API_ROUTES = {
     BILLING: {
         OVERVIEW: '/billing/overview',
         PAYMENTS: '/billing/payments',
-        UPLOAD_RECEIPT: '/billing/payments/{period}/receipt',
+        UPLOAD_RECEIPTS: '/billing/receipts',
     },
     VERIFICATION_TEMPORARY_CODE: '/verification-temporary-code',
     DASHBOARD: '/dashboard',

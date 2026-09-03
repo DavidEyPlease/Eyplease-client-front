@@ -40,6 +40,23 @@ export const periodLabel = (period: string): string => {
     return name ? `${name} ${year}` : period
 }
 
+const joinWithAnd = (items: string[]) =>
+    items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`
+
+/**
+ * Varios periodos en una frase: "Julio y Agosto 2026", o "Diciembre 2025 y Enero 2026"
+ * si cruzan de año. Con uno solo, igual que periodLabel.
+ */
+export const periodsLabel = (periods: string[]): string => {
+    if (!periods.length) return ''
+
+    const years = new Set(periods.map(period => period.split('-')[0]))
+    if (years.size > 1) return joinWithAnd(periods.map(periodLabel))
+
+    const months = periods.map(period => MONTHS[Number(period.split('-')[1]) - 1] ?? period)
+    return `${joinWithAnd(months)} ${[...years][0]}`
+}
+
 /**
  * Si tiene sentido ofrecerle subir el comprobante desde el sidebar.
  *
@@ -51,6 +68,31 @@ export const shouldOfferReceipt = (overview?: IBillingOverview): boolean => {
     if (!payment?.can_upload_receipt) return false
 
     return payment.is_overdue || (overview?.billing_type === 'manual' && payment.is_due)
+}
+
+/** A qué periodos va un comprobante y cuánto cubre. */
+export interface IReceiptTarget {
+    periods: string[]
+    amount: number
+    currency: string
+    hasReceipt: boolean
+}
+
+/**
+ * El objetivo del comprobante desde el resumen: todos los periodos que debe (una
+ * transferencia suele cubrirlos juntos) o, si ya los mandó todos a revisión, el
+ * periodo en curso para poder reemplazarlo.
+ */
+export const receiptTargetFrom = (overview?: IBillingOverview): IReceiptTarget | null => {
+    const payment = overview?.current_payment
+    if (!payment?.can_upload_receipt) return null
+
+    const owed = overview?.debt?.periods ?? []
+    if (owed.length) {
+        return { periods: owed.map(item => item.period), amount: overview!.debt.total, currency: overview!.debt.currency, hasReceipt: false }
+    }
+
+    return { periods: [payment.period], amount: payment.remaining, currency: payment.currency, hasReceipt: payment.has_receipt }
 }
 
 /** Formatos que acepta un comprobante: foto del banco o PDF del estado de cuenta. */

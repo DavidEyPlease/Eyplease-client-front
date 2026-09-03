@@ -6,7 +6,8 @@ import Modal from '@/components/common/Modal'
 import { BillingRestrictedFeature, ICurrentPayment } from '@/interfaces/billing'
 import { formatCurrency } from '@/utils'
 import { formatDate } from '@/utils/dates'
-import { periodLabel } from '../utils'
+import { periodLabel, periodsLabel } from '../utils'
+import { useBillingEnforcement } from './context'
 import { daysLabel, PROFILE_BILLING_PATH, RESTRICTED_FEATURE_LABELS } from './utils'
 
 /**
@@ -34,8 +35,13 @@ const COPY: Record<PendingDialogKind, { title: string, icon: React.ReactNode }> 
 /** El aviso de pago pendiente: un solo modal para el recordatorio y para las funciones cerradas. */
 const PaymentPendingDialog = ({ open, kind, feature, payment, onUpload, onOpenChange }: Props) => {
     const navigate = useNavigate()
+    const { debt } = useBillingEnforcement()
     const { enforcement } = payment
     const copy = COPY[kind]
+
+    const multiple = (debt?.periods.length ?? 0) > 1
+    const owedTotal = multiple ? debt!.total : payment.remaining
+    const owedLabel = multiple ? periodsLabel(debt!.periods.map(item => item.period)) : periodLabel(payment.period)
 
     const dueDate = payment.due_date
         ? formatDate(payment.due_date, { formatter: { date: 'medium' }, dateOnly: true })
@@ -74,11 +80,11 @@ const PaymentPendingDialog = ({ open, kind, feature, payment, onUpload, onOpenCh
 
                 <div>
                     <p className="text-2xl font-extrabold tracking-tight">
-                        {formatCurrency(payment.remaining, payment.currency)}
+                        {formatCurrency(owedTotal, payment.currency)}
                     </p>
                     <p className="text-[12.5px] font-semibold text-muted-foreground">
-                        {periodLabel(payment.period)}
-                        {dueDate && ` · venció el ${dueDate}`}
+                        {owedLabel}
+                        {dueDate && ` · ${multiple ? 'el primero venció' : 'venció'} el ${dueDate}`}
                     </p>
                 </div>
 
