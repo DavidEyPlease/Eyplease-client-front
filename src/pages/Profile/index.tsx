@@ -1,5 +1,7 @@
 import { useState } from "react"
+import { useSearchParams } from "react-router"
 
+import useBillingAccess from "@/components/billing/useBillingAccess"
 import useAuth from "@/hooks/useAuth"
 import Billing from "./components/Billing"
 import ChangePassword from "./components/ChangePassword"
@@ -8,11 +10,16 @@ import FormEditProfile from "./components/FormEditProfile"
 import IdentityCard from "./components/IdentityCard"
 import Preferences from "./components/Preferences"
 import ReportContent from "./components/ReportContent"
-import SectionNav, { ProfileSectionKey } from "./components/SectionNav"
+import SectionNav from "./components/SectionNav"
+import { isProfileSectionKey, ProfileSectionKey } from "./utils"
 
 const ProfilePage = () => {
-    const [section, setSection] = useState<ProfileSectionKey>('personal')
+    const [searchParams] = useSearchParams()
+    /* Los avisos de pago enlazan directo a la ficha de facturación */
+    const requested = searchParams.get('section')
+    const [section, setSection] = useState<ProfileSectionKey>(isProfileSectionKey(requested) ? requested : 'personal')
     const { user } = useAuth()
+    const { canSeeBilling } = useBillingAccess()
 
     if (!user) return null
 
@@ -26,7 +33,7 @@ const ProfilePage = () => {
             <div>
                 {section === 'personal' && <FormEditProfile user={user} />}
                 {section === 'reports' && <ReportContent />}
-                {section === 'billing' && <Billing />}
+                {section === 'billing' && canSeeBilling && <Billing />}
                 {section === 'preferences' && <Preferences user={user} />}
                 {section === 'security' && <ChangePassword />}
                 {section === 'help' && <Faqs />}

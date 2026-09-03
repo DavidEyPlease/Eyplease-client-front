@@ -29,8 +29,10 @@ const dateLabel = (date?: string | null) =>
  * que decidir aquí qué periodo toca ni si está vencido.
  */
 const SidebarBillingCard = () => {
-    const { overview, loading } = useBilling()
+    const { overview, loading, canSeeBilling } = useBilling()
     const [uploadOpen, setUploadOpen] = useState(false)
+
+    if (!canSeeBilling) return null
 
     if (loading) {
         return (

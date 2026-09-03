@@ -1,6 +1,7 @@
 // import useFetch from "@/hooks/useFetch"
 // import CustomServicesSummary from "./components/CustomServices"
 import Newsletter from "./components/Newsletter"
+import HomeOverdueBanner from "@/components/billing/enforcement/HomeOverdueBanner"
 import BirthdayBanner from "./components/BirthdayBanner"
 import AnnualReport from "./components/AnnualReport"
 // import PostsSummary from "./components/Posts"
@@ -13,6 +14,8 @@ import AnnualReport from "./components/AnnualReport"
 const DashboardPage = () => {
     return (
         <div className="grid gap-y-5">
+            <HomeOverdueBanner />
+
             {/* Birthday Banner */}
             {<BirthdayBanner />}
 

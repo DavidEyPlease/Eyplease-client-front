@@ -3,9 +3,9 @@ import { ChevronRightIcon, CreditCardIcon, FileTextIcon, UserRoundIcon } from 'l
 import { IconHelpCenter } from '@/components/Svg/IconHelpCenter'
 import { IconLock } from '@/components/Svg/IconLock'
 import { IconPreferences } from '@/components/Svg/IconPreferences'
+import useBillingAccess from '@/components/billing/useBillingAccess'
 import { cn } from '@/lib/utils'
-
-export type ProfileSectionKey = 'personal' | 'reports' | 'billing' | 'preferences' | 'security' | 'help'
+import { ProfileSectionKey } from '../utils'
 
 const SECTIONS: { key: ProfileSectionKey, label: string, icon: React.ReactNode }[] = [
     { key: 'personal', label: 'Datos personales', icon: <UserRoundIcon /> },
@@ -23,9 +23,13 @@ interface Props {
 
 /** Menú vertical de secciones del perfil. */
 const SectionNav = ({ active, onChange }: Props) => {
+    const { canSeeBilling } = useBillingAccess()
+    /* La facturación no aplica a todas las cuentas: a las excluidas ni se les ofrece */
+    const sections = SECTIONS.filter(section => section.key !== 'billing' || canSeeBilling)
+
     return (
         <nav className="flex flex-col gap-1 rounded-3xl border bg-card p-2 shadow-card">
-            {SECTIONS.map(section => {
+            {sections.map(section => {
                 const isActive = section.key === active
 
                 return (

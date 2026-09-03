@@ -12,13 +12,11 @@ import { FileTypes } from "@/interfaces/files"
 import { uploadFile } from "@/utils/files"
 import { IAuthUser } from "@/interfaces/auth"
 import { PermissionKeys } from "@/interfaces/permissions"
-import { useQueryClient } from "@tanstack/react-query"
 
 const useAuth = () => {
     const navigate = useNavigate()
     const location = useLocation()
     const { user, logout, setUtilData, setAuth, setUser, setInitialLoading } = useAuthStore(state => state)
-    const queryClient = useQueryClient()
     const [loadingAction, setLoadingAction] = useState('')
     const [pending, setPending] = useState(true)
 
@@ -48,10 +46,12 @@ const useAuth = () => {
 
     const handleLogout = () => {
         HttpService.post(API_ROUTES.LOGOUT, {}).finally(() => {
-            logout()
-            queryClient.clear()
-            navigate(APP_ROUTES.AUTH.SIGN_IN)
+            /* Primero sin token: cualquier petición que se cuele ya no lleva sesión */
             localStorage.removeItem(SESSION_KEY)
+            logout()
+            navigate(APP_ROUTES.AUTH.SIGN_IN)
+            /* La caché la vacía MainLayout al desmontarse: hacerlo aquí, con las
+               queries aún montadas, las relanza sin sesión (los 401 tras el logout) */
         })
     }
 
@@ -61,8 +61,9 @@ const useAuth = () => {
         return accessesKeys.includes(access)
     }
 
+    /** Resuelve cuando la sesión (y su util-data) está en el store, o cuando se decidió que no hay sesión. */
     const getMe = async () => {
-        HttpService.getMe<ApiResponse<IAuthUser>>().then(async response => {
+        return HttpService.getMe<ApiResponse<IAuthUser>>().then(async response => {
             if (response.data) {
                 const { plan } = response.data
                 setAuth(response.data, plan.accesses.filter(i => i.permission_key).map(({ permission_key }) => permission_key))

@@ -4,6 +4,7 @@ import { InfiniteData, QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import HttpService from '@/services/http'
 import { ApiResponse, CursorPaginationResponse } from '@/interfaces/common'
 import { UseQueryFetchOptions } from '@/interfaces/tanstack-query.types'
+import useAuthStore from '@/store/auth'
 
 /**
  * Listado infinito por cursor (cursorPaginate de Laravel): cada página trae
@@ -17,6 +18,9 @@ export default function useCursorListQuery<T>(apiEndpoint: string, options: UseQ
 		enabled = true,
 		refetchOnWindowFocus = false,
 	} = options
+
+	/* Hasta que /me responda no sale ninguna petición: evita la carrera con la sesión */
+	const initialLoading = useAuthStore(state => state.initialLoading)
 
 	const queryKey = useMemo(() => {
 		return customQueryKey || ['fetch-cursor', apiEndpoint]
@@ -34,7 +38,7 @@ export default function useCursorListQuery<T>(apiEndpoint: string, options: UseQ
 		queryFn: ({ pageParam }) => fetcher(pageParam),
 		getNextPageParam: (lastPage) => (lastPage.last_page ? undefined : lastPage.pagination_token),
 		staleTime,
-		enabled,
+		enabled: enabled && !initialLoading,
 		refetchOnWindowFocus,
 	})
 

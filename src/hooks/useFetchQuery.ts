@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, QueryKey } from '@tanstack/react-query'
 
 import HttpService from '@/services/http'
 import { ApiResponse } from '@/interfaces/common'
+import useAuthStore from '@/store/auth'
 
 interface UseFetchResult<T> {
     response: ApiResponse<T> | undefined,
@@ -35,6 +36,8 @@ export default function useFetchQuery<T>(url: string, options: UseFetchOptions =
         refetchOnWindowFocus = false,
     } = options
     const queryClient = useQueryClient()
+    /* Hasta que /me responda no sale ninguna petición: evita la carrera con la sesión */
+    const initialLoading = useAuthStore(state => state.initialLoading)
 
     const queryKey = useMemo(() => {
         return customQueryKey || ['fetch', url, queryParams]
@@ -62,7 +65,7 @@ export default function useFetchQuery<T>(url: string, options: UseFetchOptions =
         queryFn: fetcher,
         staleTime,
         gcTime: cacheTime,
-        enabled,
+        enabled: enabled && !initialLoading,
         refetchOnWindowFocus,
     })
 

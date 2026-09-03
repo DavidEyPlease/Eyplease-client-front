@@ -1,6 +1,9 @@
-import { SESSION_KEY } from "@/constants/app"
+import { BILLING_ERROR_CODES, BROWSER_EVENTS, SESSION_KEY } from "@/constants/app"
+import { publishEvent } from "@/utils/events"
 
 const MAX_RETRIES = 1
+const FORBIDDEN = 403
+const BILLING_CODES: string[] = Object.values(BILLING_ERROR_CODES)
 const BUILD_VERSION = import.meta.env.VITE_BUILD_ID || 'dev'
 const UPGRADE_REQUIRED = 426
 
@@ -74,7 +77,16 @@ class HttpService {
                     window.location.reload()
                     return new Promise(() => {}) as T
                 }
-                throw await response.json()
+
+                const error = await response.json()
+
+                // Bloqueo por atraso en el pago: se avisa a la app (que abre el aviso y
+                // refresca su estado) y se propaga igual, para que quien llamó no se cuelgue.
+                if (response.status === FORBIDDEN && BILLING_CODES.includes(error?.message)) {
+                    publishEvent(BROWSER_EVENTS.BILLING_RESTRICTED, { code: error.message, feature: error?.errors?.feature })
+                }
+
+                throw error
             }
 
             // if (options.method === 'GET' || options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH') {

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 
+import RestrictedSectionNotice from "@/components/billing/enforcement/RestrictedSectionNotice"
+import { useBillingEnforcement } from "@/components/billing/enforcement/context"
 import { EmptySection } from "@/components/generics/EmptySection"
 import LoadMorePaginator from "@/components/generics/LoadMorePaginator"
 import PageLoader from "@/components/generics/PageLoader"
@@ -10,8 +12,9 @@ import { API_ROUTES } from "@/constants/api"
 import { MAP_TOOLS_SECTIONS } from "@/constants/app"
 import useAuth from "@/hooks/useAuth"
 import useInfiniteListQuery from "@/hooks/useInfiniteListQuery"
+import { BillingRestrictedFeature } from "@/interfaces/billing"
 import { PermissionKeys } from "@/interfaces/permissions"
-import { ITool, IToolsFilters } from "@/interfaces/tools"
+import { ITool, IToolsFilters, ToolSectionTypes } from "@/interfaces/tools"
 import { useToolsStore } from "@/store/tools"
 import ToolFilters from "./components/Filters"
 import ToolItem from "./components/ToolItem"
@@ -22,6 +25,17 @@ const ToolsPage = () => {
     const { filters, setFilters, getListQueryKey } = useToolsStore(state => state)
 
     const listQueryKey = getListQueryKey()
+
+    const { isFeatureRestricted, requestFeature } = useBillingEnforcement()
+    /* Con propuestas cerradas no se pide la lista: la API respondería 403 igual */
+    const proposalsRestricted = isFeatureRestricted(BillingRestrictedFeature.LIBRARY_PROPOSALS)
+        && filters.section === ToolSectionTypes.PROPOSALS
+
+    /* Cambiar a propuestas pasa por la puerta: si está cerrada, abre el aviso y no cambia */
+    const onChangeFilters = (next: Partial<IToolsFilters>) => {
+        if (next.section === ToolSectionTypes.PROPOSALS && !requestFeature(BillingRestrictedFeature.LIBRARY_PROPOSALS)) return
+        setFilters(next)
+    }
 
     const {
         data,
@@ -34,7 +48,7 @@ const ToolsPage = () => {
         {
             queryParams: filters,
             customQueryKey: listQueryKey,
-            enabled: true,
+            enabled: !proposalsRestricted,
         }
     )
 
@@ -67,7 +81,7 @@ const ToolsPage = () => {
                         onSubmitSearch={(search) => setFilters({ search })}
                     />
                 </div>
-                <ToolFilters filters={filters} setFilter={setFilters} />
+                <ToolFilters filters={filters} setFilter={onChangeFilters} />
             </div>
 
             <div className="flex items-center gap-2.5">
@@ -82,7 +96,9 @@ const ToolsPage = () => {
                 )}
             </div>
 
-            {isLoading ? (
+            {proposalsRestricted ? (
+                <RestrictedSectionNotice feature={BillingRestrictedFeature.LIBRARY_PROPOSALS} />
+            ) : isLoading ? (
                 <PageLoader />
             ) : (
                 <div className="flex items-start gap-4">
@@ -100,7 +116,7 @@ const ToolsPage = () => {
                 </div>
             )}
 
-            {tools.length === 0 && !isLoading && (
+            {tools.length === 0 && !isLoading && !proposalsRestricted && (
                 <EmptySection
                     title="No hay resultados"
                     description="Intenta ajustar los filtros o buscar con otras palabras clave."

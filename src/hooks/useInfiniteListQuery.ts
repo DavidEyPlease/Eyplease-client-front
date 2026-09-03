@@ -5,6 +5,7 @@ import { UseQueryFetchOptions } from "@/interfaces/tanstack-query.types"
 import HttpService from '@/services/http'
 import { ApiResponse, PaginationResponse, QueryParams } from '@/interfaces/common'
 import { objectToQueryParams } from "@/utils"
+import useAuthStore from "@/store/auth"
 
 interface UseInfiniteListOptions<F> extends UseQueryFetchOptions {
     queryParams?: QueryParams<F>
@@ -23,6 +24,8 @@ export default function useInfiniteListQuery<T, F = unknown>(apiEndpoint: string
     } = options
 
     const queryClient = useQueryClient()
+    /* Hasta que /me responda no sale ninguna petición: evita la carrera con la sesión */
+    const initialLoading = useAuthStore(state => state.initialLoading)
 
     const queryKey = useMemo(() => {
         return customQueryKey || ['fetch', apiEndpoint, queryParams]
@@ -52,7 +55,7 @@ export default function useInfiniteListQuery<T, F = unknown>(apiEndpoint: string
             return lastPage.current_page + 1
         },
         staleTime,
-        enabled,
+        enabled: enabled && !initialLoading,
         refetchOnWindowFocus,
         refetchOnMount,
         refetchInterval,

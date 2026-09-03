@@ -1,5 +1,12 @@
 import { z } from "zod"
 
+export const PROFILE_SECTION_KEYS = ['personal', 'reports', 'billing', 'preferences', 'security', 'help'] as const
+export type ProfileSectionKey = typeof PROFILE_SECTION_KEYS[number]
+
+/** Para aceptar la sección por query string sin fiarse del valor que llegue. */
+export const isProfileSectionKey = (value: string | null): value is ProfileSectionKey =>
+    PROFILE_SECTION_KEYS.includes(value as ProfileSectionKey)
+
 /** Fuerza de la nueva contraseña (0-4): solo orientativa, la validación real es el schema. */
 export const getPasswordStrength = (password: string): number => {
     if (!password) return 0

@@ -190,7 +190,21 @@ export const BROWSER_EVENTS = {
     GALLERY_LIST_UPDATED: 'gallery-list-updated',
     POSTS_LIST_UPDATED: 'posts-list-updated',
     UPLOAD_REPORT: 'upload-report',
-    CLEAR_FILE_UPLOADER: 'clear-file-uploader'
+    CLEAR_FILE_UPLOADER: 'clear-file-uploader',
+    /** La API respondió 403 por atraso en el pago (lo emite el servicio HTTP). */
+    BILLING_RESTRICTED: 'billing-restricted',
 }
+
+/** Códigos con los que la API cierra funciones o la cuenta por atraso en el pago. */
+export const BILLING_ERROR_CODES = {
+    FEATURE_RESTRICTED: 'BILLING_FEATURE_RESTRICTED',
+    ACCOUNT_BLOCKED: 'ACCOUNT_BLOCKED_BY_BILLING',
+} as const
+
+/**
+ * Cuentas a las que no se les muestra nada de facturación: ni el estado de cobro
+ * ni el acceso a pagos y facturas. Su cobro se lleva por fuera de la app.
+ */
+export const BILLING_EXCLUDED_ACCOUNTS = ['028616']
 
 export const TRANSPARENT_SHIELD = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="

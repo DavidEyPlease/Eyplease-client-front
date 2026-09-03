@@ -39,6 +39,37 @@ interface IManualPaymentMethod {
 
 export type IBillingPaymentMethod = IAutomaticPaymentMethod | IManualPaymentMethod
 
+/** Funciones que la escalada por atraso puede cerrar. Mismas claves que el backend. */
+export enum BillingRestrictedFeature {
+    BIRTHDAY_POSTS = 'birthday_posts',
+    LIBRARY_PROPOSALS = 'library_proposals',
+}
+
+/** Por qué la escalada está en pausa aunque haya atraso. */
+export type BillingPausedReason = 'in_review' | 'grace'
+
+/**
+ * Escalada por atraso, ya resuelta por la API: qué mostrar, qué cerrar y cuánto
+ * falta para el bloqueo. El front no conoce ningún umbral.
+ */
+export interface IBillingEnforcement {
+    days_overdue: number
+    show_reminder_popup: boolean
+    show_home_banner: boolean
+    show_global_banner: boolean
+    restricted_features: BillingRestrictedFeature[]
+    days_until_block: number | null
+    block_date: string | null
+    account_blocked: boolean
+    paused_reason: BillingPausedReason | null
+}
+
+/** Lo que viaja en el evento del navegador cuando la API responde 403 por atraso. */
+export interface IBillingRestrictedEvent {
+    code: string
+    feature?: BillingRestrictedFeature
+}
+
 /** El periodo que toca atender ahora: ya resuelto por la API, sin reglas en el front. */
 export interface ICurrentPayment {
     period: string
@@ -51,6 +82,7 @@ export interface ICurrentPayment {
     is_overdue: boolean
     has_receipt: boolean
     can_upload_receipt: boolean
+    enforcement: IBillingEnforcement
 }
 
 export interface IBillingOverview {

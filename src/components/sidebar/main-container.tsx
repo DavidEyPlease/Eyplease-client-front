@@ -1,5 +1,6 @@
 // import ButtonBack from "@/components/generics/ButtonBack";
 import AssistantLauncher from "@/components/assistant/AssistantLauncher"
+import GlobalPaymentBanner from "@/components/billing/enforcement/GlobalPaymentBanner"
 import { DarkModeSelector } from "@/components/common/DarkModeSelector"
 import { APP_ROUTES, SIDEBAR_ITEMS } from "@/constants/app"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
@@ -50,6 +51,7 @@ const MainContainer = ({ children, page }: Props) => {
                         <NotificationsDropdown />
                     </div>
                 </header>
+                <GlobalPaymentBanner />
                 <div className="relative min-h-screen">
                     {children}
                 </div>
