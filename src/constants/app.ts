@@ -172,8 +172,8 @@ export const MAP_STATUS_USER_REQUEST_SERVICES = {
 
 export const MAP_TOOLS_SECTIONS = {
     [ToolSectionTypes.STAY_INFORMED]: 'Entérate Ya',
-    [ToolSectionTypes.EXPLAIN]: 'Explíca',
-    [ToolSectionTypes.LEARN]: 'Aprende',
+    [ToolSectionTypes.EXPLAIN]: 'Historia en Redes Sociales',
+    [ToolSectionTypes.LEARN]: 'Publicación de Redes Sociales',
     [ToolSectionTypes.PROPOSALS]: 'Propuestas',
     [ToolSectionTypes.PRODUCTS]: 'Productos',
     [ToolSectionTypes.GET_STARTED]: 'Inicia',

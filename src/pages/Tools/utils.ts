@@ -1,4 +1,4 @@
-import { BellRingIcon, BriefcaseIcon, LightbulbIcon, LucideIcon, PresentationIcon, ShoppingBagIcon, ZapIcon } from 'lucide-react'
+import { BellRingIcon, BriefcaseIcon, CircleDashedIcon, ImageIcon, LucideIcon, ShoppingBagIcon, ZapIcon } from 'lucide-react'
 
 import { ToolSectionTypes } from '@/interfaces/tools'
 import { sanitizeFileName } from '@/utils'
@@ -9,8 +9,8 @@ export const TOOL_SECTION_ICON: Record<ToolSectionTypes, LucideIcon> = {
     [ToolSectionTypes.PRODUCTS]: ShoppingBagIcon,
     [ToolSectionTypes.GET_STARTED]: ZapIcon,
     [ToolSectionTypes.STAY_INFORMED]: BellRingIcon,
-    [ToolSectionTypes.LEARN]: LightbulbIcon,
-    [ToolSectionTypes.EXPLAIN]: PresentationIcon,
+    [ToolSectionTypes.LEARN]: ImageIcon,
+    [ToolSectionTypes.EXPLAIN]: CircleDashedIcon,
 }
 
 /** Orden de las secciones en los filtros (el mismo que tenía la vista anterior). */
