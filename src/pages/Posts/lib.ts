@@ -45,6 +45,29 @@ export const getPostDate = (post: IPost): Date | string =>
 
 export const isPostSent = (post: IPost): boolean => !!post.shared_at
 
+/**
+ * Pieza que celebra algo que ACABA de pasar, no el cierre del mes.
+ *
+ * Viene marcada desde la API: deducirlo de `created_at` no sirve porque el día
+ * que corre el lote mensual todas sus piezas son de hoy.
+ */
+export const isPostLive = (post: IPost): boolean => !!post.live_event_at
+
+/** Pasó hoy — es lo que justifica el aviso, no solo que sea reciente. */
+export const isLiveToday = (post: IPost): boolean => {
+	if (!post.live_event_at) return false
+
+	const event = new Date(post.live_event_at)
+	if (Number.isNaN(event.getTime())) return false
+
+	const today = new Date()
+	return (
+		event.getFullYear() === today.getFullYear() &&
+		event.getMonth() === today.getMonth() &&
+		event.getDate() === today.getDate()
+	)
+}
+
 export const isPostRegenerating = (post: IPost): boolean => !!post.is_regenerating
 
 /** Las publicaciones de clientes de eyplease no las envía el usuario, no se marcan. */
