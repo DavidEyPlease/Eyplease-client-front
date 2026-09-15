@@ -2,8 +2,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { IPost } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/utils/dates'
-import { CheckIcon, ImageIcon, VideoIcon } from 'lucide-react'
-import { canSelectPost, getPostDate, getPostMedia, isPostRegenerating, isPostSent } from '../../lib'
+import { CheckIcon, VideoIcon } from 'lucide-react'
+import { canSelectPost, getAvailableMediaTypes, getPostDate, getPostMedia, isPostRegenerating, isPostSent, MEDIA_TYPE_ICONS } from '../../lib'
 
 interface Props {
 	post: IPost
@@ -15,6 +15,9 @@ interface Props {
 
 const PostRow = ({ post, active, selected, onSelect, onToggleSelected }: Props) => {
 	const media = getPostMedia(post)
+	// La miniatura sale de la vertical; si la publicación no la tiene, de la cuadrada.
+	const thumbnail = media.image ?? media.imageSquare
+	const mediaTypes = getAvailableMediaTypes(media)
 	const sent = isPostSent(post)
 	const regenerating = isPostRegenerating(post)
 
@@ -42,8 +45,8 @@ const PostRow = ({ post, active, selected, onSelect, onToggleSelected }: Props) 
 				className="flex flex-1 cursor-pointer items-center gap-3 py-2.5 text-left focus-visible:outline-none"
 			>
 				<span className="h-13.25 w-10.5 shrink-0 overflow-hidden rounded-[9px] border bg-surface-soft">
-					{media.image ? (
-						<img src={media.image.url} alt="" loading="lazy" className="size-full object-cover" />
+					{thumbnail ? (
+						<img src={thumbnail.url} alt="" loading="lazy" className="size-full object-cover" />
 					) : (
 						<span className="grid size-full place-content-center text-muted-foreground">
 							<VideoIcon className="size-4" />
@@ -56,8 +59,10 @@ const PostRow = ({ post, active, selected, onSelect, onToggleSelected }: Props) 
 					<span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
 						{formatDate(getPostDate(post), { formatter: { date: 'medium' }, dateOnly: true })}
 						<span className="flex items-center gap-1.5 text-muted-foreground/60">
-							{media.image && <ImageIcon className="size-4" />}
-							{media.video && <VideoIcon className="size-4" />}
+							{mediaTypes.map(type => {
+								const Icon = MEDIA_TYPE_ICONS[type]
+								return <Icon key={type} className="size-4" />
+							})}
 						</span>
 					</span>
 				</span>

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { IPost } from '@/interfaces/posts'
 import { Maximize2Icon } from 'lucide-react'
-import { getDefaultMediaType, getPostMedia, isPostRegenerating, PostMediaType } from '../../lib'
+import { getAvailableMediaTypes, getDefaultMediaType, getPostMedia, isPostRegenerating, PostMediaType } from '../../lib'
 import MediaTypeSwitch from './MediaTypeSwitch'
 import PostDetailDrawer from './PostDetailDrawer'
 import PostDetailInfo from './PostDetailInfo'
@@ -19,7 +19,11 @@ const PostDetail = ({ post, ref }: Props) => {
 	const [mediaType, setMediaType] = useState<PostMediaType>(getDefaultMediaType(media))
 	const [expanded, setExpanded] = useState(false)
 
-	const showMediaSwitch = !!media.image && !!media.video
+	const mediaTypes = getAvailableMediaTypes(media)
+	const showMediaSwitch = mediaTypes.length > 1
+	/* Si el formato elegido deja de existir —la publicación se regeneró sin él— se cae al primero
+	   que sí tenga, en vez de quedarse enseñando un hueco. */
+	const activeType = mediaTypes.includes(mediaType) ? mediaType : mediaTypes[0] ?? mediaType
 	const regenerating = isPostRegenerating(post)
 
 	// El tope de altura solo entra en pantallas bajas, para que las acciones del pie sigan alcanzables
@@ -29,7 +33,7 @@ const PostDetail = ({ post, ref }: Props) => {
 			className="overflow-hidden rounded-[20px] border bg-card shadow-card lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
 		>
 			<div className="flex items-center justify-between gap-2 border-b px-3.5 py-2.5">
-				{showMediaSwitch && <MediaTypeSwitch value={mediaType} onChange={setMediaType} />}
+				{showMediaSwitch && <MediaTypeSwitch value={activeType} types={mediaTypes} onChange={setMediaType} />}
 				<Button
 					variant="outline"
 					size="icon-sm"
@@ -41,14 +45,15 @@ const PostDetail = ({ post, ref }: Props) => {
 				</Button>
 			</div>
 
-			<PostMedia post={post} media={media} mediaType={mediaType} fit="cover" regenerating={regenerating} />
+			<PostMedia post={post} media={media} mediaType={activeType} fit="cover" regenerating={regenerating} />
 
-			<PostDetailInfo post={post} media={media} mediaType={mediaType} />
+			<PostDetailInfo post={post} media={media} mediaType={activeType} />
 
 			<PostDetailDrawer
 				post={post}
 				media={media}
-				mediaType={mediaType}
+				mediaType={activeType}
+				mediaTypes={mediaTypes}
 				open={expanded}
 				showMediaSwitch={showMediaSwitch}
 				onMediaTypeChange={setMediaType}

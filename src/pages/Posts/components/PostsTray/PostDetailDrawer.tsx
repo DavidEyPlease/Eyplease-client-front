@@ -11,6 +11,7 @@ interface Props {
 	post: IPost
 	media: PostMediaFiles
 	mediaType: PostMediaType
+	mediaTypes: PostMediaType[]
 	open: boolean
 	showMediaSwitch: boolean
 	onMediaTypeChange: (value: PostMediaType) => void
@@ -18,14 +19,14 @@ interface Props {
 }
 
 /** Vista ampliada de la publicación: la pieza completa sin recortar, con scroll propio. */
-const PostDetailDrawer = ({ post, media, mediaType, open, showMediaSwitch, onMediaTypeChange, onOpenChange }: Props) => {
+const PostDetailDrawer = ({ post, media, mediaType, mediaTypes, open, showMediaSwitch, onMediaTypeChange, onOpenChange }: Props) => {
 	return (
 		<Drawer direction="right" open={open} onOpenChange={onOpenChange}>
 			<DrawerContent className="w-full">
 				<DrawerHeader className="flex flex-row items-center justify-between gap-2 border-b p-3.5">
 					<DrawerTitle className="sr-only">{post.title}</DrawerTitle>
 					{showMediaSwitch ? (
-						<MediaTypeSwitch value={mediaType} onChange={onMediaTypeChange} />
+						<MediaTypeSwitch value={mediaType} types={mediaTypes} onChange={onMediaTypeChange} />
 					) : (
 						<span className="truncate text-sm font-bold tracking-tight">{post.title}</span>
 					)}

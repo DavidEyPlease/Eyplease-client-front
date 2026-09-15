@@ -1,7 +1,7 @@
 import { NewsletterSection } from "./common"
-import { EypleaseFile } from "./files"
+import { ArtifactType, EypleaseFile } from "./files"
 
-export type PostArtifactType = 'image' | 'video'
+export type PostArtifactType = ArtifactType
 
 export enum PostTypes {
     NEWSLETTER = 'newsletter',

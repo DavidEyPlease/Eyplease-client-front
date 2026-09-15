@@ -1,6 +1,6 @@
 import { IPost } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
-import { POST_MEDIA_TYPES, PostMedia as PostMediaFiles, PostMediaType } from '../../lib'
+import { getPostMediaFile, POST_MEDIA_TYPES, PostMedia as PostMediaFiles, PostMediaType } from '../../lib'
 
 interface Props {
 	post: IPost
@@ -13,6 +13,9 @@ interface Props {
 
 const PostMedia = ({ post, media, mediaType, fit, regenerating }: Props) => {
 	const showVideo = mediaType === POST_MEDIA_TYPES.VIDEO && !!media.video
+	const image = getPostMediaFile(media, mediaType)
+	// La cuadrada dentro del marco vertical de la tarjeta: `contain` para no recortarla.
+	const crop = fit === 'cover' && mediaType !== POST_MEDIA_TYPES.IMAGE_SQUARE
 
 	return (
 		<div className="relative bg-surface-soft">
@@ -23,11 +26,15 @@ const PostMedia = ({ post, media, mediaType, fit, regenerating }: Props) => {
 					className={cn('w-full bg-black object-contain', fit === 'cover' ? 'aspect-4/5' : 'max-h-[80vh]')}
 				/>
 			) : (
-				media.image && (
+				image && (
 					<img
-						src={media.image.url}
+						src={image.url}
 						alt={post.title}
-						className={cn('w-full', fit === 'cover' ? 'aspect-4/5 object-cover' : 'h-auto object-contain')}
+						className={cn(
+							'w-full',
+							fit === 'cover' ? 'aspect-4/5' : 'h-auto',
+							crop ? 'object-cover' : 'object-contain',
+						)}
 					/>
 				)
 			)}

@@ -1,41 +1,74 @@
 import { NewsletterSectionKeys } from '@/interfaces/common'
-import { EypleaseFile } from '@/interfaces/files'
+import { ARTIFACT_TYPES, EypleaseFile, artifactOf } from '@/interfaces/files'
 import { IPost, PostArtifactType, PostTypes } from '@/interfaces/posts'
+import { RectangleVerticalIcon, SquareIcon, VideoIcon } from 'lucide-react'
 
-const VIDEO_EXTS = ['mp4']
-const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'webp']
-
-export const POST_MEDIA_TYPES = {
-	IMAGE: 'image',
-	VIDEO: 'video',
-} as const
+export const POST_MEDIA_TYPES = ARTIFACT_TYPES
 
 export type PostMediaType = PostArtifactType
 
+/** Orden en que se ofrecen los formatos: la vertical primero, que es la que más se publica. */
+export const MEDIA_TYPE_ORDER: PostMediaType[] = [
+	POST_MEDIA_TYPES.IMAGE,
+	POST_MEDIA_TYPES.IMAGE_SQUARE,
+	POST_MEDIA_TYPES.VIDEO,
+]
+
+export const MEDIA_TYPE_LABELS: Record<PostMediaType, string> = {
+	[POST_MEDIA_TYPES.IMAGE]: 'Vertical',
+	[POST_MEDIA_TYPES.IMAGE_SQUARE]: 'Cuadrada',
+	[POST_MEDIA_TYPES.VIDEO]: 'Video',
+}
+
+/** El icono dice la forma del artefacto: la etiqueta y el dibujo cuentan lo mismo. */
+export const MEDIA_TYPE_ICONS = {
+	[POST_MEDIA_TYPES.IMAGE]: RectangleVerticalIcon,
+	[POST_MEDIA_TYPES.IMAGE_SQUARE]: SquareIcon,
+	[POST_MEDIA_TYPES.VIDEO]: VideoIcon,
+}
+
 export interface PostMedia {
 	image?: EypleaseFile
+	imageSquare?: EypleaseFile
 	video?: EypleaseFile
 }
 
-/** Archivos de la publicación separados por tipo: la imagen es la miniatura por defecto. */
-export const getPostMedia = (post: IPost): PostMedia => ({
-	image: post.files.find(file => IMAGE_EXTS.includes(file.ext)),
-	video: post.files.find(file => VIDEO_EXTS.includes(file.ext)),
-})
-
-export const getPostMediaLabel = ({ image, video }: PostMedia): string | null => {
-	if (image && video) return 'Imagen + video'
-	if (video) return 'Video'
-	if (image) return 'Imagen'
-	return null
+/**
+ * Archivos de la publicación separados por ARTEFACTO, no por extensión.
+ *
+ * Separar por extensión funcionó mientras sólo había dos: uno acababa en .jpeg y el otro en
+ * .mp4. Con la imagen cuadrada hay DOS archivos con la misma extensión, así que un `find`
+ * por extensión se queda con el primero y el otro no se ve nunca.
+ */
+export const getPostMedia = (post: IPost): PostMedia => {
+	const de = (artifact: PostMediaType) => post.files.find(file => artifactOf(file) === artifact)
+	return {
+		image: de(POST_MEDIA_TYPES.IMAGE),
+		imageSquare: de(POST_MEDIA_TYPES.IMAGE_SQUARE),
+		video: de(POST_MEDIA_TYPES.VIDEO),
+	}
 }
 
-export const getPostMediaFile = (media: PostMedia, type: PostMediaType): EypleaseFile | undefined =>
-	type === POST_MEDIA_TYPES.VIDEO ? media.video : media.image
+export const getPostMediaFile = (media: PostMedia, type: PostMediaType): EypleaseFile | undefined => {
+	if (type === POST_MEDIA_TYPES.VIDEO) return media.video
+	if (type === POST_MEDIA_TYPES.IMAGE_SQUARE) return media.imageSquare
+	return media.image
+}
 
-/** Tipo de media que se muestra al abrir: la imagen manda salvo que la publicación sea solo video. */
+/** Los formatos que la publicación tiene de verdad: una pestaña que lleva a un hueco no se ofrece. */
+export const getAvailableMediaTypes = (media: PostMedia): PostMediaType[] =>
+	MEDIA_TYPE_ORDER.filter(type => !!getPostMediaFile(media, type))
+
+/** Con un solo formato se nombra; con varios el conmutador ya dice cuáles, aquí basta cuántos. */
+export const getPostMediaLabel = (media: PostMedia): string | null => {
+	const types = getAvailableMediaTypes(media)
+	if (!types.length) return null
+	return types.length === 1 ? MEDIA_TYPE_LABELS[types[0]] : `${types.length} formatos`
+}
+
+/** Tipo de media que se muestra al abrir: la vertical manda salvo que la publicación no la tenga. */
 export const getDefaultMediaType = (media: PostMedia): PostMediaType =>
-	media.image ? POST_MEDIA_TYPES.IMAGE : POST_MEDIA_TYPES.VIDEO
+	getAvailableMediaTypes(media)[0] ?? POST_MEDIA_TYPES.IMAGE
 
 /** Las publicaciones de la sección "early" se fechan por metadata, no por created_at. */
 export const getPostDate = (post: IPost): Date | string =>
