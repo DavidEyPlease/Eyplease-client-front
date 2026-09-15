@@ -1,8 +1,11 @@
+import { Fragment } from 'react'
+
 import Button from '@/components/common/Button'
 import InfiniteScrollTrigger from '@/components/generics/InfiniteScrollTrigger'
 import { Checkbox } from '@/components/ui/checkbox'
 import { IPost } from '@/interfaces/posts'
 import { CheckIcon } from 'lucide-react'
+import { isLiveToday, isPostLive } from '../../lib'
 import { PostsSelection } from '../../hooks/usePostsSelection'
 import PostRow from './PostRow'
 
@@ -20,6 +23,15 @@ interface Props {
 
 const PostsList = ({ posts, total, sectionLabel, selection, selectedId, hasNextPage, loadingMore, onSelect, onLoadMore }: Props) => {
 	const headerChecked = selection.allSelected || (selection.selectedCount > 0 && 'indeterminate')
+
+	/*
+	 * Las piezas en vivo llegan ordenadas primero —la lista va por fecha— así que
+	 * basta con anunciar dónde empieza el grupo. No se reordena nada: mover filas
+	 * al cargar más páginas haría bailar la lista bajo el dedo.
+	 */
+	const firstLiveIndex = posts.findIndex(isPostLive)
+	const liveCount = posts.filter(isPostLive).length
+	const anyToday = posts.some(isLiveToday)
 
 	return (
 		<div className="overflow-hidden rounded-[20px] border bg-card shadow-card">
@@ -53,15 +65,28 @@ const PostsList = ({ posts, total, sectionLabel, selection, selectedId, hasNextP
 			</header>
 
 			<ul>
-				{posts.map(post => (
-					<PostRow
-						key={post.id}
-						post={post}
-						active={post.id === selectedId}
-						selected={selection.selectedIds.has(post.id)}
-						onSelect={onSelect}
-						onToggleSelected={selection.toggle}
-					/>
+				{posts.map((post, index) => (
+					<Fragment key={post.id}>
+						{index === firstLiveIndex && (
+							<li className="flex items-center gap-2 border-b bg-primary/8 px-4 py-2">
+								<span className="relative flex size-1.5">
+									<span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-70" />
+									<span className="relative inline-flex size-1.5 rounded-full bg-primary" />
+								</span>
+								<p className="text-[11.5px] font-bold tracking-wide text-primary uppercase">
+									{anyToday ? 'Pasó hoy en tu unidad' : 'Novedades de tu unidad'}
+									{liveCount > 1 && ` · ${liveCount}`}
+								</p>
+							</li>
+						)}
+						<PostRow
+							post={post}
+							active={post.id === selectedId}
+							selected={selection.selectedIds.has(post.id)}
+							onSelect={onSelect}
+							onToggleSelected={selection.toggle}
+						/>
+					</Fragment>
 				))}
 			</ul>
 

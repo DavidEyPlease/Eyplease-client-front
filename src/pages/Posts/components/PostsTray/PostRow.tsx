@@ -3,7 +3,7 @@ import { IPost } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/utils/dates'
 import { CheckIcon, VideoIcon } from 'lucide-react'
-import { canSelectPost, getAvailableMediaTypes, getPostDate, getPostMedia, isPostRegenerating, isPostSent, MEDIA_TYPE_ICONS } from '../../lib'
+import { canSelectPost, getAvailableMediaTypes, getPostDate, getPostMedia, isLiveToday, isPostRegenerating, isPostSent, MEDIA_TYPE_ICONS } from '../../lib'
 
 interface Props {
 	post: IPost
@@ -20,6 +20,7 @@ const PostRow = ({ post, active, selected, onSelect, onToggleSelected }: Props) 
 	const mediaTypes = getAvailableMediaTypes(media)
 	const sent = isPostSent(post)
 	const regenerating = isPostRegenerating(post)
+	const liveToday = isLiveToday(post)
 
 	return (
 		<li
@@ -57,7 +58,15 @@ const PostRow = ({ post, active, selected, onSelect, onToggleSelected }: Props) 
 				<span className="flex min-w-0 flex-1 flex-col gap-0.5">
 					<span className="truncate text-sm font-semibold tracking-tight">{post.title}</span>
 					<span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-						{formatDate(getPostDate(post), { formatter: { date: 'medium' }, dateOnly: true })}
+						{/* Lo de hoy dice "Hoy" y no la fecha: la fecha hay que leerla,
+						    la palabra se reconoce de un vistazo. */}
+						{liveToday ? (
+							<span className="rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
+								Hoy
+							</span>
+						) : (
+							formatDate(getPostDate(post), { formatter: { date: 'medium' }, dateOnly: true })
+						)}
 						<span className="flex items-center gap-1.5 text-muted-foreground/60">
 							{mediaTypes.map(type => {
 								const Icon = MEDIA_TYPE_ICONS[type]
@@ -76,7 +85,12 @@ const PostRow = ({ post, active, selected, onSelect, onToggleSelected }: Props) 
 						<CheckIcon className="size-3" />
 					</span>
 				) : (
-					<span className="size-2.5 shrink-0 rounded-full bg-primary-soft" />
+					<span
+						className={cn(
+							'size-2.5 shrink-0 rounded-full',
+							liveToday ? 'bg-primary' : 'bg-primary-soft',
+						)}
+					/>
 				)}
 			</button>
 		</li>

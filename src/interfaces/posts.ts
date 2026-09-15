@@ -55,6 +55,8 @@ export interface IPost {
     has_photo?: boolean
     vendorable?: IPostVendorable | null
     files: EypleaseFile[]
+    /** Cuando pasó lo que la pieza celebra. Null = pieza del lote del mes. */
+    live_event_at?: string | null
 }
 
 export interface IPostsFilters {
