@@ -114,6 +114,26 @@ class LayoutPptxRenderer {
         const boxW = z.w * xs
         const boxH = z.h * ys
         const [imgW, imgH] = this.imageSize(url, boxW, boxH)
+
+        // 'silueta': la foto ya viene recortada del fondo y con el pie desvanecido, así
+        // que va SIN marco. Aquí no se usa `sizing`: `contain` CENTRA la imagen en la caja
+        // y una silueta tiene que apoyarse en el borde INFERIOR, que es donde vive el
+        // desvanecido. Se calcula el encaje a mano. PptxGenJS respeta el alfa del PNG.
+        if (z.shape === 'silueta') {
+            const esc = Math.min(boxW / imgW, boxH / imgH)
+            const w = imgW * esc
+            const h = imgH * esc
+            slide.addImage({
+                path: this.resolveImage(url),
+                x: z.x * xs + (boxW - w) / 2,
+                y: z.y * ys + (boxH - h),
+                w,
+                h,
+                ...(z.opacity != null ? { transparency: Math.round((1 - z.opacity) * 100) } : {}),
+            })
+            return
+        }
+
         slide.addImage({
             path: this.resolveImage(url),
             x: z.x * xs,
