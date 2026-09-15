@@ -245,7 +245,15 @@ class LayoutPptxRenderer {
             const aText = this.textValue(anchor, data)
             const aSize = this.fittedSizePx(anchor, aText)
             const aH = this.lineCount(aText, anchor, aSize) * aSize * (anchor.line_height ?? 1.15)
-            return anchor.y + aH + (z.flow_gap ?? 0)
+            // Holgura para la RE-DIVISIÓN de PowerPoint. Aquí sólo se NOMBRA la fuente: si
+            // el visor no tiene Lora o Poppins sustituye por otra más ancha, un nombre que
+            // cabía en una línea se parte en dos y se come lo que va debajo (pasó en las
+            // estrellas: los cuatro nombres partidos sobre el "LLEVAS"). Cuando el texto
+            // roza el ancho de la caja se reserva una línea de más; si va holgado no se
+            // toca, para no separar de balde lo que sí cabe.
+            const holgado = this.measureWidthPx(aText, anchor, aSize) <= (anchor.w || 1) * 0.8
+            const alto = holgado ? aH : aH + aSize * (anchor.line_height ?? 1.15)
+            return anchor.y + alto + (z.flow_gap ?? 0)
         }
         return anchor.y + ((anchor as PhotoZone | LogoZone).h ?? 0) + (z.flow_gap ?? 0)
     }
