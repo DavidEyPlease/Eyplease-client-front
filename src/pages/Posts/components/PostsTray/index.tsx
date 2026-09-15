@@ -5,6 +5,7 @@ import PageLoader from '@/components/generics/PageLoader'
 import { IconPosts } from '@/components/Svg/IconPosts'
 import { IPost } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
+import { groupPostVersions } from '../../lib'
 import usePostsSelection from '../../hooks/usePostsSelection'
 import PostDetail from './PostDetail'
 import PostsList from './PostsList'
@@ -30,10 +31,21 @@ interface Props {
  */
 const PostsTray = ({ posts, total, sectionLabel, loading, filters, hasNextPage, loadingMore, onLoadMore }: Props) => {
 	const [selectedId, setSelectedId] = useState<string>()
+	/* Qué versión se está viendo de cada noticia que tiene más de una. Vive aquí y
+	   no en el detalle para que la fila de la lista enseñe la misma miniatura que
+	   la previsualización, y para que la elección sobreviva a cambiar de fila. */
+	const [versionByGroup, setVersionByGroup] = useState<Record<string, string>>({})
 	const detailRef = useRef<HTMLElement>(null)
 	const selection = usePostsSelection(posts)
 
-	const selectedPost = posts.find(post => post.id === selectedId) ?? posts[0]
+	const groups = groupPostVersions(posts)
+	const chosenOf = (group: (typeof groups)[number]) =>
+		group.versions.find(version => version.id === versionByGroup[group.key]) ?? group.versions[0]
+
+	// Una fila por noticia: la versión elegida es la que representa al grupo.
+	const visiblePosts = groups.map(chosenOf)
+	const selectedPost = visiblePosts.find(post => post.id === selectedId) ?? visiblePosts[0]
+	const selectedGroup = groups.find(group => group.versions.some(version => version.id === selectedPost?.id))
 	const showDetail = !loading && !!selectedPost
 	// Se mantienen las dos columnas mientras carga para que los filtros no cambien de ancho al llegar los datos
 	const twoColumns = loading || posts.length > 0
@@ -66,7 +78,7 @@ const PostsTray = ({ posts, total, sectionLabel, loading, filters, hasNextPage, 
 
 				{!loading && posts.length > 0 && (
 					<PostsList
-						posts={posts}
+						posts={visiblePosts}
 						total={total}
 						sectionLabel={sectionLabel}
 						selection={selection}
@@ -82,7 +94,16 @@ const PostsTray = ({ posts, total, sectionLabel, loading, filters, hasNextPage, 
 			{/* El envoltorio se estira a la altura de la fila: es lo que le da recorrido al sticky del detalle */}
 			{showDetail && (
 				<div className="lg:self-stretch">
-					<PostDetail key={selectedPost.id} ref={detailRef} post={selectedPost} />
+					<PostDetail
+						key={selectedPost.id}
+						ref={detailRef}
+						post={selectedPost}
+						versions={selectedGroup?.versions ?? [selectedPost]}
+						onVersionChange={postId => {
+							if (selectedGroup) setVersionByGroup(actual => ({ ...actual, [selectedGroup.key]: postId }))
+							setSelectedId(postId)
+						}}
+					/>
 				</div>
 			)}
 		</div>

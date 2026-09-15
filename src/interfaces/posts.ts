@@ -57,6 +57,15 @@ export interface IPost {
     files: EypleaseFile[]
     /** Cuando pasó lo que la pieza celebra. Null = pieza del lote del mes. */
     live_event_at?: string | null
+    /**
+     * Versiones de una MISMA noticia. Círculo Rosa saca dos piezas por consultora
+     * —con y sin el producto— para que la Directora elija cuál usar; las dos
+     * comparten `version_group`. Null en casi todas las secciones, que sólo
+     * tienen una.
+     */
+    version_key?: string | null
+    version_label?: string | null
+    version_group?: string | null
 }
 
 export interface IPostsFilters {

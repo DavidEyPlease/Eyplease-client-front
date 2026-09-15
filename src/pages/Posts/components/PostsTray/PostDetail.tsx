@@ -8,13 +8,17 @@ import MediaTypeSwitch from './MediaTypeSwitch'
 import PostDetailDrawer from './PostDetailDrawer'
 import PostDetailInfo from './PostDetailInfo'
 import PostMedia from './PostMedia'
+import VersionSwitch from './VersionSwitch'
 
 interface Props {
 	post: IPost
+	/** Las versiones de esa misma noticia. Una sola cuando la sección no las maneja. */
+	versions: IPost[]
+	onVersionChange: (postId: string) => void
 	ref?: React.Ref<HTMLElement>
 }
 
-const PostDetail = ({ post, ref }: Props) => {
+const PostDetail = ({ post, versions, onVersionChange, ref }: Props) => {
 	const media = getPostMedia(post)
 	const [mediaType, setMediaType] = useState<PostMediaType>(getDefaultMediaType(media))
 	const [expanded, setExpanded] = useState(false)
@@ -32,8 +36,11 @@ const PostDetail = ({ post, ref }: Props) => {
 			ref={ref}
 			className="overflow-hidden rounded-[20px] border bg-card shadow-card lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
 		>
-			<div className="flex items-center justify-between gap-2 border-b px-3.5 py-2.5">
+			<div className="flex flex-wrap items-center justify-between gap-2 border-b px-3.5 py-2.5">
 				{showMediaSwitch && <MediaTypeSwitch value={activeType} types={mediaTypes} onChange={setMediaType} />}
+				{versions.length > 1 && (
+					<VersionSwitch value={post.id} versions={versions} onChange={onVersionChange} />
+				)}
 				<Button
 					variant="outline"
 					size="icon-sm"

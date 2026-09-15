@@ -109,3 +109,49 @@ export const canMarkPostAsSent = (post: IPost): boolean => post.type !== PostTyp
 /** Solo entra en la selección múltiple lo que aún se puede marcar como enviado y no está regenerándose. */
 export const canSelectPost = (post: IPost): boolean =>
 	canMarkPostAsSent(post) && !isPostSent(post) && !isPostRegenerating(post)
+
+export interface PostVersionGroup {
+	/** Clave estable del grupo; el id de la pieza cuando no hay versiones. */
+	key: string
+	/** Todas las versiones de la misma noticia, en el orden que llegaron. */
+	versions: IPost[]
+}
+
+/**
+ * Junta las piezas que son la MISMA noticia contada de dos formas.
+ *
+ * Sin esto, Círculo Rosa saca dos filas con el mismo nombre y la Directora las
+ * lee como duplicado, aunque sean alternativas a propósito. Se agrupan por
+ * `version_group`, que la API sólo llena cuando la subsección maneja versiones:
+ * el resto de las secciones cae en grupos de uno y se comporta igual que antes.
+ *
+ * Se respeta el orden de aparición en vez de reordenar: la lista se pagina, y
+ * mover filas al cargar más haría bailar lo que la clienta está mirando.
+ */
+export const groupPostVersions = (posts: IPost[]): PostVersionGroup[] => {
+	const groups: PostVersionGroup[] = []
+	const porClave = new Map<string, PostVersionGroup>()
+
+	for (const post of posts) {
+		const clave = post.version_group ?? post.id
+		const existente = porClave.get(clave)
+
+		if (existente) {
+			existente.versions.push(post)
+			continue
+		}
+
+		const grupo: PostVersionGroup = { key: clave, versions: [post] }
+		porClave.set(clave, grupo)
+		groups.push(grupo)
+	}
+
+	/* Dentro del grupo manda la clave de versión: la A siempre primero. El orden
+	   que trae la consulta sale del id de la subsección, que es un uuid y por lo
+	   tanto arbitrario — la Directora vería la A o la B según el día. */
+	for (const grupo of groups) {
+		grupo.versions.sort((a, b) => (a.version_key ?? '').localeCompare(b.version_key ?? ''))
+	}
+
+	return groups
+}
