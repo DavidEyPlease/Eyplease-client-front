@@ -16,6 +16,8 @@ import useFiles from "@/hooks/useFiles"
 import { CheckIcon } from "lucide-react"
 import usePostActions from "../hooks/usePostActions"
 import { NewsletterSectionKeys } from "@/interfaces/common"
+import { artifactOf } from "@/interfaces/files"
+import { MEDIA_TYPE_LABELS } from "../lib"
 
 interface Props {
     item: IPost
@@ -47,8 +49,12 @@ const PostItem = ({ item }: Props) => {
                 <Carousel className="w-full" setApi={setApi}>
                     <CarouselContent>
                         {item.files.map(file => (
-                            <CarouselItem key={file.id}>
-                                {/* <p className="text-sm font-bold">{item.title}</p> */}
+                            <CarouselItem key={file.id} className="relative">
+                                {/* Desde que hay cuadrada, dos diapositivas son imagen: sin el rotulo
+                                    no se sabe cual se esta viendo ni cual se va a descargar. */}
+                                <span className="absolute left-3 top-2 z-10 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">
+                                    {MEDIA_TYPE_LABELS[artifactOf(file)]}
+                                </span>
                                 {file.ext === 'mp4' ? (
                                     <video src={file.url} className="w-full h-72" controls></video>
                                 ) : (
