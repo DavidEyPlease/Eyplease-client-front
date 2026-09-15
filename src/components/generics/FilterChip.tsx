@@ -5,6 +5,8 @@ interface Props {
 	icon?: React.ReactNode
 	/** Icono al final del chip (p. ej. candado de sección bloqueada) */
 	endIcon?: React.ReactNode
+	/** Novedades sin ver en esta sección. Se omite en cero: un chip que siempre trae número deja de avisar. */
+	badge?: number
 	active?: boolean
 	disabled?: boolean
 	className?: string
@@ -12,7 +14,7 @@ interface Props {
 }
 
 /** Chip de filtro en píldora: icono + etiqueta, con estado activo del sistema de diseño. */
-const FilterChip = ({ label, icon, endIcon, active, disabled, className, onClick }: Props) => {
+const FilterChip = ({ label, icon, endIcon, badge, active, disabled, className, onClick }: Props) => {
 	return (
 		<button
 			type="button"
@@ -29,6 +31,11 @@ const FilterChip = ({ label, icon, endIcon, active, disabled, className, onClick
 		>
 			{icon}
 			{label}
+			{!!badge && (
+				<span className="ml-0.5 inline-flex min-w-4.5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none font-bold text-white tabular-nums">
+					{badge}
+				</span>
+			)}
 			{endIcon}
 		</button>
 	)
