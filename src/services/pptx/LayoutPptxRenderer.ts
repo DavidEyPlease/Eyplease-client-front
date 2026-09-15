@@ -119,7 +119,13 @@ class LayoutPptxRenderer {
         // que va SIN marco. Aquí no se usa `sizing`: `contain` CENTRA la imagen en la caja
         // y una silueta tiene que apoyarse en el borde INFERIOR, que es donde vive el
         // desvanecido. Se calcula el encaje a mano. PptxGenJS respeta el alfa del PNG.
-        if (z.shape === 'silueta') {
+        //
+        // Sólo si la URL es de verdad la de la silueta. El backend cambia la foto por su
+        // silueta ÚNICAMENTE cuando el recorte está subido (`aplicarSiluetas`), así que la
+        // ruta es el aviso exacto de que existe. Si no, se dibuja como siempre y cae al
+        // círculo, igual que hace el motor del PDF: vale más un círculo que un recuadro
+        // pegado con el fondo original.
+        if (z.shape === 'silueta' && url.includes('/siluetas/')) {
             const esc = Math.min(boxW / imgW, boxH / imgH)
             const w = imgW * esc
             const h = imgH * esc
@@ -144,7 +150,8 @@ class LayoutPptxRenderer {
             w: imgW,
             h: imgH,
             sizing: { type: z.fit === 'contain' ? 'contain' : 'cover', w: boxW, h: boxH },
-            rounding: z.shape === 'circle', // único recorte nativo; rounded_rect → rectángulo
+            // 'silueta' que llega aquí es una foto SIN recortar: círculo, como el PDF.
+            rounding: z.shape === 'circle' || z.shape === 'silueta', // único recorte nativo; rounded_rect → rectángulo
             ...(z.opacity != null ? { transparency: Math.round((1 - z.opacity) * 100) } : {}),
         })
     }
