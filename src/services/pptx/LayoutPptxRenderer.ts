@@ -1,4 +1,8 @@
 import PptxGenJS from 'pptxgenjs'
+import { animarIntro } from './animarIntro'
+
+/** Las de premiación: el Top 3 y el podio de tres lugares. */
+const ES_PREMIACION = /\/(top_3|top_podium)$/
 
 import { sanitizeFileName } from '@/utils'
 import { Layout, LayoutSlideSpec, LayoutZone, PhotoZone, TextZone, LogoZone } from './layoutTypes'
@@ -41,6 +45,9 @@ class LayoutPptxRenderer {
     // que hay que escalar contra él y no contra el lienzo en pulgadas (ver renderZones).
     private canvas: { w: number; h: number } | null = null
 
+    /** Láminas (1-based) que llevan entrada animada: las de premiación. */
+    private premiacion: number[] = []
+
     constructor(config: { fontColor?: string } = {}) {
         this.pres = new PptxGenJS()
         this.pres.layout = 'LAYOUT_WIDE'
@@ -61,23 +68,34 @@ class LayoutPptxRenderer {
     ): void {
         this.imageDims = imageDims
         this.canvas = canvas
-        for (const spec of slides) {
+        this.premiacion = []
+        slides.forEach((spec, i) => {
             const slide = this.pres.addSlide()
             slide.addImage({ path: this.resolveImage(spec.bg), x: 0, y: 0, w: SLIDE_W_IN, h: SLIDE_H_IN })
 
             const layout = spec.layout_key ? layouts[spec.layout_key] : undefined
             if (layout) this.renderZones(slide, layout, spec.data)
-        }
+            // Las láminas de premiación llevan entrada animada (ver animarIntro).
+            // i + 1 porque los slideN.xml del paquete empiezan en 1.
+            if (ES_PREMIACION.test(spec.layout_key ?? '')) this.premiacion.push(i + 1)
+        })
     }
 
     async download(fileName: string): Promise<void> {
-        await this.pres.writeFile({ fileName: `${sanitizeFileName(fileName)}.pptx` })
+        const blob = await this.toBlob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${sanitizeFileName(fileName)}.pptx`
+        a.click()
+        URL.revokeObjectURL(url)
     }
 
     /** Genera el .pptx como Blob (sin descargar). El nombre de archivo se aplica
      *  al momento de la descarga; aquí solo se devuelve el binario. */
     async toBlob(): Promise<Blob> {
-        return (await this.pres.write({ outputType: 'blob' })) as Blob
+        const blob = (await this.pres.write({ outputType: 'blob' })) as Blob
+        return animarIntro(blob, this.premiacion)
     }
 
     // ---- Render de zonas ----
@@ -130,6 +148,7 @@ class LayoutPptxRenderer {
             const w = imgW * esc
             const h = imgH * esc
             slide.addImage({
+                objectName: z.data_key, // lo lee animarIntro para ordenar la entrada
                 path: this.resolveImage(url),
                 x: z.x * xs + (boxW - w) / 2,
                 y: z.y * ys + (boxH - h),
@@ -141,6 +160,7 @@ class LayoutPptxRenderer {
         }
 
         slide.addImage({
+            objectName: z.data_key,
             path: this.resolveImage(url),
             x: z.x * xs,
             y: z.y * ys,
@@ -215,6 +235,7 @@ class LayoutPptxRenderer {
             .map(line => ({ text: line, options: { breakLine: true } }))
 
         slide.addText(runs, {
+            objectName: z.data_key, // lo lee animarIntro para ordenar la entrada
             x: boxLeftPx * xs,
             y: topPx * ys,
             w: z.w * xs,
