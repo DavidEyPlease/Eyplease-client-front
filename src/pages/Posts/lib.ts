@@ -155,3 +155,49 @@ export const groupPostVersions = (posts: IPost[]): PostVersionGroup[] => {
 
 	return groups
 }
+
+/** Nombre del mes en español, a partir de una fecha `YYYY-MM-DD`. */
+const nombreDeMes = (fecha: string): string => {
+	/* Se parte la cadena en vez de pasarla a `new Date`: un `YYYY-MM-DD` se
+	   interpreta como UTC y en México eso cae el día anterior, así que el día 1
+	   de un mes saldría con el nombre del mes pasado. */
+	const [anio, mes] = fecha.split('-').map(Number)
+	if (!anio || !mes) return ''
+	return new Date(anio, mes - 1, 1).toLocaleDateString('es-MX', { month: 'long' })
+}
+
+export interface PostsSection {
+	key: 'live' | 'closed'
+	title: string
+	posts: IPost[]
+}
+
+/**
+ * Parte la lista en lo que se mueve y lo que ya cerró.
+ *
+ * Las dos hablan de meses distintos y con diseños distintos, y mezcladas se leen
+ * como repetidas: la Directora ve dos veces a la misma consultora sin entender
+ * que una es de agosto y la otra de septiembre. Separarlas con su rótulo lo
+ * explica sin que nadie tenga que deducirlo.
+ *
+ * Lo vivo va primero porque es lo que cambia hoy. Cada tramo conserva el orden
+ * en que llegó.
+ */
+export const splitPostsByStage = (posts: IPost[]): PostsSection[] => {
+	const live = posts.filter(isPostLive)
+	const closed = posts.filter(post => !isPostLive(post))
+
+	const tramo = (key: PostsSection['key'], lista: IPost[], prefijo: string, sinMes: string): PostsSection => {
+		/* Sólo se nombra el mes si TODAS las piezas del tramo son del mismo. Un
+		   listado que mezclara dos cierres saldría rotulado con el de la primera,
+		   y un rótulo que miente es peor que uno genérico. */
+		const meses = new Set(lista.map(post => post.newsletter_date ?? ''))
+		const mes = meses.size === 1 ? nombreDeMes([...meses][0]) : ''
+		return { key, title: mes ? `${prefijo} ${mes}` : sinMes, posts: lista }
+	}
+
+	return [
+		...(live.length > 0 ? [tramo('live', live, 'Actualizado en vivo ·', 'Actualizado en vivo')] : []),
+		...(closed.length > 0 ? [tramo('closed', closed, 'Al cierre de', 'Al cierre del mes')] : []),
+	]
+}

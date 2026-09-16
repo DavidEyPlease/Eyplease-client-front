@@ -36,11 +36,16 @@ const PostDetail = ({ post, versions, onVersionChange, ref }: Props) => {
 			ref={ref}
 			className="overflow-hidden rounded-[20px] border bg-card shadow-card lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
 		>
+			{/* La versión va ARRIBA y en su propia fila: es la decisión grande —qué
+			    pieza se publica— y el formato es cómo se publica esa pieza. */}
+			{versions.length > 1 && (
+				<div className="border-b px-3.5 py-2.5">
+					<VersionSwitch value={post.id} versions={versions} onChange={onVersionChange} />
+				</div>
+			)}
+
 			<div className="flex flex-wrap items-center justify-between gap-2 border-b px-3.5 py-2.5">
 				{showMediaSwitch && <MediaTypeSwitch value={activeType} types={mediaTypes} onChange={setMediaType} />}
-				{versions.length > 1 && (
-					<VersionSwitch value={post.id} versions={versions} onChange={onVersionChange} />
-				)}
 				<Button
 					variant="outline"
 					size="icon-sm"

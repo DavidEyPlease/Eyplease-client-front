@@ -55,6 +55,11 @@ export interface IPost {
     has_photo?: boolean
     vendorable?: IPostVendorable | null
     files: EypleaseFile[]
+    /**
+     * El mes al que pertenecen los DATOS, que no es el día en que se hizo la
+     * pieza: la del cierre de agosto se genera en septiembre.
+     */
+    newsletter_date?: string | null
     /** Cuando pasó lo que la pieza celebra. Null = pieza del lote del mes. */
     live_event_at?: string | null
     /**
