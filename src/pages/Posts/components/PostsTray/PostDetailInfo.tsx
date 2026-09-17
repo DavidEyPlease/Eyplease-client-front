@@ -6,7 +6,7 @@ import useFiles from '@/hooks/useFiles'
 import { IPost } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/utils/dates'
-import { CalendarIcon, CheckIcon, DownloadIcon, ImagesIcon, RefreshCwIcon } from 'lucide-react'
+import { CalendarIcon, CheckIcon, DownloadIcon, ImagesIcon, RefreshCwIcon, Undo2Icon } from 'lucide-react'
 import usePostActions from '../../hooks/usePostActions'
 import RegeneratePhotoDialog from './RegeneratePhotoDialog'
 import { canMarkPostAsSent, getAvailableMediaTypes, getPostDate, getPostMediaFile, getPostMediaLabel, isPostRegenerating, isPostSent, MEDIA_TYPE_ICONS, PostMedia, PostMediaType } from '../../lib'
@@ -22,7 +22,7 @@ interface Props {
 
 /** Título, metadatos y acciones de una publicación. Compartido por la tarjeta lateral y el drawer. */
 const PostDetailInfo = ({ post, media, mediaType }: Props) => {
-	const { requestState, markAsSent, markAsSentOnDownload, regenerate, updateCachedPost } = usePostActions()
+	const { requestState, markAsSent, markAsSentOnDownload, unmarkAsSent, regenerate, updateCachedPost } = usePostActions()
 	const { executing, downloadFile } = useFiles()
 	const [photoDialogOpen, setPhotoDialogOpen] = useState(false)
 
@@ -76,14 +76,28 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 
 			<div className="mt-3.5 flex flex-col gap-2">
 				{canMarkPostAsSent(post) && (
+					/* Enviada NO es un estado muerto: se puede deshacer. Si no, quien la marcó
+					   sin querer —o probó la descarga— se queda con el sello para siempre. */
 					<Button
 						variant="outline"
-						disabled={sent || regenerating || requestState.loading}
-						onClick={() => markAsSent(post.id)}
-						className={cn(ACTION_CLASSES, 'w-full', sent && 'border-green-200 bg-green-50 text-green-700 disabled:opacity-100')}
+						disabled={regenerating || requestState.loading}
+						onClick={() => sent ? unmarkAsSent(post.id) : markAsSent(post.id)}
+						title={sent ? 'Quitar la marca de enviada' : 'Marcar esta publicación como enviada'}
+						className={cn(ACTION_CLASSES, 'group w-full', sent && 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800')}
 					>
-						<CheckIcon />
-						{sent ? 'Enviada' : 'Marcar como enviada'}
+						{sent ? (
+							<>
+								<CheckIcon className="group-hover:hidden" />
+								<Undo2Icon className="hidden group-hover:block" />
+								<span className="group-hover:hidden">Enviada</span>
+								<span className="hidden group-hover:inline">Quitar marca</span>
+							</>
+						) : (
+							<>
+								<CheckIcon />
+								Marcar como enviada
+							</>
+						)}
 					</Button>
 				)}
 

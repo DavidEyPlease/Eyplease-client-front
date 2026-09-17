@@ -24,7 +24,7 @@ interface Props {
 }
 
 const PostItem = ({ item }: Props) => {
-    const { requestState, markAsSent, markAsSentOnDownload } = usePostActions()
+    const { requestState, markAsSent, markAsSentOnDownload, unmarkAsSent } = usePostActions()
     const { setApi, current: currentFile } = useCarousel()
     const { executing, downloadFile } = useFiles()
 
@@ -82,21 +82,25 @@ const PostItem = ({ item }: Props) => {
             <CardFooter className="flex flex-wrap justify-between px-4 gap-2">
                 {item.type !== PostTypes.EYPLEASE_CLIENTS && (
                     <div className="flex items-center gap-2">
+                        {/* Interruptor: «Enviada» se puede deshacer, no es un estado sin vuelta. */}
                         <button
-                            disabled={status === "sent" || requestState.loading}
-                            className={`relative w-5 h-5 rounded border-2 transition-all duration-300 ${status === "sent" ? "bg-green-500 border-green-500 scale-110" : "border-gray-300 hover:border-green-400"
+                            disabled={requestState.loading}
+                            title={status === "sent" ? "Quitar la marca de enviada" : "Marcar como enviada"}
+                            className={`relative w-5 h-5 rounded border-2 transition-all duration-300 ${status === "sent" ? "bg-green-500 border-green-500 scale-110 hover:bg-green-600" : "border-gray-300 hover:border-green-400"
                                 }`}
-                            onClick={() => markAsSent(item.id)}
+                            onClick={() => status === "sent" ? unmarkAsSent(item.id) : markAsSent(item.id)}
                         >
                             {status === "sent" && (
                                 <CheckIcon className="w-3 h-3 text-white absolute top-0.5 left-0.5 animate-in zoom-in duration-200" />
                             )}
                         </button>
-                        <span
-                            className={`text-sm transition-colors ${status === "sent" ? "text-green-600 font-medium" : "text-gray-600"}`}
+                        <button
+                            disabled={requestState.loading}
+                            onClick={() => status === "sent" ? unmarkAsSent(item.id) : markAsSent(item.id)}
+                            className={`text-sm transition-colors ${status === "sent" ? "text-green-600 font-medium hover:text-green-700" : "text-gray-600 hover:text-gray-800"}`}
                         >
                             {status === "sent" ? "Enviada" : "Marcar envío"}
-                        </span>
+                        </button>
                     </div>
                 )}
                 <Button

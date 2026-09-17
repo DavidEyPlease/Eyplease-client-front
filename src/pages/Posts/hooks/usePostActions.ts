@@ -122,6 +122,7 @@ const usePostActions = () => {
         updateCachedPost,
         markAsSent,
         markAsSentOnDownload,
+        unmarkAsSent,
         markManyAsSent,
         regenerate
     }
