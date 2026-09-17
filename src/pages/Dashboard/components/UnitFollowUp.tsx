@@ -18,6 +18,8 @@ interface SectionStats {
 	posts_count: number
 	posts_sent_count: number
 	posts_live_today_count?: number
+	/** Nunca ha enviado nada de esta sección, mirando toda su historia y no solo el mes. */
+	never_sent?: boolean
 }
 
 interface Pendiente {
