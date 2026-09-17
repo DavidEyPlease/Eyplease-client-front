@@ -3,6 +3,7 @@
 import Newsletter from "./components/Newsletter"
 import HomeOverdueBanner from "@/components/billing/enforcement/HomeOverdueBanner"
 import BirthdayBanner from "./components/BirthdayBanner"
+import UnitFollowUp from "./components/UnitFollowUp"
 import AnnualReport from "./components/AnnualReport"
 // import PostsSummary from "./components/Posts"
 // import Tasks from "./components/Tasks"
@@ -18,6 +19,9 @@ const DashboardPage = () => {
 
             {/* Birthday Banner */}
             {<BirthdayBanner />}
+
+            {/* Lo que le falta por enviar, antes que nada: es a lo que viene */}
+            <UnitFollowUp />
 
             {/* Reporte anual (solo en junio) */}
             <AnnualReport />
