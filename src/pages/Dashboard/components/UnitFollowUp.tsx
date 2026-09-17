@@ -4,6 +4,7 @@ import { SparklesIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { IconBySection } from '@/components/generics/IconBySection'
+import { cn } from '@/lib/utils'
 import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
 import useFetchQuery from '@/hooks/useFetchQuery'
@@ -21,6 +22,26 @@ interface SectionStats {
 	/** Nunca ha enviado nada de esta sección, mirando toda su historia y no solo el mes. */
 	never_sent?: boolean
 }
+
+interface Cobertura {
+	people_count: number
+	people_reached: number
+	percent: number
+}
+
+/**
+ * La escalera, en el idioma que ya hablan: Mary Kay vive de escalones.
+ *
+ * El primero va en 25% a proposito. La mediana de cobertura en septiembre de 2026 fue del
+ * 10%, asi que un primer escalon alto dejaria a casi todas fuera el primer mes y el marcador
+ * nace muerto.
+ */
+const ESCALONES = [
+	{ pct: 25, nombre: 'Constante' },
+	{ pct: 50, nombre: 'Cercana' },
+	{ pct: 75, nombre: 'Presente' },
+	{ pct: 100, nombre: 'Unidad completa' },
+]
 
 interface Pendiente {
 	key: string
@@ -60,6 +81,13 @@ const UnitFollowUp = () => {
 		},
 	})
 
+	const { response: coberturaResp } = useFetchQuery<Cobertura>(API_ROUTES.POSTS.COVERAGE, {
+		customQueryKey: queryKeys.detail('posts-coverage', MainPostSectionTypes.UNITY),
+		staleTime: 60_000,
+		refetchOnWindowFocus: true,
+		queryParams: { post_type: MainPostSectionTypes.UNITY },
+	})
+
 	const { pendientes, enviadas } = useMemo(() => {
 		const stats = response?.data ?? []
 		const etiquetas = new Map(sections.map(section => [section.key.toString(), section.label]))
@@ -97,6 +125,10 @@ const UnitFollowUp = () => {
 	const visibles = pendientes.slice(0, MAX_FILAS)
 	const resto = pendientes.length - visibles.length
 
+	const cobertura = coberturaResp?.data
+	const faltan = cobertura ? Math.max(cobertura.people_count - cobertura.people_reached, 0) : 0
+	const siguiente = cobertura ? ESCALONES.find(escalon => cobertura.percent < escalon.pct) : undefined
+
 	const abrir = (section: string) => {
 		setFilters({ post_type: MainPostSectionTypes.UNITY, section: section as PostSectionTypes })
 		navigate(APP_ROUTES.POSTS.LIST)
@@ -111,16 +143,71 @@ const UnitFollowUp = () => {
 				<div className="min-w-0 flex-1">
 					<h2 className="text-[15px] font-extrabold tracking-tight">Su seguimiento de unidad</h2>
 					<p className="text-[12.5px] text-muted-foreground">
-						Le preparé el contenido. Solo falta enviarlo.
+						{cobertura && cobertura.people_count > 0
+							? <>Ha llegado a <b className="font-bold text-foreground">{cobertura.people_reached}</b> de sus {cobertura.people_count} consultoras este mes.</>
+							: 'Le preparé el contenido. Solo falta enviarlo.'}
 					</p>
 				</div>
 				<div className="shrink-0 text-right">
-					<p className="text-2xl leading-none font-extrabold text-primary">{total}</p>
+					<p className="text-2xl leading-none font-extrabold text-primary">
+						{cobertura && cobertura.people_count > 0 ? `${cobertura.percent}%` : total}
+					</p>
 					<p className="text-[10.5px] font-bold tracking-wide text-muted-foreground uppercase">
-						{total === 1 ? 'pendiente' : 'pendientes'}
+						{cobertura && cobertura.people_count > 0
+							? 'de su unidad'
+							: total === 1 ? 'pendiente' : 'pendientes'}
 					</p>
 				</div>
 			</header>
+
+			{cobertura && cobertura.people_count > 0 && (
+				<div className="px-5 pb-4">
+					{/* Barra de avance, nunca un semaforo: la mediana del padron esta en el 10% y
+					    un color de alarma convierte la meta en una nota reprobatoria. */}
+					<div className="h-2 overflow-hidden rounded-full bg-primary/10">
+						<div
+							className="h-full rounded-full bg-primary-gradient transition-[width] duration-500"
+							style={{ width: `${Math.max(cobertura.percent, 2)}%` }}
+						/>
+					</div>
+
+					<div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+						<p className="text-[12.5px] text-muted-foreground">
+							{faltan > 0
+								? <>Le faltan <b className="font-bold text-foreground">{faltan}</b> {faltan === 1 ? 'consultora' : 'consultoras'} por recibir algo suyo este mes.</>
+								: <>No se le quedó nadie fuera este mes.</>}
+						</p>
+						{siguiente && (
+							<p className="ml-auto text-[11.5px] font-semibold text-primary">
+								Siguiente: {siguiente.nombre} · {siguiente.pct}%
+							</p>
+						)}
+					</div>
+
+					<ol className="mt-3 flex gap-1.5">
+						{ESCALONES.map(escalon => {
+							const logrado = cobertura.percent >= escalon.pct
+							return (
+								<li
+									key={escalon.pct}
+									className={cn(
+										'flex-1 rounded-lg border px-2 py-1.5 text-center transition-colors',
+										logrado ? 'border-primary/25 bg-primary/8' : 'border-dashed bg-transparent',
+									)}
+								>
+									<p className={cn(
+										'truncate text-[11px] font-bold',
+										logrado ? 'text-primary' : 'text-muted-foreground/70',
+									)}>
+										{escalon.nombre}
+									</p>
+									<p className="text-[10px] font-semibold text-muted-foreground/60">{escalon.pct}%</p>
+								</li>
+							)
+						})}
+					</ol>
+				</div>
+			)}
 
 			<ul className="bg-background">
 				{visibles.map(fila => (
@@ -167,9 +254,8 @@ const UnitFollowUp = () => {
 
 			<footer className="flex flex-wrap items-center gap-2 border-t bg-surface-soft px-5 py-2.5 text-xs text-muted-foreground">
 				<span>
-					{enviadas > 0
-						? `Este mes ha enviado ${enviadas} ${enviadas === 1 ? 'pieza' : 'piezas'}.`
-						: 'Este mes todavía no ha enviado ninguna.'}
+					{total} {total === 1 ? 'pieza pendiente' : 'piezas pendientes'}
+					{enviadas > 0 && ` · este mes ha enviado ${enviadas}`}
 				</span>
 				{resto > 0 && (
 					<span className="ml-auto">
