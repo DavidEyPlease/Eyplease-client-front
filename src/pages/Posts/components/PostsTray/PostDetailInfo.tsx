@@ -22,7 +22,7 @@ interface Props {
 
 /** Título, metadatos y acciones de una publicación. Compartido por la tarjeta lateral y el drawer. */
 const PostDetailInfo = ({ post, media, mediaType }: Props) => {
-	const { requestState, markAsSent, regenerate, updateCachedPost } = usePostActions()
+	const { requestState, markAsSent, markAsSentOnDownload, regenerate, updateCachedPost } = usePostActions()
 	const { executing, downloadFile } = useFiles()
 	const [photoDialogOpen, setPhotoDialogOpen] = useState(false)
 
@@ -50,6 +50,12 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 	const mediaLabel = getPostMediaLabel(media)
 	// Con un solo formato el icono es el suyo; con varios, uno que signifique "hay más de uno".
 	const MediaLabelIcon = mediaTypes.length === 1 ? MEDIA_TYPE_ICONS[mediaTypes[0]] : ImagesIcon
+
+	/* Sólo se marca si el archivo llegó de verdad: un fallo de descarga no es un envío. */
+	const onDownload = async () => {
+		if (!activeFile) return
+		if (await downloadFile(activeFile.uri)) await markAsSentOnDownload(post)
+	}
 
 	return (
 		<div className="p-3.5">
@@ -101,7 +107,7 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 						className="w-full flex-1 justify-center rounded-xl px-3 py-2.5 text-[12.5px]"
 						loading={executing}
 						disabled={!activeFile || regenerating}
-						onClick={() => activeFile && downloadFile(activeFile.uri)}
+						onClick={onDownload}
 					/>
 				</div>
 			</div>

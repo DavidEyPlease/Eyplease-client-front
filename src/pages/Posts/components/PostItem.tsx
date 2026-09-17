@@ -24,11 +24,18 @@ interface Props {
 }
 
 const PostItem = ({ item }: Props) => {
-    const { requestState, markAsSent } = usePostActions()
+    const { requestState, markAsSent, markAsSentOnDownload } = usePostActions()
     const { setApi, current: currentFile } = useCarousel()
     const { executing, downloadFile } = useFiles()
 
     const status = item.shared_at ? 'sent' : 'published'
+
+    /* Descargar marca sola, igual que compartir en la app. Sólo si el archivo llegó. */
+    const onDownload = async () => {
+        const file = item.files[currentFile - 1]
+        if (!file) return
+        if (await downloadFile(file.uri)) await markAsSentOnDownload(item)
+    }
 
     return (
         <Card className="gap-2 py-4 justify-between">
@@ -102,7 +109,7 @@ const PostItem = ({ item }: Props) => {
                     size="sm"
                     rounded
                     loading={executing}
-                    onClick={() => downloadFile(item.files[currentFile - 1].uri)}
+                    onClick={onDownload}
                 />
             </CardFooter>
         </Card>

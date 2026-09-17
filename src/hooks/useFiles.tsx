@@ -38,14 +38,17 @@ const useFiles = () => {
         }
     }
 
-    const downloadFile = async (uri: string, downloadName?: string) => {
+    /** Devuelve si el archivo llegó de verdad: quien encadene algo a la descarga lo necesita. */
+    const downloadFile = async (uri: string, downloadName?: string): Promise<boolean> => {
         setExecuting(true)
         try {
             const blob = await getFileByUri(uri)
             downloadBlob(blob, downloadName || uri.split('/').pop() || 'file')
+            return true
         } catch (error) {
             console.log(error)
             toast.error('Error al descargar el archivo')
+            return false
         } finally {
             setExecuting(false)
         }

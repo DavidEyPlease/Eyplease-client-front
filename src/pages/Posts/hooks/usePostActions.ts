@@ -4,7 +4,7 @@ import { API_ROUTES } from '@/constants/api'
 import useRequestQuery from '@/hooks/useRequestQuery'
 import { PaginationResponse } from '@/interfaces/common'
 import { IPost } from '@/interfaces/posts'
-import { PostMediaType } from '../lib'
+import { canMarkPostAsSent, isPostSent, PostMediaType } from '../lib'
 import { usePostsStore } from '@/store/posts'
 import { queryKeys } from '@/utils/cache'
 import { InfiniteData, useQueryClient } from '@tanstack/react-query'
@@ -53,6 +53,33 @@ const usePostActions = () => {
         }
     }
 
+    const unmarkAsSent = async (itemId: string) => {
+        updateCachedPost(itemId, { shared_at: null })
+        try {
+            await request('DELETE', markAsSentUrl(itemId))
+        } catch (error) {
+            console.error(error)
+            updateCachedPost(itemId, { shared_at: new Date() })
+            toast.error('No se pudo quitar la marca de enviada')
+        }
+    }
+
+    /**
+     * Descargar es, en la web, lo que compartir es en la app: la pieza sale hacia su gente.
+     * Así que marca sola, como marca `SharePost` en el móvil, y no cuesta un clic más.
+     *
+     * Con «Deshacer» a mano, porque quien descargó sólo para mirarla tiene que poder
+     * devolverla — y es quien de verdad sabe si la mandó.
+     */
+    const markAsSentOnDownload = async (post: IPost) => {
+        if (!canMarkPostAsSent(post) || isPostSent(post)) return
+
+        await markAsSent(post.id)
+        toast.success('Marcada como enviada', {
+            action: { label: 'Deshacer', onClick: () => unmarkAsSent(post.id) },
+        })
+    }
+
     /** Reencola la generación del artefacto (imagen o video) que está viendo la persona. */
     const regenerate = async (itemId: string, artifact: PostMediaType) => {
         setRegeneratingArtifact(itemId, artifact)
@@ -94,6 +121,7 @@ const usePostActions = () => {
         markingMany,
         updateCachedPost,
         markAsSent,
+        markAsSentOnDownload,
         markManyAsSent,
         regenerate
     }
