@@ -35,6 +35,18 @@ interface IManualPaymentMethod {
     type: 'manual'
     accounts: IPaymentAccount[]
     instructions: string | null
+    /** Pagar con tarjeta por su cuenta. Lo decide la API (Finanzas lo enciende y apaga). */
+    card_checkout?: { enabled: boolean }
+}
+
+/** Liga de pago con tarjeta (Stripe) abierta para el cliente: qué meses cubre y cuánto de cada uno. */
+export interface ICardCheckout {
+    id: string
+    checkout_url: string
+    amount: number
+    currency: string
+    periods: { period: string, amount: number }[]
+    expires_at: string
 }
 
 export type IBillingPaymentMethod = IAutomaticPaymentMethod | IManualPaymentMethod

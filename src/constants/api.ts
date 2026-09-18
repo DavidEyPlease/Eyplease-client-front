@@ -85,6 +85,7 @@ export const API_ROUTES = {
         OVERVIEW: '/billing/overview',
         PAYMENTS: '/billing/payments',
         UPLOAD_RECEIPTS: '/billing/receipts',
+        CARD_CHECKOUT: '/billing/card-checkout',
     },
     VERIFICATION_TEMPORARY_CODE: '/verification-temporary-code',
     DASHBOARD: '/dashboard',

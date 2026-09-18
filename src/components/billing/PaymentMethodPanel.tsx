@@ -1,11 +1,15 @@
+import { useState } from 'react'
 import { AlertTriangleIcon, CreditCardIcon, LandmarkIcon } from 'lucide-react'
 
+import Button from '@/components/common/Button'
 import StatTile from '@/components/generics/StatTile'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IBillingOverview } from '@/interfaces/billing'
 import { formatCurrency } from '@/utils'
 import { formatDate } from '@/utils/dates'
 import PaymentAccounts from './PaymentAccounts'
+import CardPayDialog from './CardPayDialog'
+import { canPayWithCard } from './useCardCheckout'
 import { periodLabel } from './utils'
 
 interface Props {
@@ -15,6 +19,8 @@ interface Props {
 
 /** Cómo y cuándo paga el cliente: tipo de cobro, medio guardado e importes. */
 const PaymentMethodPanel = ({ overview, loading }: Props) => {
+    const [payOpen, setPayOpen] = useState(false)
+
     if (loading) {
         return (
             <div className="flex flex-col gap-3">
@@ -28,6 +34,7 @@ const PaymentMethodPanel = ({ overview, loading }: Props) => {
 
     const { payment_method: paymentMethod } = overview
     const isAutomatic = paymentMethod.type === 'automatic'
+    const cardAvailable = canPayWithCard(overview)
     const nextChargeDate = overview.next_charge_date
         ? formatDate(overview.next_charge_date, { formatter: { date: 'medium' }, dateOnly: true })
         : null
@@ -56,10 +63,25 @@ const PaymentMethodPanel = ({ overview, loading }: Props) => {
                 />
             </div>
 
+            {cardAvailable && (
+                <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/[0.05] p-4">
+                    <div className="min-w-0">
+                        <h4 className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-primary uppercase [&>svg]:size-3.5">
+                            <CreditCardIcon aria-hidden />
+                            Paga con tarjeta
+                        </h4>
+                        <p className="mt-1 text-[12.5px] font-semibold text-muted-foreground">
+                            Tienes {formatCurrency(overview.debt.total, overview.debt.currency)} por pagar. Se acredita al momento, sin mandar comprobante.
+                        </p>
+                    </div>
+                    <Button text="Pagar con tarjeta" className="py-2.5 text-sm" onClick={() => setPayOpen(true)} />
+                </section>
+            )}
+
             <section className="rounded-2xl border bg-card p-4">
                 <h4 className="mb-2.5 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-muted-foreground uppercase [&>svg]:size-3.5">
                     {isAutomatic ? <CreditCardIcon aria-hidden /> : <LandmarkIcon aria-hidden />}
-                    {isAutomatic ? 'Tu tarjeta' : 'Dónde pagar'}
+                    {isAutomatic ? 'Tu tarjeta' : cardAvailable ? 'O paga por transferencia' : 'Dónde pagar'}
                 </h4>
 
                 {paymentMethod.type === 'automatic' ? (
@@ -82,6 +104,8 @@ const PaymentMethodPanel = ({ overview, loading }: Props) => {
                     <PaymentAccounts accounts={paymentMethod.accounts} instructions={paymentMethod.instructions} />
                 )}
             </section>
+
+            <CardPayDialog open={payOpen} debt={overview.debt} onOpenChange={setPayOpen} />
         </div>
     )
 }
