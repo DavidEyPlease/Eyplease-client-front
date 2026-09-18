@@ -74,10 +74,11 @@ class LayoutPptxRenderer {
             slide.addImage({ path: this.resolveImage(spec.bg), x: 0, y: 0, w: SLIDE_W_IN, h: SLIDE_H_IN })
 
             const layout = spec.layout_key ? layouts[spec.layout_key] : undefined
-            if (layout) this.renderZones(slide, layout, spec.data)
+            const premiacion = ES_PREMIACION.test(spec.layout_key ?? '')
+            if (layout) this.renderZones(slide, layout, spec.data, premiacion)
             // Las láminas de premiación llevan entrada animada (ver animarIntro).
             // i + 1 porque los slideN.xml del paquete empiezan en 1.
-            if (ES_PREMIACION.test(spec.layout_key ?? '')) this.premiacion.push(i + 1)
+            if (premiacion) this.premiacion.push(i + 1)
         })
     }
 
@@ -100,7 +101,7 @@ class LayoutPptxRenderer {
 
     // ---- Render de zonas ----
 
-    private renderZones(slide: PptxGenJS.Slide, layout: Layout, data: Record<string, unknown>): void {
+    private renderZones(slide: PptxGenJS.Slide, layout: Layout, data: Record<string, unknown>, premiacion = false): void {
         // Escala px→pulgadas: canvas propio del layout > canvas del payload > lienzo del slide.
         // OJO: NO caer a SLIDE_W_IN/SLIDE_H_IN cuando falta el canvas del layout — las zonas
         // vienen en px del canvas del payload (p. ej. 1920×1080), y usar el lienzo en pulgadas
@@ -118,11 +119,125 @@ class LayoutPptxRenderer {
             if (z.type !== 'logo' && z.data_key) byKey[z.data_key] = z
         }
 
+        // Nombre + cifra que fluye bajo él → un solo cuadro (ver parejasFluidas). En la
+        // premiación no: su animación hace entrar el nombre y la cifra por separado.
+        const parejas = premiacion ? new Map<string, TextZone>() : this.parejasFluidas(layout.zones, data)
+        const seguidoras = new Set(Array.from(parejas.values(), z => z.data_key))
+
         for (const zone of layout.zones) {
             if (zone.type === 'photo') this.drawPhoto(slide, zone, data, xs, ys)
             else if (zone.type === 'logo') this.drawLogo(slide, zone, data, xs, ys)
-            else if (zone.type === 'text') this.drawText(slide, zone, data, byKey, xs, ys)
+            else if (zone.type === 'text') {
+                if (seguidoras.has(zone.data_key)) continue // va dentro del cuadro de su ancla
+                const sigue = parejas.get(zone.data_key)
+                if (sigue) this.drawPareja(slide, zone, sigue, data, xs, ys)
+                else this.drawText(slide, zone, data, byKey, xs, ys)
+            }
         }
+    }
+
+    /**
+     * Las parejas nombre → cifra que van en UN solo cuadro de texto, con la cifra como
+     * segundo párrafo.
+     *
+     * En cuadros separados, la cifra se coloca con el alto que aquí se CALCULA para el
+     * nombre, y el cálculo no sabe cómo lo partirá PowerPoint (sólo se nombra la fuente).
+     * Por eso effectiveTopPx reserva un renglón de más cuando el nombre roza el ancho, y
+     * un nombre que al final cabe en una línea deja un hueco bajo él («Ma De La Luz
+     * Becerra» … «1 inicio» muy abajo). En un solo cuadro es PowerPoint quien parte el
+     * nombre y la cifra va justo detrás, tenga o no la fuente.
+     *
+     * Sólo cuando es seguro: el ancla tiene y fija, lleva UNA sola zona debajo, las dos
+     * comparten anclaje (x y align) y la de abajo no es más ancha que el nombre. Las
+     * estrellas (LLEVAS y FALTAN bajo el nombre, la segunda sumando el alto de la
+     * primera) y las cadenas siguen por separado, como hasta ahora.
+     */
+    private parejasFluidas(zones: LayoutZone[], data: Record<string, unknown>): Map<string, TextZone> {
+        const textos = zones.filter((z): z is TextZone => z.type === 'text' && !!z.data_key)
+        const porClave = new Map(textos.map(z => [z.data_key, z]))
+        const debajo = new Map<string, TextZone[]>()
+        for (const z of textos) {
+            if (z.flow_below) debajo.set(z.flow_below, [...(debajo.get(z.flow_below) ?? []), z])
+        }
+        const parejas = new Map<string, TextZone>()
+        debajo.forEach((bajo, clave) => {
+            const a = porClave.get(clave)
+            const b = bajo[0]
+            if (!a || a.flow_below || bajo.length !== 1) return
+            if (Math.abs(a.x - b.x) > 2 || (a.align ?? 'left') !== (b.align ?? 'left')) return
+            if ((b.w ?? 0) > (a.w ?? 0) + 4) return
+            // Con uno de los dos vacío no hay nada que juntar: cada uno por su camino.
+            if (this.textValue(a, data) === '' || this.textValue(b, data) === '') return
+            parejas.set(clave, b)
+        })
+        return parejas
+    }
+
+    /** Nombre y cifra en un cuadro: dos párrafos, cada uno con su estilo, y el hueco del
+     *  layout (`flow_gap`) como espacio antes del segundo. */
+    private drawPareja(
+        slide: PptxGenJS.Slide,
+        a: TextZone,
+        b: TextZone,
+        data: Record<string, unknown>,
+        xs: number,
+        ys: number,
+    ): void {
+        const arriba = this.parrafosDe(a, data, ys)
+        const abajo = this.parrafosDe(b, data, ys)
+        const huecoPt = Math.max(0, b.flow_gap ?? 0) * ys * 72 // px → pt, como la fuente
+        const runs: PptxGenJS.TextProps[] = [
+            ...arriba.lineas.map(text => ({ text, options: { ...arriba.estilo, breakLine: true } })),
+            ...abajo.lineas.map((text, i) => ({
+                text,
+                options: { ...abajo.estilo, breakLine: true, ...(i === 0 && huecoPt > 0 ? { paraSpaceBefore: huecoPt } : {}) },
+            })),
+        ]
+        slide.addText(runs, {
+            objectName: a.data_key,
+            x: this.izquierdaPx(a) * xs,
+            y: a.y * ys,
+            w: a.w * xs,
+            h: (arriba.hPx + Math.max(0, b.flow_gap ?? 0) + abajo.hPx) * ys,
+            align: a.align,
+            valign: 'top',
+            margin: 0,
+        })
+    }
+
+    /** El texto de una zona partido en renglones, con su estilo de run y el alto estimado. */
+    private parrafosDe(z: TextZone, data: Record<string, unknown>, ys: number) {
+        let text = this.textValue(z, data)
+        if (z.uppercase) text = text.toUpperCase()
+        const sizePx = this.fittedSizePx(z, text)
+        return {
+            lineas: text.split(/\r\n|\r|\n/),
+            estilo: this.estiloDe(z, sizePx, ys),
+            hPx: this.lineCount(text, z, sizePx) * sizePx * (z.line_height ?? 1.15),
+        }
+    }
+
+    /** Fuente, tamaño, color e interlineado de una zona, en unidades de PptxGenJS. */
+    private estiloDe(z: TextZone, sizePx: number, ys: number) {
+        const fontMeta = FONT_MAP[z.font] || { family: z.font || 'Inter', italic: false }
+        return {
+            align: z.align,
+            fontFace: fontMeta.family,
+            italic: fontMeta.italic,
+            bold: (z.weight ?? 400) >= 600,
+            fontSize: sizePx * ys * 72, // px → pt (igual escala que la geometría vertical)
+            color: Array.isArray(z.color) ? this.rgbToHex(z.color) : this.fallbackColor,
+            charSpacing: z.tracking ? z.tracking * ys * 72 : 0,
+            lineSpacingMultiple: z.line_height ?? 1.15,
+        }
+    }
+
+    /** El layout guarda x como ancla de alineación (center→centro, right→derecha);
+     *  PptxGenJS alinea dentro de [x, x+w], así que se reconstruye el borde izquierdo. */
+    private izquierdaPx(z: TextZone): number {
+        if (z.align === 'center') return z.x - z.w / 2
+        if (z.align === 'right') return z.x - z.w
+        return z.x
     }
 
     private drawPhoto(slide: PptxGenJS.Slide, z: PhotoZone, data: Record<string, unknown>, xs: number, ys: number): void {
@@ -215,19 +330,8 @@ class LayoutPptxRenderer {
         if (z.uppercase) text = text.toUpperCase()
 
         const sizePx = this.fittedSizePx(z, text) // auto_fit: encoge en JS (fit:'shrink' no aplica al abrir)
-        const lineHeight = z.line_height ?? 1.15
-
-        // Caja: el layout guarda x como ancla de alineación (center→centro, right→derecha).
-        // PptxGenJS centra/alinea dentro de [x, x+w], así que reconstruimos el x izquierdo.
-        let boxLeftPx = z.x
-        if (z.align === 'center') boxLeftPx = z.x - z.w / 2
-        else if (z.align === 'right') boxLeftPx = z.x - z.w
-
         const topPx = this.effectiveTopPx(z, byKey, data)
-        const hPx = this.lineCount(text, z, sizePx) * sizePx * lineHeight
-
-        const fontMeta = FONT_MAP[z.font] || { family: z.font || 'Inter', italic: false }
-        const color = Array.isArray(z.color) ? this.rgbToHex(z.color) : this.fallbackColor
+        const hPx = this.lineCount(text, z, sizePx) * sizePx * (z.line_height ?? 1.15)
 
         // Saltos explícitos (\n) → varias líneas con breakLine.
         const runs: PptxGenJS.TextProps[] = text
@@ -236,19 +340,12 @@ class LayoutPptxRenderer {
 
         slide.addText(runs, {
             objectName: z.data_key, // lo lee animarIntro para ordenar la entrada
-            x: boxLeftPx * xs,
+            x: this.izquierdaPx(z) * xs,
             y: topPx * ys,
             w: z.w * xs,
             h: hPx * ys,
-            align: z.align,
             valign: 'top', // el editor exporta siempre valign top (ancla arriba)
-            fontFace: fontMeta.family,
-            italic: fontMeta.italic,
-            bold: (z.weight ?? 400) >= 600,
-            fontSize: sizePx * ys * 72, // px → pt (igual escala que la geometría vertical)
-            color,
-            charSpacing: z.tracking ? z.tracking * ys * 72 : 0,
-            lineSpacingMultiple: lineHeight,
+            ...this.estiloDe(z, sizePx, ys),
             margin: 0, // sin inset; el layout ya posiciona exacto
         })
     }
