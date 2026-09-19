@@ -1,6 +1,8 @@
 import { FileTextIcon, SendIcon, UploadIcon, UsersIcon } from "lucide-react"
 
 import EYPLEASE_ICON from "@/assets/images/icon-white.png"
+import AuthStage from "./TopShell/AuthStage"
+import { isNewShell } from "./TopShell/useNewShell"
 
 /** Áreas del panel que la clienta encuentra al entrar. */
 const AUTH_HIGHLIGHTS = [
@@ -15,6 +17,10 @@ interface Props {
 }
 
 const AuthLayout = ({ children }: Props) => {
+	// El mismo interruptor que el área autenticada: quien tiene encendido el diseño nuevo lo ve
+	// desde la puerta. Los formularios no cambian; sólo el marco que los envuelve.
+	if (isNewShell()) return <AuthStage>{children}</AuthStage>
+
 	return (
 		<div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
 			<aside className="relative hidden flex-col justify-between overflow-hidden bg-auth-panel p-12 lg:flex">
