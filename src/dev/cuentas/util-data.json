@@ -1,0 +1,939 @@
+{
+ "faqs": [
+  {
+   "id": "127c8587-0222-4b14-a30e-5da5df8497b1",
+   "question": "¿Cómo se obtiene la información?",
+   "answer": "Tienen la opción de darnos acceso para bajarla, mandarla por correo o whatsapp al igual que subirla directo a la plataforma."
+  },
+  {
+   "id": "2c6bcb47-feb7-45be-8154-d36251908ab2",
+   "question": "¿Las invitaciones y diseños libres en cuanto tiempo se entregan?",
+   "answer": "Todos los registros antes de las 11 am horario centro de México se entregan el mismo día de Lunes a Viernes, si el registro es posterior al horario la entrega se hace el día siguiente."
+  },
+  {
+   "id": "31f11d6f-d562-4018-952c-a98db9e1261b",
+   "question": "¿Se puede descargar en varios dispositivos?",
+   "answer": "Si, son ilimitados los accesos."
+  },
+  {
+   "id": "c2cd2ffc-b161-45fa-81f9-a7dbbde13081",
+   "question": "¿La información se actualiza?",
+   "answer": "Por ahora la información siempre es al cierre de mes, estamos trabajando en poder actualizar semanalmente."
+  },
+  {
+   "id": "f0cdad18-55df-4b56-9340-28741def6b57",
+   "question": "¿Los diseños cambian?",
+   "answer": "Si, cada mes los diseños son nuevos."
+  }
+ ],
+ "templates": [
+  {
+   "id": "a10abeaf-e9ad-4a7f-b97f-e06cd2938b57",
+   "name": "Plantilla 1",
+   "picture": {
+    "url": "https://cdn.eyplease.com.mx/public/templates/plantilla-1/cover/Boletín portada - FEBRERO 2026 (1).png",
+    "uri": "public/templates/plantilla-1/cover/Boletín portada - FEBRERO 2026 (1).png"
+   }
+  },
+  {
+   "id": "a1352213-4df5-4eb5-8ee4-35b2224da0f9",
+   "name": "Plantilla 2",
+   "picture": {
+    "url": "https://cdn.eyplease.com.mx/public/templates/plantilla-2/cover/Boletín portada - MARZO 2026.png",
+    "uri": "public/templates/plantilla-2/cover/Boletín portada - MARZO 2026.png"
+   }
+  },
+  {
+   "id": "a16f584b-28e6-448f-88eb-56a7af60f1ec",
+   "name": "Plantilla 3",
+   "picture": {
+    "url": "https://cdn.eyplease.com.mx/public/templates/plantilla-3/cover/Boletín portada - ABRIL 2026.png",
+    "uri": "public/templates/plantilla-3/cover/Boletín portada - ABRIL 2026.png"
+   }
+  },
+  {
+   "id": "a1aba8b2-5674-4943-9ec1-51a6f81b1c45",
+   "name": "Plantilla 4",
+   "picture": {
+    "url": "https://cdn.eyplease.com.mx/public/templates/plantilla-4/cover/Boletín portada - Plantilla 4.png",
+    "uri": "public/templates/plantilla-4/cover/Boletín portada - Plantilla 4.png"
+   }
+  },
+  {
+   "id": "a1dd446c-6d7a-4c89-8f52-543763ed5802",
+   "name": "Plantilla 5",
+   "picture": {
+    "url": "https://cdn.eyplease.com.mx/public/templates/plantilla-5/cover/portada.jpg",
+    "uri": "public/templates/plantilla-5/cover/portada.jpg"
+   }
+  },
+  {
+   "id": "a216c6f3-8647-4808-81fe-1cb6c96b2083",
+   "name": "Plantilla 6",
+   "picture": {
+    "url": "https://cdn.eyplease.com.mx/public/templates/plantilla-6/cover/portada.jpg",
+    "uri": "public/templates/plantilla-6/cover/portada.jpg"
+   }
+  },
+  {
+   "id": "a250d2d1-69a4-46e4-a4f6-2b2360d7e9a0",
+   "name": "Plantilla 7",
+   "picture": {
+    "url": "https://cdn.eyplease.com.mx/public/templates/plantilla-7/cover/portada.jpg",
+    "uri": "public/templates/plantilla-7/cover/portada.jpg"
+   }
+  },
+  {
+   "id": "a2a90aba-05d2-4fe9-9025-827eccda0b10",
+   "name": "Plantilla 8",
+   "picture": {
+    "url": "https://cdn.eyplease.com.mx/public/templates/plantilla-8/cover/portada.jpg",
+    "uri": "public/templates/plantilla-8/cover/portada.jpg"
+   }
+  }
+ ],
+ "newsletters": [
+  {
+   "id": "ca188770-1ce4-44f1-b8e7-b71fae026662",
+   "name": "Boletín Unidad",
+   "importDisplayName": "Unidad",
+   "code": "unit_newsletter",
+   "sections": [
+    {
+     "id": "c4fba0f7-0d19-11f1-a37a-fa163e927b79",
+     "name": "Tempraneras",
+     "sectionKey": "early",
+     "showInNewsletter": 0,
+     "canImported": 0,
+     "has_publish_posts": 1,
+     "is_daily": true,
+     "daily_time": "06:00"
+    },
+    {
+     "id": "2400463e-9fed-11f0-83bc-fa163e128a00",
+     "name": "Ventas Mensuales Personales",
+     "sectionKey": "unity_monthly_personal_sales",
+     "showInNewsletter": 0,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "24003e7c-9fed-11f0-83bc-fa163e128a00",
+     "name": "Iniciadoras",
+     "sectionKey": "initiators",
+     "showInNewsletter": 0,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "61e6b334-b35d-42e6-9b7f-93d61cd8f29c",
+     "name": "Cuadro de Honor",
+     "sectionKey": "honor_roll",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "3b063263-ee2a-4b9f-b777-7f824f3d423c",
+     "name": "Cuadro de Iniciadoras",
+     "sectionKey": "initiation_cut",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "a0f92908-1f9d-40b3-a2c0-8db4dd0aafea",
+     "name": "Club de puntos",
+     "sectionKey": "points_club",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "9e411081-8e88-449a-931d-cc9ec003a625",
+     "name": "Camino al éxito",
+     "sectionKey": "road_to_success",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "a7990914-847a-11f1-aed4-fa163e927b79",
+     "name": "DIQ's",
+     "sectionKey": "diqs",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "11b6bd30-d608-4b14-8d18-9ae6baba5403",
+     "name": "Estrellas",
+     "sectionKey": "stars",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "3e767758-f031-4268-810d-7e20809ddffd",
+     "name": "Producción de grupos",
+     "sectionKey": "group_production",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "3a395a9f-454f-411d-97f4-5f2f347b0818",
+     "name": "Nuevos inicios",
+     "sectionKey": "new_beginnings",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "b27634c4-f7c4-4300-9102-daf364bb47d0",
+     "name": "Círculo Rosa VIP Plus",
+     "sectionKey": "pink_circle_vip_plus",
+     "showInNewsletter": 0,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": true,
+     "daily_time": "11:30"
+    },
+    {
+     "id": "b7dd5016-6f27-41c5-a001-68c713053ac7",
+     "name": "Circulo rosa",
+     "sectionKey": "pink_circle",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "5c77b430-d8ee-4cb2-a3d0-d6e22746898c",
+     "name": "Corazones de Círculo Rosa",
+     "sectionKey": "pink_circle_hearts",
+     "showInNewsletter": 0,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": true,
+     "daily_time": "11:30"
+    },
+    {
+     "id": "86f58d49-6169-4d41-af3f-3d681124da7b",
+     "name": "Cumpleaños",
+     "sectionKey": "birthdays",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "0a66244f-c560-11ef-a73c-fa163e128a00",
+     "name": "Aniversarios",
+     "sectionKey": "anniversaries",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    }
+   ]
+  },
+  {
+   "id": "231bf018-3c39-43cc-ba5a-65356ff258ef",
+   "name": "Boletín Nacional",
+   "importDisplayName": "Directoras",
+   "code": "national_newsletter",
+   "sections": [
+    {
+     "id": "fb32d8f6-18d4-11f1-8e9e-fa163e927b79",
+     "name": "Cuadro de honor Nacional",
+     "sectionKey": "honor_roll_national",
+     "showInNewsletter": 0,
+     "canImported": 0,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "b4b5a267-9ff6-11f0-83bc-fa163e128a00",
+     "name": "Reconocimiento Area",
+     "sectionKey": "area_recognition",
+     "showInNewsletter": 0,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "b5351e43-bf56-11f0-b8d9-fa163e128a00",
+     "name": "Producción del grupo",
+     "sectionKey": "national_group_production",
+     "showInNewsletter": 0,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "d68a1f7c-9ff6-11f0-83bc-fa163e128a00",
+     "name": "Ventas Mensuales Personales",
+     "sectionKey": "national_monthly_personal_sales",
+     "showInNewsletter": 0,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "980f3daf-3b03-4d05-af02-52de44012715",
+     "name": "Nuevas directoras",
+     "sectionKey": "new_directors",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "5aa572b0-f15a-409e-9f4f-863750d5bc8f",
+     "name": "Directora en Calificación",
+     "sectionKey": "diq",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "d5ef3480-a849-4b75-8bd5-335c1e6f724c",
+     "name": "Hacia la cumbre",
+     "sectionKey": "towards_summit",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "1b73a493-9e99-414a-9ecc-b639c6f8dd0d",
+     "name": "Bonos",
+     "sectionKey": "bonds",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "3ef0a7b3-2b63-4d10-82a9-6d98ea2ee3fb",
+     "name": "Estrellas",
+     "sectionKey": "national_stars",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "4658a910-c6c2-492c-bbe5-de63fa65face",
+     "name": "Ranking Anual",
+     "sectionKey": "national_ranking",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "0fc83f63-5897-47fa-8692-98f297847697",
+     "name": "Tops",
+     "sectionKey": "tops",
+     "showInNewsletter": 1,
+     "canImported": 0,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "cf1d207d-7f6a-4b41-ba49-30f77abab129",
+     "name": "Corte de ventas",
+     "sectionKey": "sales_cut",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "c442a73b-e643-4430-bf5b-81878c4a2d7b",
+     "name": "Corte de iniciación",
+     "sectionKey": "national_initiation_cut",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "b4b59c9e-9ff6-11f0-83bc-fa163e128a00",
+     "name": "Corte de Unit Club",
+     "sectionKey": "target_unit_club",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "1e570670-0396-423a-b366-b263d318ccc4",
+     "name": "TSR",
+     "sectionKey": "tsr",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 0,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "fc64f2a8-9ff6-11f0-83bc-fa163e128a00",
+     "name": "Cumpleaños",
+     "sectionKey": "national_birthdays",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    },
+    {
+     "id": "fc64f847-9ff6-11f0-83bc-fa163e128a00",
+     "name": "Aniversarios",
+     "sectionKey": "national_anniversaries",
+     "showInNewsletter": 1,
+     "canImported": 1,
+     "has_publish_posts": 1,
+     "is_daily": false,
+     "daily_time": null
+    }
+   ]
+  }
+ ],
+ "plans": [
+  {
+   "id": "27a1e667-05eb-48e5-a388-4815d11a42f5",
+   "plan_key": "standard",
+   "name": "Plan Standard",
+   "price": 99,
+   "active": true,
+   "free": false,
+   "is_default": false,
+   "features": [
+    "Mis clientes",
+    "Galería",
+    "Biblioteca"
+   ],
+   "color": "#1aaee0",
+   "trial_days": 14,
+   "old_plan_id": 20,
+   "created_at": null,
+   "updated_at": "2026-03-26T18:29:14.000000Z",
+   "accesses": [
+    "tools",
+    "proposals",
+    "customers",
+    "posts",
+    "clients",
+    "products",
+    "get_started"
+   ],
+   "sections": {
+    "clients": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   }
+  },
+  {
+   "id": "fb85b91b-63d3-4227-9cff-0cfe3c9dcf8e",
+   "plan_key": "basic",
+   "name": "Plan Básico",
+   "price": 349,
+   "active": true,
+   "free": false,
+   "is_default": false,
+   "features": [
+    "Boletín informativo de unidad en PDF Y PPTX",
+    "3 secciones de Bilblioteca",
+    "Videos e imágenes personalizados de cumpleaños",
+    "Videos e imágenes personalizados de Cuadro de Honor",
+    "Videos e imágenes personalizados de Estrellas",
+    "Videos e imágenes personalizados de Círculo Rosa #de meses: 2, 3, 5, 6, 11 y 12",
+    "Videos e imágenes personalizados de Futuras Directoras"
+   ],
+   "color": "#007517",
+   "trial_days": 14,
+   "old_plan_id": 3,
+   "created_at": null,
+   "updated_at": "2026-07-20T20:56:17.000000Z",
+   "accesses": [
+    "pink_circle_hearts",
+    "pink_circle_vip_plus",
+    "unit_newsletter",
+    "reports_upload",
+    "gallery",
+    "tools",
+    "customers",
+    "posts",
+    "unity",
+    "clients",
+    "get_started",
+    "proposals",
+    "products",
+    "group_production",
+    "birthdays",
+    "pink_circle",
+    "initiators",
+    "unity_monthly_personal_sales",
+    "diqs"
+   ],
+   "sections": {
+    "unity": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "road_to_success",
+      "label": "Camino al éxito"
+     }
+    ],
+    "clients": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   }
+  },
+  {
+   "id": "98bb65ac-86b2-450b-80a3-09a269f08ae1",
+   "plan_key": "executive",
+   "name": "Plan Ejecutivo",
+   "price": 659,
+   "active": true,
+   "free": false,
+   "is_default": false,
+   "features": [
+    "Boletín informativo de unidad en PDF Y PPTX",
+    "3 secciones de contenido digital con tu logo para aumentar tu venta directa",
+    "Videos e imágenes personalizados de cumpleaños",
+    "Videos e imágenes personalizados de Cuadro de Honor",
+    "Videos e imágenes personalizados de Estrellas",
+    "Videos e imágenes personalizados de Círculo Rosa #de meses: 2 al 12",
+    "Videos e imágenes personalizados de Futuras Directoras y Target a Futuras Directoras",
+    "Videos e imágenes personalizados de Nuevos Inicios a 2da Herramienta",
+    "Diseños de invitaciones ilimitadas",
+    "Entrenamientos",
+    "3 secciones adicionales de contenido digital con tu logo para impulsar a tu unidad."
+   ],
+   "color": "#e25592",
+   "trial_days": 14,
+   "old_plan_id": 11,
+   "created_at": null,
+   "updated_at": "2026-07-20T20:56:23.000000Z",
+   "accesses": [
+    "pink_circle_vip_plus",
+    "pink_circle_hearts",
+    "unit_newsletter",
+    "reports_upload",
+    "gallery",
+    "trainings",
+    "tools",
+    "get_started",
+    "learn",
+    "proposals",
+    "explain",
+    "products",
+    "stay_informed",
+    "customers",
+    "posts",
+    "services",
+    "events",
+    "unity",
+    "clients",
+    "group_production",
+    "birthdays",
+    "pink_circle",
+    "initiators",
+    "unity_monthly_personal_sales",
+    "diqs"
+   ],
+   "sections": {
+    "unity": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "new_beginnings",
+      "label": "Nuevos inicios"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "road_to_success",
+      "label": "Camino al éxito"
+     }
+    ],
+    "clients": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   }
+  },
+  {
+   "id": "4d1f7fb7-b26b-4fdd-817b-96fde7d4ef26",
+   "plan_key": "elite",
+   "name": "Plan Elite",
+   "price": 969,
+   "active": true,
+   "free": false,
+   "is_default": false,
+   "features": [
+    "Boletín informativo de unidad en PDF Y PPTX",
+    "3 secciones de contenido digital con tu logo para aumentar tu venta directa",
+    "Videos e imágenes personalizados de Cumpleaños y Aniversarios",
+    "Videos e imágenes personalizados de Cuadro de Honor",
+    "Videos e imágenes personalizados de Estrellas",
+    "Videos e imágenes personalizados de Círculo Rosa de todos los meses",
+    "Videos e imágenes personalizados de Futuras Directoras y Target a Futuras Directoras",
+    "Videos e imágenes personalizados de Nuevos Inicios a 2da, 3ra y 4ta Herramienta",
+    "Entrenamientos",
+    "2 Diseños libres al día",
+    "3 secciones adicionales de contenido digital con tu logo para impulsar a tu unidad",
+    "Seguimiento personalizado en imagen al día en sus ordenantes"
+   ],
+   "color": "#b92d5e",
+   "trial_days": 14,
+   "old_plan_id": 23,
+   "created_at": null,
+   "updated_at": "2026-07-20T20:56:30.000000Z",
+   "accesses": [
+    "pink_circle_hearts",
+    "unit_newsletter",
+    "reports_upload",
+    "gallery",
+    "trainings",
+    "customers",
+    "tools",
+    "get_started",
+    "learn",
+    "proposals",
+    "explain",
+    "products",
+    "stay_informed",
+    "posts",
+    "services",
+    "custom_services",
+    "events",
+    "unity",
+    "clients",
+    "group_production",
+    "birthdays",
+    "pink_circle",
+    "initiators",
+    "unity_monthly_personal_sales",
+    "anniversaries",
+    "diqs",
+    "pink_circle_vip_plus"
+   ],
+   "sections": {
+    "unity": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "new_beginnings",
+      "label": "Nuevos inicios"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "early",
+      "label": "Ordenantes del mes"
+     },
+     {
+      "key": "anniversaries",
+      "label": "Aniversarios"
+     },
+     {
+      "key": "road_to_success",
+      "label": "Camino al éxito"
+     }
+    ],
+    "clients": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   }
+  },
+  {
+   "id": "dd84da0a-efa1-4566-ae9a-d95a1ded138f",
+   "plan_key": "national",
+   "name": "Plan Nacional",
+   "price": 1099,
+   "active": true,
+   "free": false,
+   "is_default": false,
+   "features": [
+    "Boletín informativo de unidad en PDF Y PPTX",
+    "6 secciones de Bilblioteca",
+    "Videos e imágenes personalizados de cumpleaños",
+    "Videos e imágenes personalizados de Cuadro de Honor",
+    "Videos e imágenes personalizados de Estrellas",
+    "Videos e imágenes personalizados de Círculo Rosa de todos los meses",
+    "Videos e imágenes personalizados de Futuras Directoras y Target a Futuras Directoras",
+    "Videos e imágenes personalizados de Nuevos Inicios a 2da, 3ra y 4ta Herramienta",
+    "Entrenamientos",
+    "2 Diseños libres al día"
+   ],
+   "color": "#2c08dd",
+   "trial_days": 14,
+   "old_plan_id": 27,
+   "created_at": null,
+   "updated_at": "2026-07-20T20:56:37.000000Z",
+   "accesses": [
+    "tools",
+    "learn",
+    "get_started",
+    "proposals",
+    "explain",
+    "products",
+    "stay_informed",
+    "national_newsletter",
+    "unit_newsletter",
+    "reports_upload",
+    "trainings",
+    "gallery",
+    "customers",
+    "posts",
+    "services",
+    "custom_services",
+    "events",
+    "unity",
+    "directors",
+    "clients",
+    "group_production",
+    "birthdays",
+    "pink_circle",
+    "initiators",
+    "unity_monthly_personal_sales",
+    "anniversaries",
+    "national_monthly_personal_sales",
+    "national_group_production",
+    "diq",
+    "tsr",
+    "national_anniversaries",
+    "national_birthdays",
+    "target_unit_club",
+    "national_initiation_cut",
+    "area_recognition",
+    "sales_cut",
+    "diqs",
+    "pink_circle_hearts",
+    "pink_circle_vip_plus"
+   ],
+   "sections": {
+    "unity": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "new_beginnings",
+      "label": "Nuevos inicios"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "anniversaries",
+      "label": "Aniversarios"
+     },
+     {
+      "key": "early",
+      "label": "Ordenantes del mes"
+     },
+     {
+      "key": "road_to_success",
+      "label": "Camino al éxito"
+     }
+    ],
+    "directors": [
+     {
+      "key": "diq",
+      "label": "Directora en calificación"
+     },
+     {
+      "key": "honor_roll_national",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "national_stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "sales_cut",
+      "label": "Corte de ventas"
+     },
+     {
+      "key": "national_initiation_cut",
+      "label": "Corte de iniciación"
+     },
+     {
+      "key": "target_unit_club",
+      "label": "Unit club"
+     },
+     {
+      "key": "national_birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "national_anniversaries",
+      "label": "Aniversarios"
+     }
+    ],
+    "clients": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   }
+  }
+ ],
+ "task_categories": [
+  {
+   "id": "822696bd-e21d-4688-9932-b4fb75c785ce",
+   "name": "Flayer",
+   "slug": "flayer",
+   "type": "eyplease_service"
+  },
+  {
+   "id": "82e4f91c-a7c4-4b13-b2b9-6e87ff06daa1",
+   "name": "PDF",
+   "slug": "pdf",
+   "type": "eyplease_service"
+  },
+  {
+   "id": "a1e10525-f412-11f0-aea3-fa163e927b79",
+   "name": "Tarea de sistema",
+   "slug": "system_task",
+   "type": "system_task"
+  }
+ ],
+ "training_categories": [
+  {
+   "name": "Ventas",
+   "slug": "sales"
+  },
+  {
+   "name": "Iniciación",
+   "slug": "initiation"
+  },
+  {
+   "name": "Informativo",
+   "slug": "informative"
+  },
+  {
+   "name": "Marketing",
+   "slug": "marketing"
+  },
+  {
+   "name": "Iniciación",
+   "slug": "onboarding"
+  },
+  {
+   "name": "Estrategias",
+   "slug": "strategies"
+  },
+  {
+   "name": "Clientes",
+   "slug": "clients"
+  },
+  {
+   "name": "Liderazgo",
+   "slug": "leadership"
+  }
+ ]
+}

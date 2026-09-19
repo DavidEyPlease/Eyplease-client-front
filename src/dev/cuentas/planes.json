@@ -1,0 +1,1452 @@
+[
+ {
+  "id": "f3dd9821-9a5f-47d9-a672-b6eb2202c0cc",
+  "name": "Plan Gratis",
+  "price": 0.0,
+  "color": "#57eae8",
+  "features": [
+   "Boletines"
+  ],
+  "free": true,
+  "accesses": [
+   {
+    "name": "Corazones de Círculo Rosa",
+    "permission_key": "pink_circle_hearts",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Biblioteca",
+    "permission_key": "tools",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Aprende",
+    "permission_key": "learn",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Inicia",
+    "permission_key": "get_started",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Propuestas",
+    "permission_key": "proposals",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Explica",
+    "permission_key": "explain",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Productos",
+    "permission_key": "products",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Enterate Ya",
+    "permission_key": "stay_informed",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Boletin Unidad",
+    "permission_key": "unit_newsletter",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Cargar reportes",
+    "permission_key": "reports_upload",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Galeria",
+    "permission_key": "gallery",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Entrenamientos",
+    "permission_key": "trainings",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Mis Clientes",
+    "permission_key": "customers",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Publicaciones",
+    "permission_key": "posts",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Servicios",
+    "permission_key": "services",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Personalizados",
+    "permission_key": "custom_services",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "services",
+    "custom_permissions": []
+   },
+   {
+    "name": "Eventos",
+    "permission_key": "events",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "services",
+    "custom_permissions": []
+   },
+   {
+    "name": "Unidad",
+    "permission_key": "unity",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "new_beginnings",
+      "label": "Nuevos inicios"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   },
+   {
+    "name": "Clientes",
+    "permission_key": "clients",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   },
+   {
+    "name": "Producción de grupos",
+    "permission_key": "group_production",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Cumpleaños",
+    "permission_key": "birthdays",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Circulo rosa",
+    "permission_key": "pink_circle",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Iniciadoras",
+    "permission_key": "initiators",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Ventas Mensuales Personales",
+    "permission_key": "unity_monthly_personal_sales",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "DIQ's",
+    "permission_key": "diqs",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Círculo Rosa VIP Plus",
+    "permission_key": "pink_circle_vip_plus",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   }
+  ]
+ },
+ {
+  "id": "27a1e667-05eb-48e5-a388-4815d11a42f5",
+  "name": "Plan Standard",
+  "price": 99.0,
+  "color": "#1aaee0",
+  "features": [
+   "Mis clientes",
+   "Galería",
+   "Biblioteca"
+  ],
+  "free": false,
+  "accesses": [
+   {
+    "name": "Biblioteca",
+    "permission_key": "tools",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Propuestas",
+    "permission_key": "proposals",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Mis Clientes",
+    "permission_key": "customers",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Publicaciones",
+    "permission_key": "posts",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Clientes",
+    "permission_key": "clients",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   },
+   {
+    "name": "Productos",
+    "permission_key": "products",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Inicia",
+    "permission_key": "get_started",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   }
+  ]
+ },
+ {
+  "id": "fb85b91b-63d3-4227-9cff-0cfe3c9dcf8e",
+  "name": "Plan Básico",
+  "price": 349.0,
+  "color": "#007517",
+  "features": [
+   "Boletín informativo de unidad en PDF Y PPTX",
+   "3 secciones de Bilblioteca",
+   "Videos e imágenes personalizados de cumpleaños",
+   "Videos e imágenes personalizados de Cuadro de Honor",
+   "Videos e imágenes personalizados de Estrellas",
+   "Videos e imágenes personalizados de Círculo Rosa #de meses: 2, 3, 5, 6, 11 y 12",
+   "Videos e imágenes personalizados de Futuras Directoras"
+  ],
+  "free": false,
+  "accesses": [
+   {
+    "name": "Corazones de Círculo Rosa",
+    "permission_key": "pink_circle_hearts",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Círculo Rosa VIP Plus",
+    "permission_key": "pink_circle_vip_plus",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Boletin Unidad",
+    "permission_key": "unit_newsletter",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Cargar reportes",
+    "permission_key": "reports_upload",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Galeria",
+    "permission_key": "gallery",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Biblioteca",
+    "permission_key": "tools",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Mis Clientes",
+    "permission_key": "customers",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Publicaciones",
+    "permission_key": "posts",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Unidad",
+    "permission_key": "unity",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "road_to_success",
+      "label": "Camino al éxito"
+     }
+    ]
+   },
+   {
+    "name": "Clientes",
+    "permission_key": "clients",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   },
+   {
+    "name": "Inicia",
+    "permission_key": "get_started",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Propuestas",
+    "permission_key": "proposals",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Productos",
+    "permission_key": "products",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Producción de grupos",
+    "permission_key": "group_production",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Cumpleaños",
+    "permission_key": "birthdays",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Circulo rosa",
+    "permission_key": "pink_circle",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Iniciadoras",
+    "permission_key": "initiators",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Ventas Mensuales Personales",
+    "permission_key": "unity_monthly_personal_sales",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "DIQ's",
+    "permission_key": "diqs",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   }
+  ]
+ },
+ {
+  "id": "98bb65ac-86b2-450b-80a3-09a269f08ae1",
+  "name": "Plan Ejecutivo",
+  "price": 659.0,
+  "color": "#e25592",
+  "features": [
+   "Boletín informativo de unidad en PDF Y PPTX",
+   "3 secciones de contenido digital con tu logo para aumentar tu venta directa",
+   "Videos e imágenes personalizados de cumpleaños",
+   "Videos e imágenes personalizados de Cuadro de Honor",
+   "Videos e imágenes personalizados de Estrellas",
+   "Videos e imágenes personalizados de Círculo Rosa #de meses: 2 al 12",
+   "Videos e imágenes personalizados de Futuras Directoras y Target a Futuras Directoras",
+   "Videos e imágenes personalizados de Nuevos Inicios a 2da Herramienta",
+   "Diseños de invitaciones ilimitadas",
+   "Entrenamientos",
+   "3 secciones adicionales de contenido digital con tu logo para impulsar a tu unidad."
+  ],
+  "free": false,
+  "accesses": [
+   {
+    "name": "Círculo Rosa VIP Plus",
+    "permission_key": "pink_circle_vip_plus",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Corazones de Círculo Rosa",
+    "permission_key": "pink_circle_hearts",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Boletin Unidad",
+    "permission_key": "unit_newsletter",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Cargar reportes",
+    "permission_key": "reports_upload",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Galeria",
+    "permission_key": "gallery",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Entrenamientos",
+    "permission_key": "trainings",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Biblioteca",
+    "permission_key": "tools",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Inicia",
+    "permission_key": "get_started",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Aprende",
+    "permission_key": "learn",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Propuestas",
+    "permission_key": "proposals",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Explica",
+    "permission_key": "explain",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Productos",
+    "permission_key": "products",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Enterate Ya",
+    "permission_key": "stay_informed",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Mis Clientes",
+    "permission_key": "customers",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Publicaciones",
+    "permission_key": "posts",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Servicios",
+    "permission_key": "services",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Eventos",
+    "permission_key": "events",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "services",
+    "custom_permissions": []
+   },
+   {
+    "name": "Unidad",
+    "permission_key": "unity",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "new_beginnings",
+      "label": "Nuevos inicios"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "road_to_success",
+      "label": "Camino al éxito"
+     }
+    ]
+   },
+   {
+    "name": "Clientes",
+    "permission_key": "clients",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   },
+   {
+    "name": "Producción de grupos",
+    "permission_key": "group_production",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Cumpleaños",
+    "permission_key": "birthdays",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Circulo rosa",
+    "permission_key": "pink_circle",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Iniciadoras",
+    "permission_key": "initiators",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Ventas Mensuales Personales",
+    "permission_key": "unity_monthly_personal_sales",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "DIQ's",
+    "permission_key": "diqs",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   }
+  ]
+ },
+ {
+  "id": "4d1f7fb7-b26b-4fdd-817b-96fde7d4ef26",
+  "name": "Plan Elite",
+  "price": 969.0,
+  "color": "#b92d5e",
+  "features": [
+   "Boletín informativo de unidad en PDF Y PPTX",
+   "3 secciones de contenido digital con tu logo para aumentar tu venta directa",
+   "Videos e imágenes personalizados de Cumpleaños y Aniversarios",
+   "Videos e imágenes personalizados de Cuadro de Honor",
+   "Videos e imágenes personalizados de Estrellas",
+   "Videos e imágenes personalizados de Círculo Rosa de todos los meses",
+   "Videos e imágenes personalizados de Futuras Directoras y Target a Futuras Directoras",
+   "Videos e imágenes personalizados de Nuevos Inicios a 2da, 3ra y 4ta Herramienta",
+   "Entrenamientos",
+   "2 Diseños libres al día",
+   "3 secciones adicionales de contenido digital con tu logo para impulsar a tu unidad",
+   "Seguimiento personalizado en imagen al día en sus ordenantes"
+  ],
+  "free": false,
+  "accesses": [
+   {
+    "name": "Corazones de Círculo Rosa",
+    "permission_key": "pink_circle_hearts",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Boletin Unidad",
+    "permission_key": "unit_newsletter",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Cargar reportes",
+    "permission_key": "reports_upload",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Galeria",
+    "permission_key": "gallery",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Entrenamientos",
+    "permission_key": "trainings",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Mis Clientes",
+    "permission_key": "customers",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Biblioteca",
+    "permission_key": "tools",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Inicia",
+    "permission_key": "get_started",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Aprende",
+    "permission_key": "learn",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Propuestas",
+    "permission_key": "proposals",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Explica",
+    "permission_key": "explain",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Productos",
+    "permission_key": "products",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Enterate Ya",
+    "permission_key": "stay_informed",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Publicaciones",
+    "permission_key": "posts",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Servicios",
+    "permission_key": "services",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Personalizados",
+    "permission_key": "custom_services",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "services",
+    "custom_permissions": []
+   },
+   {
+    "name": "Eventos",
+    "permission_key": "events",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "services",
+    "custom_permissions": []
+   },
+   {
+    "name": "Unidad",
+    "permission_key": "unity",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "new_beginnings",
+      "label": "Nuevos inicios"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "early",
+      "label": "Ordenantes del mes"
+     },
+     {
+      "key": "anniversaries",
+      "label": "Aniversarios"
+     },
+     {
+      "key": "road_to_success",
+      "label": "Camino al éxito"
+     }
+    ]
+   },
+   {
+    "name": "Clientes",
+    "permission_key": "clients",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   },
+   {
+    "name": "Producción de grupos",
+    "permission_key": "group_production",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Cumpleaños",
+    "permission_key": "birthdays",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Circulo rosa",
+    "permission_key": "pink_circle",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Iniciadoras",
+    "permission_key": "initiators",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Ventas Mensuales Personales",
+    "permission_key": "unity_monthly_personal_sales",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Aniversarios",
+    "permission_key": "anniversaries",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "DIQ's",
+    "permission_key": "diqs",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Círculo Rosa VIP Plus",
+    "permission_key": "pink_circle_vip_plus",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   }
+  ]
+ },
+ {
+  "id": "dd84da0a-efa1-4566-ae9a-d95a1ded138f",
+  "name": "Plan Nacional",
+  "price": 1099.0,
+  "color": "#2c08dd",
+  "features": [
+   "Boletín informativo de unidad en PDF Y PPTX",
+   "6 secciones de Bilblioteca",
+   "Videos e imágenes personalizados de cumpleaños",
+   "Videos e imágenes personalizados de Cuadro de Honor",
+   "Videos e imágenes personalizados de Estrellas",
+   "Videos e imágenes personalizados de Círculo Rosa de todos los meses",
+   "Videos e imágenes personalizados de Futuras Directoras y Target a Futuras Directoras",
+   "Videos e imágenes personalizados de Nuevos Inicios a 2da, 3ra y 4ta Herramienta",
+   "Entrenamientos",
+   "2 Diseños libres al día"
+  ],
+  "free": false,
+  "accesses": [
+   {
+    "name": "Biblioteca",
+    "permission_key": "tools",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Aprende",
+    "permission_key": "learn",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Inicia",
+    "permission_key": "get_started",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Propuestas",
+    "permission_key": "proposals",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Explica",
+    "permission_key": "explain",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Productos",
+    "permission_key": "products",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Enterate Ya",
+    "permission_key": "stay_informed",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Boletin Nacional",
+    "permission_key": "national_newsletter",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Boletin Unidad",
+    "permission_key": "unit_newsletter",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Cargar reportes",
+    "permission_key": "reports_upload",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Entrenamientos",
+    "permission_key": "trainings",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Galeria",
+    "permission_key": "gallery",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Mis Clientes",
+    "permission_key": "customers",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Publicaciones",
+    "permission_key": "posts",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Servicios",
+    "permission_key": "services",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Personalizados",
+    "permission_key": "custom_services",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "services",
+    "custom_permissions": []
+   },
+   {
+    "name": "Eventos",
+    "permission_key": "events",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "services",
+    "custom_permissions": []
+   },
+   {
+    "name": "Unidad",
+    "permission_key": "unity",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "honor_roll",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "new_beginnings",
+      "label": "Nuevos inicios"
+     },
+     {
+      "key": "pink_circle",
+      "label": "Circulo rosa"
+     },
+     {
+      "key": "birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "anniversaries",
+      "label": "Aniversarios"
+     },
+     {
+      "key": "early",
+      "label": "Ordenantes del mes"
+     },
+     {
+      "key": "road_to_success",
+      "label": "Camino al éxito"
+     }
+    ]
+   },
+   {
+    "name": "Directoras",
+    "permission_key": "directors",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "diq",
+      "label": "Directora en calificación"
+     },
+     {
+      "key": "honor_roll_national",
+      "label": "Cuadro de honor"
+     },
+     {
+      "key": "national_stars",
+      "label": "Estrellas"
+     },
+     {
+      "key": "sales_cut",
+      "label": "Corte de ventas"
+     },
+     {
+      "key": "national_initiation_cut",
+      "label": "Corte de iniciación"
+     },
+     {
+      "key": "target_unit_club",
+      "label": "Unit club"
+     },
+     {
+      "key": "national_birthdays",
+      "label": "Cumpleaños"
+     },
+     {
+      "key": "national_anniversaries",
+      "label": "Aniversarios"
+     }
+    ]
+   },
+   {
+    "name": "Clientes",
+    "permission_key": "clients",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   },
+   {
+    "name": "Producción de grupos",
+    "permission_key": "group_production",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Cumpleaños",
+    "permission_key": "birthdays",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Circulo rosa",
+    "permission_key": "pink_circle",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Iniciadoras",
+    "permission_key": "initiators",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Ventas Mensuales Personales",
+    "permission_key": "unity_monthly_personal_sales",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Aniversarios",
+    "permission_key": "anniversaries",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Ventas Mensuales Personales",
+    "permission_key": "national_monthly_personal_sales",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Producción del grupo",
+    "permission_key": "national_group_production",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Directora en Calificación",
+    "permission_key": "diq",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "TSR",
+    "permission_key": "tsr",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Aniversarios",
+    "permission_key": "national_anniversaries",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Cumpleaños",
+    "permission_key": "national_birthdays",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Corte de Unit Club",
+    "permission_key": "target_unit_club",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Corte de iniciación",
+    "permission_key": "national_initiation_cut",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Reconocimiento Area",
+    "permission_key": "area_recognition",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Corte de ventas",
+    "permission_key": "sales_cut",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "national_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "DIQ's",
+    "permission_key": "diqs",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Corazones de Círculo Rosa",
+    "permission_key": "pink_circle_hearts",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   },
+   {
+    "name": "Círculo Rosa VIP Plus",
+    "permission_key": "pink_circle_vip_plus",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "unit_newsletter",
+    "custom_permissions": []
+   }
+  ]
+ }
+]
