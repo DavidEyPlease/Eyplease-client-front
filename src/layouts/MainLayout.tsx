@@ -11,6 +11,8 @@ import MainContainer from "@/components/sidebar/main-container"
 import UploadToastProgress from "@/components/generics/UploadToastProgress"
 import ReportTaskCenter from "@/components/generics/ReportTasks/ReportTaskCenter"
 import useAuthStore from "@/store/auth"
+import TopShell from "./TopShell"
+import { isNewShell } from "./TopShell/useNewShell"
 
 /**
  * Área autenticada. Arranca en dos puertas encadenadas: primero la sesión (/me y
@@ -52,14 +54,18 @@ const MainLayout = () => {
         <section className='flex'>
             {/* Segunda puerta: el provider retiene todo esto hasta que el overview responde */}
             <BillingEnforcementProvider fallback={<BootShell />}>
-                <SidebarProvider>
-                    <AppSidebar />
-                    <MainContainer page={location.pathname}>
-                        <div key={animationKey} className="animate-fade flex flex-col flex-1 gap-4 p-4">
-                            <Outlet />
-                        </div>
-                    </MainContainer>
-                </SidebarProvider>
+                {/* El marco nuevo se enciende por persona (`?nuevo=1`). Sólo cambia el marco: las
+                    páginas entran por el mismo Outlet en los dos. */}
+                {isNewShell() ? <TopShell /> : (
+                    <SidebarProvider>
+                        <AppSidebar />
+                        <MainContainer page={location.pathname}>
+                            <div key={animationKey} className="animate-fade flex flex-col flex-1 gap-4 p-4">
+                                <Outlet />
+                            </div>
+                        </MainContainer>
+                    </SidebarProvider>
+                )}
 
                 <UploadToastProgress />
                 <ReportTaskCenter />
