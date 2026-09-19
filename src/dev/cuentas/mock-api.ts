@@ -192,7 +192,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             response = ownedSections.has(section) ? respond(page(postsFor(plan, section))) : respond(null, 403)
         }
         else if (path === '/posts/stats/coverage') response = respond(owned.has('unity') ? { people_count: 52, people_reached: 7, percent: 13 } : { people_count: 0, people_reached: 0, percent: 0 })
-        else if (path === '/posts/stats/month') response = respond((q.get('sections') ?? '').split(',').filter(Boolean).map(section_key => ({ section_key, posts_count: 3, posts_sent_count: section_key === 'pink_circle' ? 0 : 1, posts_live_today_count: section_key.includes('birthdays') ? 2 : 0 })))
+        else if (path === '/posts/stats/month') response = respond((q.get('sections') ?? q.get('section') ?? '').split(',').filter(Boolean).map(section_key => ({ section_key, posts_count: 3, posts_sent_count: section_key === 'pink_circle' ? 0 : 1, posts_live_today_count: section_key.includes('birthdays') ? 2 : 0 })))
         else if (path === '/posts/my-birthday') response = respond(null)
         else if (/^\/posts\/[^/]+\/(sent|regenerate)$/.test(path)) response = respond(null)
         else if (path === '/tools/saved') response = respond(page(savedStore))

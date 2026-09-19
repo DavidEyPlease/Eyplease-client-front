@@ -13,6 +13,7 @@ import useAuthStore from "@/store/auth"
 import { queryKeys } from "@/utils/cache"
 import TrainingSection from "./components/TrainingSection"
 import { matchesTrainingSearch } from "./utils"
+import PageHead from '@/layouts/TopShell/PageHead'
 
 /** El endpoint devuelve todos los entrenamientos agrupados, así que buscar y filtrar es local. */
 const ALL_CATEGORIES = 'all'
@@ -76,6 +77,7 @@ const TrainingsPage = () => {
 
     return (
         <div className="flex flex-col gap-5 pt-2">
+            <PageHead eyebrow="Contenido" title={<>Entrenamiento: <em>un tema cada lunes</em></>} sub="Presentaciones listas para tu junta de unidad: ábrelas, descárgalas o léelas antes." />
             <div className="flex flex-col gap-3.5 rounded-3xl border bg-card bg-hero-glow px-5 py-4 shadow-card">
                 <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center">
                     <div className="min-w-60 flex-1">

@@ -15,6 +15,8 @@ import PageLoader from "@/components/generics/PageLoader"
 import FeedbackUploadReport from "./components/FeedbackUploadReport"
 import ReportsProgressCard from "./components/ReportsProgressCard"
 import NewsletterReportPanel from "./components/NewsletterReportPanel"
+import PageHead from "@/layouts/TopShell/PageHead"
+import { isNewShell } from "@/layouts/TopShell/useNewShell"
 import {
 	ConflictHeadingsError,
 	ConflictUsersError,
@@ -70,22 +72,28 @@ const ReportsPage = () => {
 
 	return (
 		<div className="mx-auto w-full max-w-6xl">
-			<header className="mb-6 flex flex-wrap items-center justify-between gap-4">
-				<div className="flex items-center gap-3.5">
-					<span className="grid size-11 shrink-0 place-content-center rounded-brand bg-primary-gradient text-white shadow-primary-glow">
-						<Upload className="size-[22px]" />
-					</span>
-					<div>
-						<h1 className="text-xl font-bold tracking-tight sm:text-[21px]">Carga de reportes</h1>
-						<p className="text-sm font-medium text-muted-foreground">
-							Sube el .xlsx de cada sección para armar los boletines del mes.
-						</p>
-					</div>
+			{isNewShell() ? (
+				<div className="mb-5">
+					<PageHead eyebrow={`Reportes · ${reportMonthLabel()}`} title={<>Tus reportes, <em>al día</em></>} sub="Varios se cargan solos desde InTouch. Aquí ves cuáles ya están y subes el .xlsx de los que falten para que tu boletín salga completo." />
 				</div>
-				<span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[13px] font-semibold text-primary">
-					{reportMonthLabel()}
-				</span>
-			</header>
+			) : (
+				<header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+					<div className="flex items-center gap-3.5">
+						<span className="grid size-11 shrink-0 place-content-center rounded-brand bg-primary-gradient text-white shadow-primary-glow">
+							<Upload className="size-[22px]" />
+						</span>
+						<div>
+							<h1 className="text-xl font-bold tracking-tight sm:text-[21px]">Carga de reportes</h1>
+							<p className="text-sm font-medium text-muted-foreground">
+								Sube el .xlsx de cada sección para armar los boletines del mes.
+							</p>
+						</div>
+					</div>
+					<span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[13px] font-semibold text-primary">
+						{reportMonthLabel()}
+					</span>
+				</header>
+			)}
 
 			{loading ? (
 				<div className="relative grid min-h-64 place-content-center">

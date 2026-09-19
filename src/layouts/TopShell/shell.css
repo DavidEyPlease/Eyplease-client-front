@@ -51,6 +51,46 @@
     100% { box-shadow: 0 10px 22px -8px rgba(78, 49, 192, .7), 0 0 0 10px rgba(44, 212, 217, 0); }
 }
 
+/* ── Las páginas de siempre, dentro del marco nuevo ──────────────────────────────────────────
+   No se reescriben de golpe: aquí cambian de MATERIA. Las fichas opacas pasan a vidrio, las líneas
+   y los fondos suaves toman el tinte violeta y las esquinas se redondean como en el Hoy. Sólo
+   alcanza a lo que vive dentro de la página; diálogos y menús van en portal y conservan lo suyo. */
+.shell-page {
+    --card: rgba(255, 255, 255, .74);
+    --background: #F3F2FA;
+    --surface-soft: rgba(108, 71, 255, .055);
+    --muted: rgba(26, 24, 48, .05);
+    --accent: rgba(108, 71, 255, .08);
+    --border: rgba(26, 24, 48, .09);
+    --input: rgba(26, 24, 48, .12);
+    --radius: .9rem;
+    --primary-gradient-start: #6C47FF;
+    --primary-gradient-end: #4E31C0;
+}
+.dark .shell-page {
+    --card: rgba(30, 27, 58, .62);
+    --background: #0B0A1A;
+    --surface-soft: rgba(255, 255, 255, .045);
+    --muted: rgba(255, 255, 255, .06);
+    --accent: rgba(140, 120, 255, .14);
+    --border: rgba(255, 255, 255, .09);
+    --input: rgba(255, 255, 255, .14);
+}
+/* Las fichas grandes (las que llevan sombra de ficha) desenfocan lo que tienen detrás, como el resto */
+.shell-page .shadow-card { -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); box-shadow: 0 6px 20px -12px rgba(27, 20, 80, .35); }
+.dark .shell-page .shadow-card { box-shadow: 0 8px 24px -12px rgba(0, 0, 0, .7); }
+
+/* La barra de arriba es fija: lo que las páginas de siempre dejaban pegado «a 1rem del borde» se
+   queda por debajo de ella, y su alto máximo descuenta la barra. */
+@media (min-width: 1024px) {
+    .shell-page .lg\:sticky.lg\:top-4 { top: 90px; }
+    .shell-page .lg\:max-h-\[calc\(100vh-2rem\)\] { max-height: calc(100vh - 106px); }
+}
+
+/* Encabezado de página del rediseño: antetítulo, título con su tramo en degradado y bajada */
+.shell-title em { font-style: normal; background: linear-gradient(135deg, #4E31C0 0%, #6C47FF 48%, #2CD4D9 120%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.dark .shell-title em { background-image: linear-gradient(135deg, #A894FF 0%, #8C78FF 40%, #2CD4D9 110%); }
+
 /* Cada página entra subiendo */
 .shell-page { animation: shell-page-in .55s cubic-bezier(.2, .8, .2, 1) both; }
 @keyframes shell-page-in { from { opacity: 0; transform: translateY(12px); } }

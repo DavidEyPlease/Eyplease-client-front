@@ -13,6 +13,7 @@ import useListMyClients from "./useListMyClients"
 import { EmptySection } from "@/components/generics/EmptySection"
 import { IconMyClients } from "@/components/Svg/IconMyClients"
 import { Badge } from "@/components/ui/badge"
+import PageHead from '@/layouts/TopShell/PageHead'
 
 const MyClientsPage = () => {
     const [openForm, setOpenForm] = useState(false)
@@ -37,6 +38,7 @@ const MyClientsPage = () => {
 
     return (
         <div className="flex flex-col gap-4 pt-2">
+            <PageHead eyebrow="Mi negocio" title={<>Mis <em>clientas</em></>} sub="Regístralas con su cumpleaños y su pieza de felicitación llega sola el día que toca." />
             <div className="flex flex-col gap-3.5 rounded-3xl border bg-card bg-hero-glow px-5 py-4 shadow-card">
                 <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center">
                     <div className="min-w-60 flex-1">

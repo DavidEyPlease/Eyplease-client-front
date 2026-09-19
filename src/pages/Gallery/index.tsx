@@ -16,6 +16,7 @@ import useInfiniteListQuery from "@/hooks/useInfiniteListQuery"
 import { EmptySection } from "@/components/generics/EmptySection"
 import { IconGallery } from "@/components/Svg/IconGallery"
 import { useGalleryStore } from "@/store/gallery"
+import PageHead from '@/layouts/TopShell/PageHead'
 
 const GalleryPage = () => {
     const { filters, setFilters, getListQueryKey } = useGalleryStore(state => state)
@@ -47,6 +48,7 @@ const GalleryPage = () => {
 
     return (
         <div className="flex flex-col gap-4 pt-2">
+            <PageHead eyebrow="Mi negocio" title={<>Galería de <em>tu unidad</em></>} sub="La foto de cada consultora, que es la que sale en sus reconocimientos. Súbela una vez y se usa en todos sus diseños." />
             <div className="flex flex-col gap-3.5 rounded-3xl border bg-card bg-hero-glow px-5 py-4 shadow-card">
                 <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center">
                     <div className="min-w-60 flex-1">

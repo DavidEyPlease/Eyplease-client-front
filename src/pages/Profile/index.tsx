@@ -12,6 +12,7 @@ import Preferences from "./components/Preferences"
 import ReportContent from "./components/ReportContent"
 import SectionNav from "./components/SectionNav"
 import { isProfileSectionKey, ProfileSectionKey } from "./utils"
+import PageHead from '@/layouts/TopShell/PageHead'
 
 const ProfilePage = () => {
     const [searchParams] = useSearchParams()
@@ -25,6 +26,7 @@ const ProfilePage = () => {
 
     return (
         <div className="grid items-start gap-4 pt-2 lg:grid-cols-[300px_minmax(0,1fr)]">
+            <div className="lg:col-span-2 empty:hidden"><PageHead eyebrow="Tu cuenta" title={<>Tu <em>perfil</em></>} sub="Tus datos, el contenido de tus boletines, tu plan y tu seguridad." /></div>
             <div className="flex flex-col gap-4 lg:sticky lg:top-4">
                 <IdentityCard user={user} />
                 <SectionNav active={section} onChange={setSection} />

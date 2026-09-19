@@ -1,5 +1,7 @@
 import { MAP_MAIN_POSTS_SECTIONS } from '@/constants/app'
 import { MainPostSectionTypes } from '@/interfaces/posts'
+import PageHead from '@/layouts/TopShell/PageHead'
+import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import PostsStats from './Stats'
 
 interface Props {
@@ -7,6 +9,18 @@ interface Props {
 }
 
 const PostsHeader = ({ mainSection }: Props) => {
+	if (isNewShell()) {
+		return (
+			<PageHead
+				eyebrow="Mi negocio"
+				title={<>Publicaciones · <em>{MAP_MAIN_POSTS_SECTIONS[mainSection]}</em></>}
+				sub="Todas las piezas del mes, sección por sección: revisa, vuelve a generar y marca las que ya enviaste."
+			>
+				<PostsStats />
+			</PageHead>
+		)
+	}
+
 	return (
 		<header className="flex flex-wrap items-center justify-between gap-5 rounded-3xl border bg-card bg-hero-glow px-5.5 py-5 shadow-card">
 			<div>

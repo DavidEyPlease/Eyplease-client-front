@@ -19,6 +19,9 @@ import { useToolsStore } from "@/store/tools"
 import ToolFilters from "./components/Filters"
 import ToolItem from "./components/ToolItem"
 import useMasonryColumns from "./hooks/useMasonryColumns"
+import PageHead from '@/layouts/TopShell/PageHead'
+import { isNewShell } from '@/layouts/TopShell/useNewShell'
+import { cn } from "@/lib/utils"
 
 const ToolsPage = () => {
     const { hasAccess } = useAuth()
@@ -72,8 +75,14 @@ const ToolsPage = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Barra fija: búsqueda y secciones no se pierden al bajar por el mural */}
-            <div className="sticky top-0 z-30 -mx-4 -mt-4 flex flex-col gap-3 border-b bg-background/85 px-4 py-3 backdrop-blur-md lg:flex-row lg:items-center">
+            <PageHead eyebrow="Contenido" title={<>Biblioteca: <em>lista para compartir</em></>} sub="Todo lo que el equipo preparó este mes, por sección. Lo de hoy también sale en las historias del Hoy." />
+
+            {/* Barra fija: búsqueda y secciones no se pierden al bajar por el mural. Con el marco nuevo
+                es una ficha de vidrio que se queda por debajo de la barra de arriba, que también es fija */}
+            <div className={cn(
+                'sticky z-30 flex flex-col gap-3 px-4 py-3 backdrop-blur-md lg:flex-row lg:items-center',
+                isNewShell() ? 'shell-glass top-[84px] rounded-[20px]' : 'top-0 -mx-4 -mt-4 border-b bg-background/85',
+            )}>
                 <div className="w-full lg:max-w-xs">
                     <SearchInput
                         value={filters.search}
