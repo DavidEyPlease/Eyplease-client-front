@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
-import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, LayersIcon, LibraryBigIcon, PauseIcon, PlayIcon, XIcon } from 'lucide-react'
+import { BookmarkIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, LayersIcon, LibraryBigIcon, PauseIcon, PlayIcon, XIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { APP_ROUTES } from '@/constants/app'
 import useFiles from '@/hooks/useFiles'
+import useSavedTools from '@/hooks/useSavedTools'
+import { ToolSectionTypes } from '@/interfaces/tools'
 import { cn } from '@/lib/utils'
 import { buildToolFileName, TOOL_SECTION_ICON } from '@/pages/Tools/utils'
 import { useToolsStore } from '@/store/tools'
 import { isImage } from '@/utils'
-import { NovedadesSection } from '../hooks/useNovedades'
+import { NovedadesSection, SAVED_SECTION } from '../hooks/useNovedades'
 
 /** Lo que dura una imagen en pantalla. El video dura lo que dure. */
 const IMAGE_SECONDS = 6
@@ -33,6 +36,7 @@ const StoryViewer = ({ sections, startKey, onSeen, onClose }: Props) => {
     const navigate = useNavigate()
     const setToolFilters = useToolsStore(state => state.setFilters)
     const { executing, downloadFile } = useFiles()
+    const { savedByToolId, save, remove, busy: savingBusy } = useSavedTools()
 
     const [sectionIndex, setSectionIndex] = useState(() => Math.max(sections.findIndex(section => section.key === startKey), 0))
     const [itemIndex, setItemIndex] = useState(0)
@@ -108,7 +112,31 @@ const StoryViewer = ({ sections, startKey, onSeen, onClose }: Props) => {
 
     if (!section || !item || !file) return null
 
-    const SectionIcon = TOOL_SECTION_ICON[section.key]
+    const isSavedSection = section.key === SAVED_SECTION
+    const SectionIcon = isSavedSection ? BookmarkIcon : TOOL_SECTION_ICON[section.key as keyof typeof TOOL_SECTION_ICON]
+    /* En Guardados cada pieza ES un guardado; en la biblioteca se busca si ya guardó esa herramienta */
+    const savedEntry = isSavedSection ? { id: item.id } : savedByToolId.get(item.id)
+
+    const onToggleSaved = async () => {
+        setPaused(true)
+        try {
+            if (savedEntry) {
+                await remove(savedEntry.id)
+                toast.success('Quitada de tus guardados')
+                /* En Guardados la pieza desaparece de la lista: se sigue con la que ocupa su lugar */
+                if (isSavedSection) {
+                    if (section.items.length <= 1) return onClose()
+                    setItemIndex(index => Math.min(index, section.items.length - 2))
+                    setFileIndex(0)
+                }
+            } else {
+                await save(item.id)
+                toast.success('Guardada: la encuentras en el anillo «Guardados»')
+            }
+        } catch (error) {
+            toast.error((error as { message?: string })?.message || 'No se pudo guardar')
+        }
+    }
     const files = item.files.length
     const seconds = isVideo ? videoSeconds : IMAGE_SECONDS
     const busy = executing || downloadingAll
@@ -125,7 +153,8 @@ const StoryViewer = ({ sections, startKey, onSeen, onClose }: Props) => {
     }
 
     const openLibrary = () => {
-        setToolFilters({ section: section.key })
+        if (isSavedSection) return
+        setToolFilters({ section: section.key as ToolSectionTypes })
         onClose()
         navigate(APP_ROUTES.TOOLS)
     }
@@ -220,9 +249,14 @@ const StoryViewer = ({ sections, startKey, onSeen, onClose }: Props) => {
                                 {downloadingAll ? '…' : files}
                             </button>
                         )}
-                        <button type="button" title="Abrir esta sección en la biblioteca" onClick={openLibrary} className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-[14px] bg-white/18 text-white backdrop-blur-md transition-colors hover:bg-white/28">
-                            <LibraryBigIcon className="size-[18px]" />
+                        <button type="button" disabled={savingBusy} title={savedEntry ? 'Quitar de guardados' : 'Guardar para después'} aria-pressed={!!savedEntry} onClick={onToggleSaved} className={cn('grid size-11 shrink-0 cursor-pointer place-items-center rounded-[14px] text-white backdrop-blur-md transition-colors disabled:opacity-60', savedEntry ? 'bg-white/35 hover:bg-white/45' : 'bg-white/18 hover:bg-white/28')}>
+                            <BookmarkIcon className={cn('size-[18px]', savedEntry && 'fill-current')} />
                         </button>
+                        {!isSavedSection && (
+                            <button type="button" title="Abrir esta sección en la biblioteca" onClick={openLibrary} className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-[14px] bg-white/18 text-white backdrop-blur-md transition-colors hover:bg-white/28">
+                                <LibraryBigIcon className="size-[18px]" />
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { LibraryBigIcon } from 'lucide-react'
+import { BookmarkIcon, LibraryBigIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
+import useSavedTools from '@/hooks/useSavedTools'
 import { cn } from '@/lib/utils'
+import { isImage } from '@/utils'
 import { TOOL_SECTION_ICON } from '@/pages/Tools/utils'
-import useNovedades, { NovedadesSection } from '../hooks/useNovedades'
+import useNovedades, { NovedadesSection, SAVED_SECTION } from '../hooks/useNovedades'
 import StoryViewer from './StoryViewer'
 
 const SEEN_KEY = 'eyplease:novedades-vistas'
@@ -28,6 +30,13 @@ const NovedadesStories = ({ index = 0 }: { index?: number }) => {
     const { novedades, loading, hasLibrary } = useNovedades()
     const [seen, setSeen] = useState(readSeen)
     const [openKey, setOpenKey] = useState<string | null>(null)
+    const { saved } = useSavedTools()
+
+    /* Guardados va como una sección más del visor, al final: lo que apartó para después */
+    const savedSection: NovedadesSection | null = saved.length
+        ? { key: SAVED_SECTION, label: 'Guardados', items: saved, cover: saved.flatMap(item => item.files).find(file => isImage(file.ext))?.url ?? null, today: 0 }
+        : null
+    const viewerSections = savedSection ? [...novedades, savedSection] : novedades
 
     if (!hasLibrary || (!loading && !novedades.length)) return null
 
@@ -59,7 +68,7 @@ const NovedadesStories = ({ index = 0 }: { index?: number }) => {
                 ))}
 
                 {novedades.map(section => {
-                    const Icon = TOOL_SECTION_ICON[section.key]
+                    const Icon = TOOL_SECTION_ICON[section.key as keyof typeof TOOL_SECTION_ICON]
                     const isSeen = seen[section.key] === section.items[0]?.id
                     return (
                         <button key={section.key} type="button" onClick={() => setOpenKey(section.key)} className="grid w-[78px] shrink-0 cursor-pointer justify-items-center gap-1.5 text-center">
@@ -74,6 +83,18 @@ const NovedadesStories = ({ index = 0 }: { index?: number }) => {
                     )
                 })}
 
+                {savedSection && (
+                    <button type="button" onClick={() => setOpenKey(SAVED_SECTION)} className="grid w-[78px] shrink-0 cursor-pointer justify-items-center gap-1.5 text-center">
+                        <span className="hoy-ring seen">
+                            <span style={savedSection.cover ? { backgroundImage: `url("${savedSection.cover}")` } : undefined}>
+                                {!savedSection.cover && <BookmarkIcon className="size-6 text-primary" />}
+                            </span>
+                            <em className="!bg-[#6C47FF]">{saved.length}</em>
+                        </span>
+                        <span className="text-[11px] leading-tight font-semibold">Guardados</span>
+                    </button>
+                )}
+
                 {novedades.length > 0 && (
                     <button type="button" onClick={() => navigate(APP_ROUTES.TOOLS)} className="grid w-[78px] shrink-0 cursor-pointer justify-items-center gap-1.5 text-center">
                         <span className="hoy-ring seen">
@@ -85,7 +106,7 @@ const NovedadesStories = ({ index = 0 }: { index?: number }) => {
             </div>
 
             {openKey && (
-                <StoryViewer sections={novedades} startKey={openKey} onSeen={markSeen} onClose={() => setOpenKey(null)} />
+                <StoryViewer sections={viewerSections} startKey={openKey} onSeen={markSeen} onClose={() => setOpenKey(null)} />
             )}
         </section>
     )

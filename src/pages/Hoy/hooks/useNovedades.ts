@@ -23,10 +23,16 @@ export const NOVEDADES_LABELS: Record<ToolSectionTypes, string> = {
     [ToolSectionTypes.EXPLAIN]: 'Historias',
 }
 
+/** Lo mínimo que el visor necesita de una pieza: lo cumplen la biblioteca y los guardados. */
+export type StoryItem = Pick<ITool, 'id' | 'title' | 'files' | 'created_at'>
+
+/** Clave de la sección de guardados: no es de la biblioteca, así que no abre en ella. */
+export const SAVED_SECTION = 'saved'
+
 export interface NovedadesSection {
-    key: ToolSectionTypes
+    key: ToolSectionTypes | typeof SAVED_SECTION
     label: string
-    items: ITool[]
+    items: StoryItem[]
     /** Imagen con la que se pinta el anillo: la primera pieza con imagen de la sección */
     cover: string | null
     /** Cuántas son de hoy: es el número que lleva el anillo */

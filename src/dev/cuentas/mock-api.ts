@@ -134,6 +134,9 @@ const billingFor = (plan: DemoPlan) => ({
 
 const FILE_PATH = '/files/download'
 
+/** Guardados de ejemplo: viven en memoria y se pierden al recargar */
+let savedStore: Array<Record<string, unknown>> = []
+
 const person = (index: number) => ({ id: `person-${index}`, name: PEOPLE[index].toUpperCase(), account: `00${index}4${index}1`, photo: null })
 const monthKey = () => month(0).slice(0, 7)
 const monthEnd = () => { const d = new Date(now.getFullYear(), now.getMonth() + 1, 0); return `${monthKey()}-${String(d.getDate()).padStart(2, '0')}` }
@@ -192,6 +195,19 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/posts/stats/month') response = respond((q.get('sections') ?? '').split(',').filter(Boolean).map(section_key => ({ section_key, posts_count: 3, posts_sent_count: section_key === 'pink_circle' ? 0 : 1, posts_live_today_count: section_key.includes('birthdays') ? 2 : 0 })))
         else if (path === '/posts/my-birthday') response = respond(null)
         else if (/^\/posts\/[^/]+\/(sent|regenerate)$/.test(path)) response = respond(null)
+        else if (path === '/tools/saved') response = respond(page(savedStore))
+        else if (/^\/tools\/saved\/[^/]+$/.test(path) && method === 'DELETE') {
+            savedStore = savedStore.filter(item => item.id !== path.split('/')[3])
+            response = respond(null)
+        }
+        else if (/^\/tools\/[^/]+\/save$/.test(path) && method === 'POST') {
+            const toolId = path.split('/')[2]
+            const section = toolId.replace(/^tool-/, '').replace(/-\d+$/, '')
+            const tool = toolsFor(section).find(item => item.id === toolId)
+            const entry = { ...tool, id: `saved-${toolId}`, tool_id: toolId }
+            savedStore = [entry, ...savedStore.filter(item => item.id !== entry.id)]
+            response = respond(entry)
+        }
         else if (path === '/tools') {
             const section = q.get('section') ?? ''
             response = owned.has(section) ? respond(page(toolsFor(section))) : respond(null, 403)

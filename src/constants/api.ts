@@ -66,6 +66,9 @@ export const API_ROUTES = {
     },
     TOOLS: {
         LIST: '/tools',
+        SAVED: '/tools/saved',
+        SAVE: '/tools/{id}/save',
+        REMOVE_SAVED: '/tools/saved/{id}',
     },
     INDICATORS: {
         BUSINESS: '/indicators/business',
