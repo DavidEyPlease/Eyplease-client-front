@@ -52,6 +52,9 @@ interface Props {
 const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
     const { user, handleLogout } = useAuth()
     const sidebarMenu = useAuthStore(state => state.sidebarMenu)
+    /* El boletín no es una entrada del menú de siempre (vivía dentro del Inicio): con el marco
+       nuevo tiene su página, y el enlace sale sólo si el plan trae algún boletín. */
+    const hasNewsletter = useAuthStore(state => state.utilData.newsletters.length > 0)
     const location = useLocation()
     const navigate = useNavigate()
 
@@ -79,6 +82,13 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
 
             <nav className="ml-1.5 hidden items-center gap-0.5 md:flex">
                 {pick(DIRECT_FIRST).map(direct)}
+
+                {hasNewsletter && (
+                    <Link to={APP_ROUTES.HOME.NEWSLETTER} className={cn(NAV_BUTTON, location.pathname.includes(APP_ROUTES.HOME.NEWSLETTER) && 'text-foreground')}>
+                        Boletín
+                        {location.pathname.includes(APP_ROUTES.HOME.NEWSLETTER) && <ActiveBar />}
+                    </Link>
+                )}
 
                 {GROUPS.map(group => {
                     const items = pick(group.keys)

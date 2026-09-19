@@ -10,6 +10,8 @@ import { IPostVendorable } from '@/interfaces/posts'
 interface Props {
     open: boolean
     person: IPostVendorable
+    /** Ya tiene foto y se quiere otra: cambia lo que se le explica, no lo que se hace. */
+    replacing?: boolean
     /** Se llama tras guardar la foto: es cuando tiene sentido encolar el render. */
     onUploaded: () => void
     onOpenChange: (open: boolean) => void
@@ -21,7 +23,7 @@ interface Props {
  * Sin foto, el render usa el avatar por defecto: regenerar tal cual gastaría cómputo
  * para devolver la misma pieza. Aquí se sube la foto y solo entonces se encola.
  */
-const RegeneratePhotoDialog = ({ open, person, onUploaded, onOpenChange }: Props) => {
+const RegeneratePhotoDialog = ({ open, person, replacing = false, onUploaded, onOpenChange }: Props) => {
     const [saving, setSaving] = useState(false)
 
     const photo = usePersonPhotoUpload({
@@ -48,7 +50,7 @@ const RegeneratePhotoDialog = ({ open, person, onUploaded, onOpenChange }: Props
     return (
         <>
             {/* Paso 1: explicar y elegir archivo. Se oculta mientras se recorta. */}
-            <Modal open={open && !photo.imgSrc} title="Falta la foto" size="md" onOpenChange={onClose}>
+            <Modal open={open && !photo.imgSrc} title={replacing ? 'Cambiar la foto' : 'Falta la foto'} size="md" onOpenChange={onClose}>
                 <div className="grid gap-4">
                     <div className="flex items-start gap-3 rounded-2xl border bg-surface-soft p-4">
                         <span className="grid size-10 shrink-0 place-content-center rounded-full bg-primary/[0.08] text-primary">
@@ -57,8 +59,9 @@ const RegeneratePhotoDialog = ({ open, person, onUploaded, onOpenChange }: Props
                         <div className="min-w-0">
                             <p className="text-[13.5px] font-bold tracking-tight">{person.name}</p>
                             <p className="mt-0.5 text-[12.5px] text-muted-foreground">
-                                Todavía no tiene foto, así que su diseño se generó con la imagen por defecto.
-                                Súbela y volvemos a generarlo con su cara.
+                                {replacing
+                                    ? 'Sube otra foto y volvemos a generar su diseño con ella. Se usará también en los siguientes.'
+                                    : 'Todavía no tiene foto, así que su diseño se generó con la imagen por defecto. Súbela y volvemos a generarlo con su cara.'}
                             </p>
                         </div>
                     </div>

@@ -5,6 +5,8 @@ import HomeOverdueBanner from "@/components/billing/enforcement/HomeOverdueBanne
 import BirthdayBanner from "./components/BirthdayBanner"
 import UnitFollowUp from "./components/UnitFollowUp"
 import AnnualReport from "./components/AnnualReport"
+import HoyPage from "@/pages/Hoy"
+import { isNewShell } from "@/layouts/TopShell/useNewShell"
 // import PostsSummary from "./components/Posts"
 // import Tasks from "./components/Tasks"
 // import ToolsSummary from "./components/Tools"
@@ -13,6 +15,9 @@ import AnnualReport from "./components/AnnualReport"
 // import CanvaButtonConnect from "@/components/generics/CanvaButtonConnect"
 
 const DashboardPage = () => {
+    /* Con el marco nuevo la portada es el Hoy (historias + feed); el boletín pasa a su página */
+    if (isNewShell()) return <HoyPage />
+
     return (
         <div className="grid gap-y-5">
             <HomeOverdueBanner />

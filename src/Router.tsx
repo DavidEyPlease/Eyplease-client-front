@@ -10,6 +10,7 @@ import ForgotPasswordPage from "./pages/Auth/ForgotPassword"
 import VerificationCodePage from "./pages/Auth/VerificationCode"
 import ResetPasswordPage from "./pages/Auth/ResetPassword"
 import DashboardPage from "./pages/Dashboard"
+import NewsletterPage from "./pages/Newsletter"
 import GalleryPage from "./pages/Gallery"
 import MyClientsPage from "./pages/MyClients"
 import ToolsPage from "./pages/Tools"
@@ -40,6 +41,7 @@ const Router = () => {
             <Route path={APP_ROUTES.AUTH.CHANGE_PASSWORD} element={isLogged ? <Navigate to='/dashboard' /> : <ResetPasswordPage />} />
             <Route element={<MainLayout />}>
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
+                <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />
                 <Route path={APP_ROUTES.HOME.GALLERY} element={<GalleryPage />} />
                 <Route path={APP_ROUTES.HOME.MY_CLIENTS} element={<MyClientsPage />} />
                 <Route path={APP_ROUTES.TOOLS} element={<ToolsPage />} />

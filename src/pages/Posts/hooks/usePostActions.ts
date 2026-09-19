@@ -12,21 +12,35 @@ import { toast } from 'sonner'
 
 const markAsSentUrl = (postId: string) => API_ROUTES.POSTS.MARK_AS_SENT.replace('{id}', postId)
 
-const usePostActions = () => {
+interface Options {
+    /**
+     * Quien guarda sus publicaciones en otra caché (el Hoy las pide por sección, no por la
+     * lista paginada) dice aquí cómo se actualiza una. Sin él se toca la lista de Publicaciones.
+     */
+    patchPost?: (itemId: string, data: Partial<IPost>) => void
+}
+
+const usePostActions = ({ patchPost }: Options = {}) => {
     const { getListQueryKey, setRegeneratingArtifact } = usePostsStore(state => state)
     const queryClient = useQueryClient()
     const [markingMany, setMarkingMany] = useState(false)
 
     // Las stats se cachean por sección (queryKeys.detail), así que se invalida la entidad completa.
+    // La cobertura también: es el anillo del seguimiento, y sube en cuanto se envía algo.
     // El error se silencia aquí para reportarlo una sola vez por acción, no una por petición.
     const { request, requestState } = useRequestQuery({
-        invalidateQueries: [queryKeys.entity('posts-stats')],
+        invalidateQueries: [queryKeys.entity('posts-stats'), queryKeys.entity('posts-coverage')],
         onError: () => { }
     })
 
     const listQueryKey = getListQueryKey()
 
     const updateCachedPost = (itemId: string, data?: Partial<IPost>) => {
+        if (patchPost && data) {
+            patchPost(itemId, data)
+            return
+        }
+
         queryClient.setQueryData<InfiniteData<PaginationResponse<IPost>>>(listQueryKey, (current) => {
             if (!current) return current
 

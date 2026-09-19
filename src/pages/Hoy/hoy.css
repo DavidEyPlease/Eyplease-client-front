@@ -1,0 +1,72 @@
+/* El Hoy del rediseño. Lo que Tailwind no da cómodo: entradas escalonadas, anillos de historias,
+   el visor y el corazón. El vidrio y el degradado vienen del marco (`shell.css`). */
+
+/* El ancho de la columna sale del ALTO de la ventana: la pieza es 4:5 y llena la tarjeta, así que a
+   680 px mide 850 de alto y en una laptop no cabe entera con sus botones. Con esto siempre cabe. */
+.hoy-page { --hoy-col: min(680px, max(440px, calc((100vh - 250px) * .8))); }
+
+/* Cada bloque sube y aparece, uno tras otro. Con su fotograma final propio: de base es invisible. */
+.hoy-rise { opacity: 0; transform: translateY(14px); animation: hoy-rise-in .7s cubic-bezier(.2, .8, .2, 1) forwards; animation-delay: calc(var(--i, 0) * 70ms + 60ms); }
+@keyframes hoy-rise-in { to { opacity: 1; transform: none; } }
+
+.hoy-title em { font-style: normal; background: linear-gradient(135deg, #4E31C0 0%, #6C47FF 48%, #2CD4D9 120%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.dark .hoy-title em { background-image: linear-gradient(135deg, #A894FF 0%, #8C78FF 40%, #2CD4D9 110%); }
+
+.hoy-soft { background: linear-gradient(135deg, rgba(108, 71, 255, .14), rgba(44, 212, 217, .14)); }
+
+/* Esqueleto de carga con barrido */
+.hoy-skel { position: relative; overflow: hidden; background: rgba(26, 24, 48, .06); }
+.dark .hoy-skel { background: rgba(255, 255, 255, .06); }
+.hoy-skel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .55) 50%, transparent 80%); transform: translateX(-100%); animation: hoy-shimmer 1.3s infinite; }
+.dark .hoy-skel::after { background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .09) 50%, transparent 80%); }
+@keyframes hoy-shimmer { to { transform: translateX(100%); } }
+
+/* ── Historias ───────────────────────────────────────────────────────────────────────────── */
+.hoy-stories { scrollbar-width: none; }
+.hoy-stories::-webkit-scrollbar { display: none; }
+.hoy-ring { position: relative; width: 74px; height: 74px; padding: 3px; border-radius: 50%; transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
+.hoy-ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, #4E31C0, #6C47FF, #2CD4D9, #E5077D, #4E31C0); animation: hoy-spin 6s linear infinite; }
+.hoy-ring.seen::before { background: var(--border); animation: none; }
+button:hover > .hoy-ring { transform: scale(1.07); }
+.hoy-ring > span { position: relative; display: grid; place-items: center; width: 100%; height: 100%; overflow: hidden; border-radius: 50%; border: 3px solid var(--card); background: var(--surface-soft) center / cover; }
+.hoy-ring > em { position: absolute; right: -2px; bottom: -2px; z-index: 2; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 99px; border: 2px solid var(--card); background: #E5077D; color: #fff; font-style: normal; font-weight: 800; font-size: 10.5px; line-height: 18px; text-align: center; }
+@keyframes hoy-spin { to { transform: rotate(360deg); } }
+
+/* ── Visor de historias ──────────────────────────────────────────────────────────────────── */
+.hoy-viewer { animation: hoy-viewer-in .3s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes hoy-viewer-in { from { opacity: 0; } }
+.hoy-viewer-card { animation: hoy-viewer-card-in .45s cubic-bezier(.34, 1.56, .64, 1) both; }
+@keyframes hoy-viewer-card-in { from { transform: scale(.92); opacity: 0; } }
+.hoy-bar > b { display: block; height: 100%; width: var(--from, 0%); background: #fff; }
+.hoy-bar.done > b { width: 100%; }
+.hoy-bar.now > b { animation: hoy-fill var(--dur, 5s) linear forwards; animation-play-state: var(--play, running); }
+@keyframes hoy-fill { from { width: var(--from, 0%); } to { width: var(--to, 100%); } }
+.hoy-slide { animation: hoy-slide-in .4s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes hoy-slide-in { from { opacity: 0; transform: scale(1.03); } }
+
+/* ── Tarjeta del feed ────────────────────────────────────────────────────────────────────── */
+.hoy-piece { animation: hoy-piece-in .45s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes hoy-piece-in { from { opacity: 0; transform: scale(1.04); } }
+.hoy-arrow { opacity: 0; transition: opacity .25s, transform .25s cubic-bezier(.34, 1.56, .64, 1); }
+article:hover .hoy-arrow, .hoy-arrow:focus-visible { opacity: 1; }
+.hoy-arrow:hover { transform: translateY(-50%) scale(1.08); }
+.hoy-live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: hoy-pulse 1.6s infinite; }
+@keyframes hoy-pulse { 0% { box-shadow: 0 0 0 0 currentColor; } 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.hoy-heart svg { width: 110px; height: 110px; color: #fff; fill: currentColor; filter: drop-shadow(0 8px 24px rgba(0, 0, 0, .5)); animation: hoy-pop .8s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+@keyframes hoy-pop { 0% { transform: scale(0); opacity: 0; } 35% { transform: scale(1.15); opacity: 1; } 70% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.1); opacity: 0; } }
+.hoy-cta { background: linear-gradient(135deg, #4E31C0 0%, #6C47FF 48%, #2CD4D9 120%); box-shadow: 0 10px 24px -10px rgba(108, 71, 255, .9); transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), box-shadow .25s, filter .2s; }
+.hoy-cta:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(108, 71, 255, 1); filter: saturate(1.15); }
+.hoy-cta:active:not(:disabled) { transform: scale(.97); }
+
+/* ── Anillo del seguimiento ──────────────────────────────────────────────────────────────── */
+.hoy-meter circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+.hoy-meter .trk { stroke: rgba(26, 24, 48, .07); }
+.dark .hoy-meter .trk { stroke: rgba(255, 255, 255, .08); }
+.hoy-meter .val { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: hoy-ring-in 1.4s cubic-bezier(.2, .8, .2, 1) .35s forwards; filter: drop-shadow(0 0 6px rgba(108, 71, 255, .55)); }
+@keyframes hoy-ring-in { to { stroke-dashoffset: var(--to); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .hoy-rise { opacity: 1; transform: none; animation: none !important; }
+    .hoy-ring::before, .hoy-skel::after, .hoy-viewer, .hoy-viewer-card, .hoy-slide, .hoy-piece, .hoy-live::before, .hoy-heart svg { animation: none !important; }
+    .hoy-meter .val { stroke-dashoffset: var(--to); animation: none !important; }
+}

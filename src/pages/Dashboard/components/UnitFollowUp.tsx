@@ -1,56 +1,14 @@
-import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { SparklesIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { IconBySection } from '@/components/generics/IconBySection'
 import { cn } from '@/lib/utils'
-import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
-import useFetchQuery from '@/hooks/useFetchQuery'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { MainPostSectionTypes, PostSectionTypes } from '@/interfaces/posts'
-import usePostSections from '@/pages/Posts/hooks/usePostSections'
 import { usePostsStore } from '@/store/posts'
-import { queryKeys } from '@/utils/cache'
-
-interface SectionStats {
-	section_key: string
-	posts_count: number
-	posts_sent_count: number
-	posts_live_today_count?: number
-	/** Nunca ha enviado nada de esta sección, mirando toda su historia y no solo el mes. */
-	never_sent?: boolean
-}
-
-interface Cobertura {
-	people_count: number
-	people_reached: number
-	percent: number
-}
-
-/**
- * La escalera, en el idioma que ya hablan: Mary Kay vive de escalones.
- *
- * El primero va en 25% a proposito. La mediana de cobertura en septiembre de 2026 fue del
- * 10%, asi que un primer escalon alto dejaria a casi todas fuera el primer mes y el marcador
- * nace muerto.
- */
-const ESCALONES = [
-	{ pct: 25, nombre: 'Constante' },
-	{ pct: 50, nombre: 'Cercana' },
-	{ pct: 75, nombre: 'Presente' },
-	{ pct: 100, nombre: 'Unidad completa' },
-]
-
-interface Pendiente {
-	key: string
-	label: string
-	pendientes: number
-	hoy: number
-	/** No ha enviado NUNCA de esta sección: es donde está el hueco grande. */
-	virgen: boolean
-}
+import useUnitFollowUp, { ESCALONES } from './useUnitFollowUp'
 
 /** Cuántas caben sin que la tarjeta se convierta en una lista que se ignora. */
 const MAX_FILAS = 5
@@ -66,57 +24,7 @@ const MAX_FILAS = 5
 const UnitFollowUp = () => {
 	const navigate = useNavigate()
 	const { setFilters } = usePostsStore(state => state)
-	const { sections } = usePostSections(MainPostSectionTypes.UNITY)
-
-	const sectionKeys = useMemo(() => sections.map(section => section.key.toString()), [sections])
-
-	const { response, loading } = useFetchQuery<SectionStats[]>(API_ROUTES.POSTS.STATS_MONTH, {
-		customQueryKey: queryKeys.list('posts-stats-followup', { sections: sectionKeys.join(',') }),
-		enabled: !!sectionKeys.length,
-		staleTime: 60_000,
-		refetchOnWindowFocus: true,
-		queryParams: {
-			sections: sectionKeys.join(','),
-			post_type: MainPostSectionTypes.UNITY,
-		},
-	})
-
-	const { response: coberturaResp } = useFetchQuery<Cobertura>(API_ROUTES.POSTS.COVERAGE, {
-		customQueryKey: queryKeys.detail('posts-coverage', MainPostSectionTypes.UNITY),
-		staleTime: 60_000,
-		refetchOnWindowFocus: true,
-		queryParams: { post_type: MainPostSectionTypes.UNITY },
-	})
-
-	const { pendientes, enviadas } = useMemo(() => {
-		const stats = response?.data ?? []
-		const etiquetas = new Map(sections.map(section => [section.key.toString(), section.label]))
-
-		const filas: Pendiente[] = stats
-			.map(stat => ({
-				key: stat.section_key,
-				label: etiquetas.get(stat.section_key) ?? stat.section_key,
-				pendientes: Math.max(stat.posts_count - stat.posts_sent_count, 0),
-				hoy: stat.posts_live_today_count ?? 0,
-				virgen: stat.posts_sent_count === 0 && stat.posts_count > 0,
-			}))
-			.filter(fila => fila.pendientes > 0)
-			/*
-			 * El orden no es por volumen: primero lo que caduca —un cumpleaños mandado
-			 * mañana no sirve—, después lo que nunca ha tocado, y al final lo demás por
-			 * cuánto tiene esperando.
-			 */
-			.sort((a, b) =>
-				(b.hoy > 0 ? 1 : 0) - (a.hoy > 0 ? 1 : 0)
-				|| (b.virgen ? 1 : 0) - (a.virgen ? 1 : 0)
-				|| b.pendientes - a.pendientes,
-			)
-
-		return {
-			pendientes: filas,
-			enviadas: stats.reduce((total, stat) => total + stat.posts_sent_count, 0),
-		}
-	}, [response, sections])
+	const { loading, pendientes, enviadas, cobertura } = useUnitFollowUp()
 
 	/* Sin pendientes no hay tarjeta: una que siempre está deja de leerse. */
 	if (loading || !pendientes.length) return null
@@ -125,7 +33,6 @@ const UnitFollowUp = () => {
 	const visibles = pendientes.slice(0, MAX_FILAS)
 	const resto = pendientes.length - visibles.length
 
-	const cobertura = coberturaResp?.data
 	const faltan = cobertura ? Math.max(cobertura.people_count - cobertura.people_reached, 0) : 0
 	const siguiente = cobertura ? ESCALONES.find(escalon => cobertura.percent < escalon.pct) : undefined
 
