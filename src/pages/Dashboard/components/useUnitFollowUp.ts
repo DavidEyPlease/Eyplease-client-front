@@ -72,7 +72,7 @@ const useUnitFollowUp = () => {
 		queryParams: { post_type: MainPostSectionTypes.UNITY },
 	})
 
-	const { pendientes, enviadas } = useMemo(() => {
+	const { pendientes, enviadas, secciones } = useMemo(() => {
 		const stats = response?.data ?? []
 		const etiquetas = new Map(sections.map(section => [section.key.toString(), section.label]))
 
@@ -99,10 +99,15 @@ const useUnitFollowUp = () => {
 		return {
 			pendientes: filas,
 			enviadas: stats.reduce((total, stat) => total + stat.posts_sent_count, 0),
+			/* Todas, en el orden del plan: publicado contra compartido se lee sección por sección */
+			secciones: sections.map(section => {
+				const stat = stats.find(item => item.section_key === section.key.toString())
+				return { key: section.key.toString(), label: section.label, generadas: stat?.posts_count ?? 0, enviadas: stat?.posts_sent_count ?? 0 }
+			}),
 		}
 	}, [response, sections])
 
-	return { loading, pendientes, enviadas, cobertura: coberturaResp?.data }
+	return { loading, pendientes, enviadas, secciones, cobertura: coberturaResp?.data }
 }
 
 export default useUnitFollowUp

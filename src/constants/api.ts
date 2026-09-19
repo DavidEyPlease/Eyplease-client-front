@@ -67,6 +67,15 @@ export const API_ROUTES = {
     TOOLS: {
         LIST: '/tools',
     },
+    INDICATORS: {
+        BUSINESS: '/indicators/business',
+    },
+    CHALLENGES: {
+        LIST: '/challenges',
+        SUGGESTIONS: '/challenges/suggestions',
+        DETAIL: '/challenges/{id}',
+        AWARD: '/challenges/{id}/awards',
+    },
     REPORTS: {
         PREFERENCES: '/reports/preferences',
         LIST_UPLOADS: '/reports/uploads',

@@ -30,6 +30,7 @@ export const APP_ROUTES = {
         LIST: '/posts',
     },
     REPORTS: '/reports',
+    INDICATORS: '/indicators',
     HELP_CENTER: '/help-center',
     PAYMENTS_AND_BILLS: '/payments-and-bills',
     CHANGE_PASSWORD: '/change-password',

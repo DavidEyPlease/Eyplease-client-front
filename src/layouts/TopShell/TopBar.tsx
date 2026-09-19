@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router'
-import { BadgeCheckIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UndoIcon } from 'lucide-react'
+import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UndoIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
 import { DarkModeSelector } from '@/components/common/DarkModeSelector'
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import useAuth from '@/hooks/useAuth'
 import { MenuItem, MenuKeys } from '@/interfaces/common'
+import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
 import useAuthStore from '@/store/auth'
 import { setNewShell } from './useNewShell'
@@ -40,6 +41,12 @@ const COPY: Partial<Record<MenuKeys, { label?: string, hint: string }>> = {
 }
 const labelOf = (item: MenuItem) => COPY[item.key]?.label ?? item.label
 
+/**
+ * Indicadores nace con el marco nuevo, así que no está en el menú de siempre: se suma aquí a
+ * «Mi negocio», y sólo para quien tiene unidad (los números y los retos son de la unidad).
+ */
+const INDICATORS = { key: 'indicators', label: 'Indicadores', hint: 'Tus números, tu seguimiento y los retos de tu unidad', path: APP_ROUTES.INDICATORS }
+
 const NAV_BUTTON = 'relative flex h-[38px] cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground data-[state=open]:bg-foreground/5 data-[state=open]:text-foreground'
 
 const ActiveBar = () => <span className="shell-grad absolute inset-x-3 bottom-[3px] h-[2.5px] rounded-full" />
@@ -55,6 +62,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
     /* El boletín no es una entrada del menú de siempre (vivía dentro del Inicio): con el marco
        nuevo tiene su página, y el enlace sale sólo si el plan trae algún boletín. */
     const hasNewsletter = useAuthStore(state => state.utilData.newsletters.length > 0)
+    const hasUnit = useAuthStore(state => state.permissions.includes(PermissionKeys.POSTS_UNITY))
     const location = useLocation()
     const navigate = useNavigate()
 
@@ -92,10 +100,11 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
 
                 {GROUPS.map(group => {
                     const items = pick(group.keys)
-                    if (!items.length) return null
-                    if (items.length === 1) return direct(items[0])
+                    const extra = group.label === 'Mi negocio' && hasUnit ? INDICATORS : null
+                    if (!items.length && !extra) return null
+                    if (items.length === 1 && !extra) return direct(items[0])
 
-                    const active = items.some(isActive)
+                    const active = items.some(isActive) || (!!extra && location.pathname.includes(extra.path))
                     return (
                         <DropdownMenu key={group.label}>
                             <DropdownMenuTrigger className={cn(NAV_BUTTON, 'group outline-none', active && 'text-foreground')}>
@@ -104,13 +113,22 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                                 {active && <ActiveBar />}
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" sideOffset={12} className="shell-drop w-[340px] rounded-[20px] border-border p-2 shadow-[0_18px_50px_-24px_rgba(27,20,80,.5)]">
+                                {extra && (
+                                    <DropdownMenuItem onClick={() => navigate(extra.path)} className="shell-drop-row cursor-pointer gap-3 rounded-[14px] px-2.5 py-2.5">
+                                        <span className="shell-drop-icon grid size-[38px] shrink-0 place-items-center rounded-xl text-primary"><ChartNoAxesColumnIcon className="size-[18px]" /></span>
+                                        <span className="min-w-0">
+                                            <b className="block text-[13.5px] font-bold">{extra.label}</b>
+                                            <small className="block text-[11.5px] text-muted-foreground">{extra.hint}</small>
+                                        </span>
+                                    </DropdownMenuItem>
+                                )}
                                 {items.map((item, index) => {
                                     const Icon = ICONS[item.icon]
                                     return (
                                         <DropdownMenuItem
                                             key={item.key}
                                             onClick={() => navigate(item.path)}
-                                            style={{ '--i': index } as React.CSSProperties}
+                                            style={{ '--i': index + (extra ? 1 : 0) } as React.CSSProperties}
                                             className="shell-drop-row cursor-pointer gap-3 rounded-[14px] px-2.5 py-2.5"
                                         >
                                             <span className="shell-drop-icon grid size-[38px] shrink-0 place-items-center rounded-xl text-primary [&_svg]:size-[18px]">
