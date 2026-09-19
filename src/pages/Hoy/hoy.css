@@ -5,6 +5,10 @@
    680 px mide 850 de alto y en una laptop no cabe entera con sus botones. Con esto siempre cabe. */
 .hoy-page { --hoy-col: min(680px, max(440px, calc((100vh - 250px) * .8))); }
 
+/* La columna fija se desplaza sola cuando no cabe; la barra, fina y sólo al pasar por encima */
+.hoy-rail { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.hoy-rail:hover { scrollbar-color: rgba(108, 71, 255, .35) transparent; }
+
 /* Cada bloque sube y aparece, uno tras otro. Con su fotograma final propio: de base es invisible. */
 .hoy-rise { opacity: 0; transform: translateY(14px); animation: hoy-rise-in .7s cubic-bezier(.2, .8, .2, 1) forwards; animation-delay: calc(var(--i, 0) * 70ms + 60ms); }
 @keyframes hoy-rise-in { to { opacity: 1; transform: none; } }
@@ -58,8 +62,12 @@ article:hover .hoy-arrow, .hoy-arrow:focus-visible { opacity: 1; }
 .hoy-cta:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(108, 71, 255, 1); filter: saturate(1.15); }
 .hoy-cta:active:not(:disabled) { transform: scale(.97); }
 
+/* Borde con el degradado de la marca, para la tarjeta que manda en la página */
+.hoy-edge { position: relative; }
+.hoy-edge::before { content: ""; position: absolute; inset: 0; padding: 1.5px; border-radius: inherit; background: linear-gradient(135deg, rgba(108, 71, 255, .7), rgba(44, 212, 217, .55) 55%, rgba(229, 7, 125, .45)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); pointer-events: none; }
+
 /* ── Anillo del seguimiento ──────────────────────────────────────────────────────────────── */
-.hoy-meter circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+.hoy-meter circle { fill: none; stroke-linecap: round; }
 .hoy-meter .trk { stroke: rgba(26, 24, 48, .07); }
 .dark .hoy-meter .trk { stroke: rgba(255, 255, 255, .08); }
 .hoy-meter .val { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: hoy-ring-in 1.4s cubic-bezier(.2, .8, .2, 1) .35s forwards; filter: drop-shadow(0 0 6px rgba(108, 71, 255, .55)); }

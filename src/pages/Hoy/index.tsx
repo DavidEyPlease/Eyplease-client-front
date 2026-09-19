@@ -54,7 +54,9 @@ const HoyPage = () => {
                 )}
             </header>
 
-            <aside className="mx-auto grid w-full max-w-(--hoy-col) grid-cols-1 gap-4 [grid-area:rail] empty:hidden xl:sticky xl:top-[90px] xl:max-w-none">
+            {/* Fija al lado del feed, pero con su PROPIO desplazamiento: si la pantalla es baja y no cabe
+                entera, se baja con la rueda sobre ella en vez de quedar inalcanzable hasta el final del feed */}
+            <aside className="hoy-rail mx-auto grid w-full max-w-(--hoy-col) grid-cols-1 gap-4 [grid-area:rail] empty:hidden xl:sticky xl:top-[90px] xl:max-h-[calc(100vh-106px)] xl:max-w-none xl:overflow-y-auto xl:pb-2">
                 <HoyRail onPickSection={onPickSection} />
             </aside>
 

@@ -230,7 +230,14 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             }
         }
         else if (path === '/users/notifications') response = respond(page([]))
-        else if (path === '/reports/uploads') response = respond([])
+        else if (path === '/reports/uploads') {
+            // Todos los reportes cargados menos el último de cada boletín: así se ve el aviso de «falta uno»
+            const uploads = (utilData.newsletters as Array<{ code: string, sections: Array<{ id: string, name: string, canImported: number }> }>)
+                .filter(n => owned.has(n.code))
+                .flatMap(n => n.sections.filter(sec => sec.canImported).slice(0, -1).map(sec => ({ id: `up-${sec.id}`, status: 'completed', year_month: month(1).slice(0, 7), created_at: iso(2), updated_at: iso(2), newsletter: n, newsletter_section: sec })))
+            response = respond(uploads)
+        }
+        else if (path.startsWith('/reports/generate-')) response = respond(null, 403)
         else if (path === '/reports/preferences') {
             // Como la API real: sólo los boletines que su plan trae, con las secciones del catálogo
             const newsletters = (utilData.newsletters as Array<{ code: string, name: string, sections: Array<{ sectionKey: string, name: string }> }>)

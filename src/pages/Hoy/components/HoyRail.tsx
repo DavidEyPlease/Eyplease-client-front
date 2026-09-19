@@ -27,18 +27,19 @@ const HoyRail = ({ onPickSection }: Props) => {
 
     return (
         <>
-            <section className="shell-glass hoy-rise hidden rounded-[22px] p-[18px] text-center xl:block">
-                <span className="shell-grad mx-auto mt-1 mb-3 block size-[84px] rounded-full p-0.5">
+            {/* La ficha va en horizontal: apilada medía 330 px y, con el seguimiento debajo, la columna
+                no cabía en una laptop (lo de abajo no se alcanzaba hasta terminar el feed). */}
+            <section className="shell-glass hoy-rise hidden items-center gap-3 rounded-[22px] p-3.5 xl:flex">
+                <span className="shell-grad block size-[58px] shrink-0 rounded-full p-0.5">
                     {user?.profile_picture?.url
                         ? <img src={user.profile_picture.url} alt="" className="size-full rounded-full border-2 border-card object-cover" />
-                        : <span className="grid size-full place-items-center rounded-full border-2 border-card bg-card text-2xl font-extrabold text-primary">{(user?.name ?? '?').charAt(0)}</span>}
+                        : <span className="grid size-full place-items-center rounded-full border-2 border-card bg-card text-xl font-extrabold text-primary">{(user?.name ?? '?').charAt(0)}</span>}
                 </span>
-                <b className="block text-[15px] font-extrabold">{titleCaseName(user?.name ?? '')}</b>
-                <small className="text-muted-foreground">{user?.client_role?.name}</small>
-                <div className="mt-2.5 flex flex-wrap justify-center gap-1.5">
-                    {user?.plan?.name && <span className={cn(TAG, 'bg-[#6C47FF]/10 text-[#6C47FF] dark:text-[#BBAAFF]')}>{user.plan.name}</span>}
-                    {user?.account && <span className={cn(TAG, 'bg-foreground/5 text-muted-foreground')}>Cuenta {user.account}</span>}
-                </div>
+                <span className="min-w-0 flex-1 leading-tight">
+                    <b className="block text-[13.5px] font-extrabold">{titleCaseName(user?.name ?? '')}</b>
+                    <small className="block text-[11.5px] text-muted-foreground">{user?.client_role?.name}{user?.account ? ` · ${user.account}` : ''}</small>
+                    {user?.plan?.name && <span className={cn(TAG, 'mt-1.5 bg-[#6C47FF]/10 text-[#6C47FF] dark:text-[#BBAAFF]')}>{user.plan.name}</span>}
+                </span>
             </section>
 
             {!loading && (hasCoverage || pendientes.length > 0) && (
@@ -48,7 +49,7 @@ const HoyRail = ({ onPickSection }: Props) => {
                     {hasCoverage ? (
                         /* Apilado en la columna angosta; con sitio a lo ancho, el anillo a la izquierda */
                         <div className="mt-3 grid items-center gap-x-5 gap-y-2.5 max-xl:sm:grid-cols-[auto_minmax(0,1fr)]">
-                            <div className="grid justify-items-center"><RingMeter percent={cobertura.percent} /></div>
+                            <div className="grid justify-items-center"><RingMeter percent={cobertura.percent} size={120} /></div>
                             <div>
                             <p className="text-center text-[12px] text-muted-foreground max-xl:sm:text-left max-xl:sm:text-[13px]">
                                 <b className="text-foreground">{cobertura.people_reached} de {cobertura.people_count}</b> consultoras recibieron algo tuyo este mes.
