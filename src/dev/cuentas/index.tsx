@@ -2,6 +2,7 @@
 // SÓLO DEV (no entra en el build): la web ENTERA entrando como cada plan real, sin sesión ni contraseñas.
 //   http://localhost:5196/cuentas.html?plan=elite          (gratis | standard | basico | ejecutivo | elite | nacional)
 //   …&rango=national_director                              (por defecto: Directora; el Standard entra como consultora)
+//   …&ir=/indicators                                       (página en la que abre; por defecto el Inicio)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
@@ -32,8 +33,14 @@ const hadSession = localStorage.getItem(SESSION_KEY)
 if (!hadSession) localStorage.setItem(SESSION_KEY, 'simulador')
 window.addEventListener('pagehide', () => { if (localStorage.getItem(SESSION_KEY) === 'simulador') localStorage.removeItem(SESSION_KEY) })
 
-// La web no conoce la ruta /cuentas.html: arranca en el Inicio (el plan ya quedó en sessionStorage)
-window.history.replaceState(null, '', '/dashboard')
+// `?nuevo=0|1` elige el marco igual que en la web real; aquí hay que guardarlo a mano porque
+// la dirección se reescribe abajo, antes de que `isNewShell()` llegue a leerla
+const shell = params.get('nuevo')
+if (shell === '0' || shell === '1') localStorage.setItem('eyplease:shell', shell === '1' ? 'new' : 'old')
+
+// La web no conoce la ruta /cuentas.html: arranca en el Inicio, o donde diga `ir` (el plan ya quedó en sessionStorage)
+const startAt = params.get('ir') ?? ''
+window.history.replaceState(null, '', startAt.startsWith('/') && !startAt.startsWith('//') ? startAt : '/dashboard')
 
 const Switcher = () => (
     <select

@@ -134,6 +134,29 @@ const billingFor = (plan: DemoPlan) => ({
 
 const FILE_PATH = '/files/download'
 
+const person = (index: number) => ({ id: `person-${index}`, name: PEOPLE[index].toUpperCase(), account: `00${index}4${index}1`, photo: null })
+const monthKey = () => month(0).slice(0, 7)
+const monthEnd = () => { const d = new Date(now.getFullYear(), now.getMonth() + 1, 0); return `${monthKey()}-${String(d.getDate()).padStart(2, '0')}` }
+
+/** Retos de ejemplo: uno suyo (cobertura) y uno puesto a la unidad, con su tabla por persona. */
+const challengeStore = {
+    personal: [{
+        id: 'ch-coverage', scope: 'personal', type: 'coverage', title: 'Llega a Constante: 25% de tu unidad', description: 'Que 13 de tus 52 consultoras reciban algo tuyo este mes.',
+        target: 25, prize: null, period: monthKey(), ends_on: monthEnd(), is_open: true, awards_count: 0,
+        progress: { current: 13, goal: 25, measure: 'percent', done: false, detail: '7 de 52 consultoras', data_missing: false },
+    }] as Array<Record<string, unknown>>,
+    unit: [{
+        id: 'ch-points', scope: 'unit', type: 'unit_points', title: '1,800 puntos antes de fin de mes', description: null,
+        target: 1800, prize: 'Set de brochas + reconocimiento en el boletín', period: monthKey(), ends_on: monthEnd(), is_open: true, awards_count: 0,
+        progress: { current: 2, goal: 52, measure: 'people', done: false, detail: null, data_missing: false },
+    }] as Array<Record<string, unknown>>,
+}
+const challengeRows = [2450, 1910, 1320, 880, 410].map((current, index) => ({ ...person(index), current, goal: 1800, done: current >= 1800, awarded: false }))
+const suggestions = [
+    { type: 'section_share', title: 'Comparte todo Círculo Rosa esta semana', description: 'Es la sección que nunca has enviado y hoy tiene piezas en vivo.\nSon 3 piezas: con mandarlas llegas a 3 consultoras más.', target: 3, params: { section: 'pink_circle' }, people: [] },
+    { type: 'leaders_five', title: 'Reto de las 5', description: 'Dos de tus líderes están a una activa de tener 5 en su grupo.', target: 5, params: null, people: [0, 1].map(index => ({ ...person(index), actives: 4 })) },
+]
+
 /** Lo que se pidió y a qué se contestó: `window.__cuentas.calls` dice qué no estaba previsto. */
 export const calls: Array<{ method: string, path: string, mocked: boolean }> = []
 
@@ -175,6 +198,37 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         }
         /* Descargar: llega un archivo de verdad (un SVG), para que «descargar y marcar enviada» se pueda probar */
         else if (path === FILE_PATH) response = new Response(new Blob(['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 135"><rect width="108" height="135" fill="#6C47FF"/></svg>'], { type: 'image/svg+xml' }))
+        else if (path === '/indicators/business') response = respond({ month: monthKey(), unit_size: owned.has('unity') ? 52 : 0, leaders: { count: 2, period: monthKey(), people: [] }, ordered: { count: 11, total: 52, source: 'sales' }, with_hearts: { count: 22 }, near_gift: { count: null } })
+        else if (path === '/challenges/suggestions') response = respond(suggestions)
+        else if (path === '/challenges' && method === 'POST') {
+            const body = JSON.parse(String(init?.body ?? '{}'))
+            const unit = String(body.type).startsWith('unit_')
+            const created = {
+                id: `ch-${Date.now()}`, scope: unit ? 'unit' : 'personal', type: body.type, description: null, target: body.target, prize: body.prize ?? null,
+                title: body.title ?? (unit ? `${Number(body.target).toLocaleString('es-MX')} ${body.type === 'unit_hearts' ? 'corazones' : 'puntos'} antes del cierre` : suggestions.find(item => item.type === body.type)?.title ?? 'Nuevo reto'),
+                period: monthKey(), ends_on: body.ends_on ?? monthEnd(), is_open: true, awards_count: 0,
+                progress: { current: 0, goal: unit ? 52 : body.target, measure: unit ? 'people' : 'pieces', done: false, detail: null, data_missing: false },
+            }
+            challengeStore[unit ? 'unit' : 'personal'].push(created)
+            response = respond(created)
+        }
+        else if (path === '/challenges') response = respond(challengeStore)
+        else if (/^\/challenges\/[^/]+\/awards$/.test(path)) {
+            const row = challengeRows.find(item => item.id === JSON.parse(String(init?.body ?? '{}')).person_id)
+            if (row) row.awarded = true
+            response = respond({ ...challengeStore.unit[0], rows: challengeRows })
+        }
+        else if (/^\/challenges\/[^/]+$/.test(path)) {
+            const id = path.split('/')[2]
+            if (method === 'DELETE') {
+                challengeStore.personal = challengeStore.personal.filter(item => item.id !== id)
+                challengeStore.unit = challengeStore.unit.filter(item => item.id !== id)
+                response = respond(null)
+            } else {
+                const found = [...challengeStore.personal, ...challengeStore.unit].find(item => item.id === id)
+                response = found ? respond({ ...found, rows: found.scope === 'unit' ? challengeRows : [] }) : respond(null, 404)
+            }
+        }
         else if (path === '/users/notifications') response = respond(page([]))
         else if (path === '/reports/uploads') response = respond([])
         else if (path === '/reports/preferences') {
