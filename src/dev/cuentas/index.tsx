@@ -3,6 +3,7 @@
 //   http://localhost:5196/cuentas.html?plan=elite          (gratis | standard | basico | ejecutivo | elite | nacional)
 //   …&rango=national_director                              (por defecto: Directora; el Standard entra como consultora)
 //   …&ir=/indicators                                       (página en la que abre; por defecto el Inicio)
+//   …&cobro=aldia|toca|atrasado                            (cómo va su pago; por defecto «toca»)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
@@ -23,6 +24,9 @@ const role = slug(plan.name) === 'standard' ? 'consultant' : 'director'
 const rank = params.get('rango') ?? sessionStorage.getItem('cuentas:rango')
 if (params.has('rango')) sessionStorage.setItem('cuentas:rango', params.get('rango') ?? '')
 else if (params.has('plan')) sessionStorage.removeItem('cuentas:rango')
+
+const cobro = params.get('cobro')
+if (cobro) sessionStorage.setItem('cuentas:cobro', cobro)
 
 installMockApi(plan, role, params.has('plan') && !params.has('rango') ? null : rank)
 // Para revisar desde la consola qué pidió la web y qué no estaba previsto

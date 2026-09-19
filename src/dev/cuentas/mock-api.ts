@@ -125,12 +125,48 @@ const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string 
     canva_connected: false, template_id: null, unread_notifications_count: 2, trial_ends_at: null, on_trial: false,
 })
 
-const billingFor = (plan: DemoPlan) => ({
-    billing_type: 'manual', plan: { name: plan.name, price: plan.price }, next_amount: plan.price, currency: 'MXN',
-    next_charge_date: null, payment_day: null, balance: 0, oldest_unpaid_period: null, unpaid_periods: 0,
-    payment_method: { type: 'manual', accounts: [], instructions: null, card_checkout: { enabled: false } },
-    current_payment: null, debt: { total: 0, currency: 'MXN', periods: [] }, payment_years: [],
-})
+const NO_ENFORCEMENT = { days_overdue: 0, show_reminder_popup: false, show_home_banner: false, show_global_banner: false, restricted_features: [], days_until_block: null, block_date: null, account_blocked: false, paused_reason: null }
+const periodOf = (back = 0) => month(back).slice(0, 7)
+const dayOfThisMonth = (day: number, monthsAhead = 0) => { const d = new Date(now.getFullYear(), now.getMonth() + monthsAhead, day); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+
+/**
+ * Cobro de ejemplo, manual y con el mes en curso por pagar (`&cobro=aldia` lo deja al corriente y
+ * `&cobro=atrasado` con dos meses vencidos): así se ven el botón de comprobante y los tres estados.
+ */
+const billingFor = (plan: DemoPlan, scenario: string) => {
+    const price = Number(plan.price) || 0
+    const owed = scenario === 'aldia' || !price ? [] : scenario === 'atrasado' ? [periodOf(1), periodOf(0)] : [periodOf(0)]
+    const overdue = scenario === 'atrasado'
+    return {
+        billing_type: 'manual', plan: { name: plan.name, price }, next_amount: price, currency: 'MXN',
+        next_charge_date: dayOfThisMonth(5, 1), payment_day: 5, balance: price * owed.length,
+        oldest_unpaid_period: owed[0] ?? null, unpaid_periods: owed.length,
+        payment_method: { type: 'manual', accounts: [{ bank: 'Banco de ejemplo', beneficiary: 'Beneficiario de ejemplo', number: '000000000000000000', numberType: 'CLABE' }], instructions: 'Pon tu número de cuenta Mary Kay en el concepto.', card_checkout: { enabled: false } },
+        current_payment: owed.length ? {
+            period: owed[owed.length - 1], status: overdue ? 'overdue' : 'pending', amount: price, remaining: price, currency: 'MXN',
+            due_date: overdue ? dayOfThisMonth(5, -1) : dayOfThisMonth(25), is_due: true, is_overdue: overdue, has_receipt: false, can_upload_receipt: true,
+            enforcement: { ...NO_ENFORCEMENT, days_overdue: overdue ? 14 : 0, show_home_banner: overdue },
+        } : null,
+        debt: { total: price * owed.length, currency: 'MXN', periods: owed.map(period => ({ period, remaining: price, status: overdue ? 'overdue' : 'pending' })) },
+        payment_years: price ? [now.getFullYear()] : [],
+    }
+}
+
+const paymentsFor = (plan: DemoPlan, scenario: string) => {
+    const price = Number(plan.price) || 0
+    if (!price) return []
+    const owed = scenario === 'aldia' ? 0 : scenario === 'atrasado' ? 2 : 1
+    return [0, 1, 2, 3, 4].map(back => {
+        const pending = back < owed
+        return {
+            id: `pay-${back}`, period: periodOf(back), amount: price, paid: pending ? 0 : price, remaining: pending ? price : 0, currency: 'MXN',
+            status: pending ? (scenario === 'atrasado' ? 'overdue' : 'pending') : 'paid', method: pending ? null : 'transfer',
+            paid_at: pending ? null : iso(back * 30 - 12), reference_number: pending ? null : `REF${4821 + back}`,
+            receipt_uploaded_at: pending ? null : iso(back * 30 - 12), has_receipt: !pending, receipt_url: null, can_upload_receipt: pending,
+        }
+    })
+}
+
 
 const FILE_PATH = '/files/download'
 
@@ -182,9 +218,12 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         let known = true
         let response: Response
 
+        const scenario = sessionStorage.getItem('cuentas:cobro') ?? 'toca'
+
         if (path === '/me') response = respond(userFor(plan, role, rank))
         else if (path === '/util-data') response = respond(utilData)
-        else if (path === '/billing/overview') response = respond(billingFor(plan))
+        else if (path === '/billing/overview') response = respond(billingFor(plan, scenario))
+        else if (path === '/billing/payments') response = respond(page(paymentsFor(plan, scenario)))
         else if (path.startsWith('/billing/')) response = respond(page([]))
         else if (path === '/posts') {
             const section = q.get('section') ?? ''
