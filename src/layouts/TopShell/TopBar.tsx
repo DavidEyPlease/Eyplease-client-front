@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router'
-import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UndoIcon } from 'lucide-react'
+import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UndoIcon, UsersRoundIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
 import { DarkModeSelector } from '@/components/common/DarkModeSelector'
@@ -32,7 +32,7 @@ const DIRECT_LAST: MenuKeys[] = [MenuKeys.UPLOAD_REPORTS]
 /** El nombre y la bajada con que se presenta cada entrada en el marco nuevo. */
 const COPY: Partial<Record<MenuKeys, { label?: string, hint: string }>> = {
     [MenuKeys.HOME]: { label: 'Hoy', hint: 'Lo que pasó hoy en tu unidad' },
-    [MenuKeys.POSTS]: { label: 'Mi unidad', hint: 'Lo que logró cada consultora y lo que falta compartirle' },
+    [MenuKeys.POSTS]: { label: 'Publicaciones', hint: 'Todas las piezas del mes, sección por sección' },
     [MenuKeys.GALLERY]: { hint: 'Las fotos de tu unidad para sus reconocimientos' },
     [MenuKeys.MY_CLIENTS]: { label: 'Mis clientas', hint: 'Sus cumpleaños con la pieza lista' },
     [MenuKeys.TOOLS]: { hint: 'Todo lo que la biblioteca preparó para que compartas' },
@@ -43,10 +43,13 @@ const COPY: Partial<Record<MenuKeys, { label?: string, hint: string }>> = {
 const labelOf = (item: MenuItem) => COPY[item.key]?.label ?? item.label
 
 /**
- * Indicadores nace con el marco nuevo, así que no está en el menú de siempre: se suma aquí a
- * «Mi negocio», y sólo para quien tiene unidad (los números y los retos son de la unidad).
+ * Lo que nace con el marco nuevo no está en el menú de siempre: se suma aquí a «Mi negocio», y
+ * sólo para quien tiene unidad (los números, los retos y las personas son de la unidad).
  */
-const INDICATORS = { key: 'indicators', label: 'Indicadores', hint: 'Tus números, tu seguimiento y los retos de tu unidad', path: APP_ROUTES.INDICATORS }
+const UNIT_EXTRAS = [
+    { key: 'indicators', label: 'Indicadores', hint: 'Tus números, tu seguimiento y los retos de tu unidad', path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon },
+    { key: 'my-unit', label: 'Mi unidad', hint: 'Lo que logró cada consultora y lo que falta compartirle', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
+]
 
 const NAV_BUTTON = 'relative flex h-[38px] cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground data-[state=open]:bg-foreground/5 data-[state=open]:text-foreground'
 
@@ -101,11 +104,11 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
 
                 {GROUPS.map(group => {
                     const items = pick(group.keys)
-                    const extra = group.label === 'Mi negocio' && hasUnit ? INDICATORS : null
-                    if (!items.length && !extra) return null
-                    if (items.length === 1 && !extra) return direct(items[0])
+                    const extras = group.label === 'Mi negocio' && hasUnit ? UNIT_EXTRAS : []
+                    if (!items.length && !extras.length) return null
+                    if (items.length === 1 && !extras.length) return direct(items[0])
 
-                    const active = items.some(isActive) || (!!extra && location.pathname.includes(extra.path))
+                    const active = items.some(isActive) || extras.some(extra => location.pathname.includes(extra.path))
                     return (
                         <DropdownMenu key={group.label}>
                             <DropdownMenuTrigger className={cn(NAV_BUTTON, 'group outline-none', active && 'text-foreground')}>
@@ -114,22 +117,22 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                                 {active && <ActiveBar />}
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" sideOffset={12} className="shell-drop w-[340px] rounded-[20px] border-border p-2 shadow-[0_18px_50px_-24px_rgba(27,20,80,.5)]">
-                                {extra && (
-                                    <DropdownMenuItem onClick={() => navigate(extra.path)} className="shell-drop-row cursor-pointer gap-3 rounded-[14px] px-2.5 py-2.5">
-                                        <span className="shell-drop-icon grid size-[38px] shrink-0 place-items-center rounded-xl text-primary"><ChartNoAxesColumnIcon className="size-[18px]" /></span>
+                                {extras.map((extra, index) => (
+                                    <DropdownMenuItem key={extra.key} onClick={() => navigate(extra.path)} style={{ '--i': index } as React.CSSProperties} className="shell-drop-row cursor-pointer gap-3 rounded-[14px] px-2.5 py-2.5">
+                                        <span className="shell-drop-icon grid size-[38px] shrink-0 place-items-center rounded-xl text-primary"><extra.Icon className="size-[18px]" /></span>
                                         <span className="min-w-0">
                                             <b className="block text-[13.5px] font-bold">{extra.label}</b>
                                             <small className="block text-[11.5px] text-muted-foreground">{extra.hint}</small>
                                         </span>
                                     </DropdownMenuItem>
-                                )}
+                                ))}
                                 {items.map((item, index) => {
                                     const Icon = ICONS[item.icon]
                                     return (
                                         <DropdownMenuItem
                                             key={item.key}
                                             onClick={() => navigate(item.path)}
-                                            style={{ '--i': index + (extra ? 1 : 0) } as React.CSSProperties}
+                                            style={{ '--i': index + extras.length } as React.CSSProperties}
                                             className="shell-drop-row cursor-pointer gap-3 rounded-[14px] px-2.5 py-2.5"
                                         >
                                             <span className="shell-drop-icon grid size-[38px] shrink-0 place-items-center rounded-xl text-primary [&_svg]:size-[18px]">

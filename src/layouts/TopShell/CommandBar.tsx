@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { BadgeCheckIcon, ChartNoAxesColumnIcon, NewspaperIcon, SearchIcon, SparklesIcon } from 'lucide-react'
+import { BadgeCheckIcon, ChartNoAxesColumnIcon, NewspaperIcon, SearchIcon, SparklesIcon, UsersRoundIcon } from 'lucide-react'
 
 import { ICONS } from '@/components/sidebar/icons'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -55,7 +55,10 @@ const CommandBar = ({ labelOf }: Props) => {
     const pages = [
         ...sidebarMenu.map(item => ({ key: item.key.toString(), label: labelOf(item.key.toString(), item.label), path: item.path, Icon: ICONS[item.icon] })),
         ...(hasNewsletter ? [{ key: 'newsletter', label: 'Boletín', path: APP_ROUTES.HOME.NEWSLETTER, Icon: NewspaperIcon }] : []),
-        ...(hasUnit ? [{ key: 'indicators', label: 'Indicadores', path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon }] : []),
+        ...(hasUnit ? [
+            { key: 'indicators', label: 'Indicadores', path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon },
+            { key: 'my-unit', label: 'Mi unidad', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
+        ] : []),
         { key: 'profile', label: 'Perfil', path: APP_ROUTES.HOME.PROFILE, Icon: BadgeCheckIcon },
     ]
 

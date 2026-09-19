@@ -155,7 +155,7 @@ const UnitFeed = ({ feed, chip, onChip, index = 0 }: Props) => {
                             {previousGroups.slice(0, PREVIOUS_SHOWN).map(card)}
                             {previousGroups.length > PREVIOUS_SHOWN && (
                                 <button type="button" onClick={() => openAll()} className="flex cursor-pointer items-center justify-center gap-1.5 py-1 text-[12.5px] font-bold text-primary hover:underline">
-                                    Ver todo el mes en {copy.title} <ArrowRightIcon className="size-3.5" />
+                                    Ver todo el mes en Publicaciones <ArrowRightIcon className="size-3.5" />
                                 </button>
                             )}
                         </>

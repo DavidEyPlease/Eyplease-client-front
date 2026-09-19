@@ -12,6 +12,7 @@ import ResetPasswordPage from "./pages/Auth/ResetPassword"
 import DashboardPage from "./pages/Dashboard"
 import NewsletterPage from "./pages/Newsletter"
 import IndicatorsPage from "./pages/Indicators"
+import MyUnitPage from "./pages/MyUnit"
 import GalleryPage from "./pages/Gallery"
 import MyClientsPage from "./pages/MyClients"
 import ToolsPage from "./pages/Tools"
@@ -44,6 +45,7 @@ const Router = () => {
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
                 <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />
                 <Route path={APP_ROUTES.INDICATORS} element={<IndicatorsPage />} />
+                <Route path={APP_ROUTES.MY_UNIT} element={<MyUnitPage />} />
                 <Route path={APP_ROUTES.HOME.GALLERY} element={<GalleryPage />} />
                 <Route path={APP_ROUTES.HOME.MY_CLIENTS} element={<MyClientsPage />} />
                 <Route path={APP_ROUTES.TOOLS} element={<ToolsPage />} />

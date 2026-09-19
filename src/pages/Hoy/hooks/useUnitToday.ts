@@ -21,7 +21,7 @@ export interface UnitGroup {
     shared: number
 }
 
-const dayKey = (date: Date | string) => {
+export const dayKey = (date: Date | string) => {
     const d = new Date(date)
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
@@ -37,7 +37,7 @@ const monthNameOf = (fecha: string): string => {
  * Parte las publicaciones de UNA sección en tarjetas: una por tramo (en vivo / cierre) y día,
  * con las versiones de cada consultora juntas. Mismo criterio que el Hoy de la app.
  */
-const buildUnitGroups = (key: string, label: string, posts: IPost[], today: string): UnitGroup[] => {
+export const buildUnitGroups = (key: string, label: string, posts: IPost[], today: string): UnitGroup[] => {
     /* Lo vivo se fecha por el día en que pasó; el lote del cierre, por el día en que se generó.
        Se separan aunque caigan el mismo día: hablan de meses distintos y juntas se leen repetidas. */
     const buckets: Record<string, IPost[]> = {}
