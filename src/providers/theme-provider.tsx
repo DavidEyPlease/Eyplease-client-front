@@ -32,20 +32,23 @@ export function ThemeProvider({
 
     useEffect(() => {
         const root = window.document.documentElement
+        const apply = (mode: "dark" | "light") => {
+            root.classList.remove("light", "dark")
+            root.classList.add(mode)
+        }
 
-        root.classList.remove("light", "dark")
-
-        if (theme === "system") {
-            const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-                .matches
-                ? "dark"
-                : "light"
-
-            root.classList.add(systemTheme)
+        if (theme !== "system") {
+            apply(theme)
             return
         }
 
-        root.classList.add(theme)
+        /* En automático sigue al sistema EN VIVO: si el equipo pasa a modo noche al atardecer,
+           la página cambia con él sin recargar. */
+        const media = window.matchMedia("(prefers-color-scheme: dark)")
+        const sync = () => apply(media.matches ? "dark" : "light")
+        sync()
+        media.addEventListener("change", sync)
+        return () => media.removeEventListener("change", sync)
     }, [theme])
 
     const value = {

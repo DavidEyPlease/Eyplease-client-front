@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { ChevronRightIcon } from 'lucide-react'
 
+import { SubscriptionRow } from '@/components/billing/SubscriptionCard'
 import { IconBySection } from '@/components/generics/IconBySection'
 import { APP_ROUTES } from '@/constants/app'
 import { PermissionKeys } from '@/interfaces/permissions'
@@ -136,6 +137,9 @@ const HoyRail = ({ onPickSection }: Props) => {
                         : <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />}
                 </Link>
             )}
+
+            {/* Su plan y su próximo cobro, siempre a la vista: con el marco de siempre lo decía el menú lateral */}
+            <SubscriptionRow className="shell-glass hoy-rise rounded-[22px] p-3.5 hover:border-[#6C47FF]/40" />
         </>
     )
 }

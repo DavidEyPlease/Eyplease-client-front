@@ -3,6 +3,8 @@ import { IconPreferences } from "@/components/Svg/IconPreferences"
 import { Switch } from "@/components/ui/switch"
 import useAuth from "@/hooks/useAuth"
 import { IAuthUser } from "@/interfaces/auth"
+import ThemeModeSelector from "@/layouts/TopShell/ThemeModeSelector"
+import { SunMoonIcon } from "lucide-react"
 import SectionCard from "./SectionCard"
 
 interface Props {
@@ -32,6 +34,19 @@ const Preferences = ({ user }: Props) => {
                     checked={user.on_notifications}
                     onCheckedChange={(checked) => updateUser({ onNotifications: checked })}
                 />
+            </div>
+
+            <div className="mt-3 flex max-w-xl flex-wrap items-center gap-3.5 rounded-2xl border p-4 transition-colors hover:bg-surface-soft">
+                <span className="grid size-9 shrink-0 place-content-center rounded-xl bg-primary/[0.08] text-primary [&_svg]:size-4.5">
+                    <SunMoonIcon aria-hidden />
+                </span>
+                <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-bold tracking-tight">Apariencia</p>
+                    <p className="text-[11.5px] font-medium text-muted-foreground">
+                        Día, noche, o automático para que siga a tu equipo
+                    </p>
+                </div>
+                <ThemeModeSelector labels />
             </div>
         </SectionCard>
     )

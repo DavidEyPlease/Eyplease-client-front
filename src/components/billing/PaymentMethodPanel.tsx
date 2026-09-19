@@ -15,10 +15,12 @@ import { periodLabel } from './utils'
 interface Props {
     overview?: IBillingOverview
     loading: boolean
+    /** Quien ya enseña las cifras arriba (la tarjeta de suscripción) pide no repetirlas */
+    hideSummary?: boolean
 }
 
 /** Cómo y cuándo paga el cliente: tipo de cobro, medio guardado e importes. */
-const PaymentMethodPanel = ({ overview, loading }: Props) => {
+const PaymentMethodPanel = ({ overview, loading, hideSummary = false }: Props) => {
     const [payOpen, setPayOpen] = useState(false)
 
     if (loading) {
@@ -41,7 +43,7 @@ const PaymentMethodPanel = ({ overview, loading }: Props) => {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap gap-2.5">
+            {!hideSummary && <div className="flex flex-wrap gap-2.5">
                 <StatTile
                     label="Próximo pago"
                     value={formatCurrency(overview.next_amount, overview.currency)}
@@ -61,7 +63,7 @@ const PaymentMethodPanel = ({ overview, loading }: Props) => {
                     tone="cyan"
                     hint={overview.payment_day ? `Cada día ${overview.payment_day}` : 'Sin día de pago'}
                 />
-            </div>
+            </div>}
 
             {cardAvailable && (
                 <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/[0.05] p-4">

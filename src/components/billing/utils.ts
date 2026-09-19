@@ -1,5 +1,6 @@
 import { IBillingOverview, PaymentMethod, PaymentStatus } from '@/interfaces/billing'
 import { queryKeys } from '@/utils/cache'
+import { formatDate } from '@/utils/dates'
 
 /** Una sola clave para el resumen: sidebar y perfil comparten petición y se invalidan juntos. */
 export const billingOverviewKey = queryKeys.generic('billing-overview')
@@ -93,6 +94,66 @@ export const receiptTargetFrom = (overview?: IBillingOverview): IReceiptTarget |
     }
 
     return { periods: [payment.period], amount: payment.remaining, currency: payment.currency, hasReceipt: payment.has_receipt }
+}
+
+export type BillingTone = 'overdue' | 'due' | 'review' | 'calm'
+
+export interface BillingStatus {
+    tone: BillingTone
+    /** El titular: primero el problema, y si no lo hay, el próximo cobro */
+    headline: string
+    planName: string
+    amount: number
+    currency: string
+    /** Qué periodo es y cuándo vence o se cobra */
+    detail: string
+    /** Con varios meses de deuda: cuántos son y desde cuándo */
+    extra: string | null
+    /** Últimos cuatro de la tarjeta, si el cobro es automático y no hay nada que comprobar */
+    cardLastFour: string | null
+    canUpload: boolean
+    receiptTarget: IReceiptTarget | null
+}
+
+const dueDateLabel = (date?: string | null) =>
+    date ? formatDate(date, { formatter: { date: 'medium' }, dateOnly: true }) : null
+
+/**
+ * El estado de cobro, leído UNA vez: qué se anuncia, cuánto y para cuándo. Lo comparten la tarjeta
+ * del menú lateral de siempre y las del marco nuevo, para que las dos digan lo mismo.
+ *
+ * Se apoya en `current_payment`, que la API devuelve ya resuelto, para no decidir aquí qué periodo
+ * toca ni si está vencido.
+ */
+export const billingStatusFrom = (overview: IBillingOverview): BillingStatus => {
+    const { current_payment: payment, payment_method: paymentMethod } = overview
+    const canUpload = shouldOfferReceipt(overview)
+    const inReview = payment?.status === PaymentStatus.IN_REVIEW
+
+    const tone: BillingTone = payment?.is_overdue ? 'overdue' : inReview ? 'review' : canUpload ? 'due' : 'calm'
+    const headline = { overdue: 'Pago atrasado', review: 'Comprobante en revisión', due: 'Toca pagar', calm: 'Próximo pago' }[tone]
+
+    const owedPeriods = overview.debt?.periods ?? []
+    const multiple = owedPeriods.length > 1
+    const dueDate = dueDateLabel(payment?.due_date ?? overview.next_charge_date)
+
+    return {
+        tone,
+        headline,
+        planName: overview.plan?.name ?? 'Sin plan',
+        /* Con varios meses de deuda manda el total; si no, el periodo en curso o el próximo cobro */
+        amount: multiple ? overview.debt.total : payment ? payment.remaining : overview.next_amount,
+        currency: overview.currency,
+        detail: multiple
+            ? periodsLabel(owedPeriods.map(item => item.period))
+            : payment
+                ? `${periodLabel(payment.period)}${dueDate ? ` · vence el ${dueDate}` : ''}`
+                : dueDate ? `Se cobra el ${dueDate}` : 'Sin fecha de cobro asignada',
+        extra: multiple ? `${owedPeriods.length} periodos pendientes${dueDate ? ` · el primero venció el ${dueDate}` : ''}` : null,
+        cardLastFour: paymentMethod.type === 'automatic' && !canUpload ? paymentMethod.card?.last_four ?? null : null,
+        canUpload,
+        receiptTarget: receiptTargetFrom(overview),
+    }
 }
 
 /** Formatos que acepta un comprobante: foto del banco o PDF del estado de cuenta. */

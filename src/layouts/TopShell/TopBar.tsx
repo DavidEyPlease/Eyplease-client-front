@@ -1,8 +1,10 @@
 import { Link, useLocation, useNavigate } from 'react-router'
-import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UndoIcon, UsersRoundIcon } from 'lucide-react'
+import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UndoIcon, UsersRoundIcon, WalletIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
-import { DarkModeSelector } from '@/components/common/DarkModeSelector'
+import { BILLING_PATH } from '@/components/billing/SubscriptionCard'
+import useBilling from '@/components/billing/useBilling'
+import { billingStatusFrom } from '@/components/billing/utils'
 import LoggedUserAvatar from '@/components/generics/LoggedUserAvatar'
 import { NotificationsDropdown } from '@/components/generics/Notifications'
 import { ICONS } from '@/components/sidebar/icons'
@@ -13,8 +15,10 @@ import useAuth from '@/hooks/useAuth'
 import { MenuItem, MenuKeys } from '@/interfaces/common'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
+import { formatCurrency } from '@/utils'
 import useAuthStore from '@/store/auth'
 import CommandBar from './CommandBar'
+import ThemeModeSelector from './ThemeModeSelector'
 import { setNewShell } from './useNewShell'
 
 /**
@@ -67,6 +71,9 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
        nuevo tiene su página, y el enlace sale sólo si el plan trae algún boletín. */
     const hasNewsletter = useAuthStore(state => state.utilData.newsletters.length > 0)
     const hasUnit = useAuthStore(state => state.permissions.includes(PermissionKeys.POSTS_UNITY))
+    /* Su plan y su cobro, en el menú de la cuenta. A las cuentas que se cobran por fuera no se les pide ni se les pinta */
+    const { overview, canSeeBilling } = useBilling()
+    const billing = canSeeBilling && overview ? billingStatusFrom(overview) : null
     const location = useLocation()
     const navigate = useNavigate()
 
@@ -164,7 +171,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                 >
                     <PanelRightIcon className="size-[18px]" />
                 </button>
-                <DarkModeSelector />
+                <ThemeModeSelector className="mx-1 hidden sm:inline-flex" />
                 <NotificationsDropdown />
 
                 <DropdownMenu>
@@ -181,6 +188,18 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                         <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-xl px-2.5 py-2" onClick={() => navigate(APP_ROUTES.HOME.PROFILE)}>
                             <BadgeCheckIcon /> Perfil
                         </DropdownMenuItem>
+                        {billing && (
+                            <DropdownMenuItem className="cursor-pointer items-start gap-2.5 rounded-xl px-2.5 py-2" onClick={() => navigate(BILLING_PATH)}>
+                                <WalletIcon className="mt-0.5" />
+                                <span className="min-w-0 leading-tight">
+                                    Pagos y suscripción
+                                    <small className={cn('block text-[11px]', billing.tone === 'overdue' ? 'font-bold text-red-600 dark:text-red-400' : billing.tone === 'due' ? 'font-bold text-amber-600 dark:text-amber-400' : 'text-muted-foreground')}>
+                                        {billing.tone === 'calm' ? `${billing.planName} · ${formatCurrency(billing.amount, billing.currency)}` : `${billing.headline} · ${formatCurrency(billing.amount, billing.currency)}`}
+                                    </small>
+                                    <small className="block text-[11px] text-muted-foreground">{billing.detail}</small>
+                                </span>
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-xl px-2.5 py-2" onClick={() => setNewShell(false)}>
                             <UndoIcon /> Volver al diseño anterior
                         </DropdownMenuItem>

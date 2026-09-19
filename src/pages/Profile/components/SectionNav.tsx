@@ -4,6 +4,7 @@ import { IconHelpCenter } from '@/components/Svg/IconHelpCenter'
 import { IconLock } from '@/components/Svg/IconLock'
 import { IconPreferences } from '@/components/Svg/IconPreferences'
 import useBillingAccess from '@/components/billing/useBillingAccess'
+import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
 import { ProfileSectionKey } from '../utils'
 
@@ -46,7 +47,7 @@ const SectionNav = ({ active, onChange }: Props) => {
                         )}
                     >
                         {section.icon}
-                        {section.label}
+                        {section.key === 'billing' && isNewShell() ? 'Pagos y suscripción' : section.label}
                         <ChevronRightIcon className={cn('ml-auto opacity-50', !isActive && 'opacity-30')} aria-hidden />
                     </button>
                 )

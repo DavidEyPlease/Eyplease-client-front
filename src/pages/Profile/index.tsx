@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router"
 
 import useBillingAccess from "@/components/billing/useBillingAccess"
@@ -19,6 +19,12 @@ const ProfilePage = () => {
     /* Los avisos de pago enlazan directo a la ficha de facturación */
     const requested = searchParams.get('section')
     const [section, setSection] = useState<ProfileSectionKey>(isProfileSectionKey(requested) ? requested : 'personal')
+    /* La dirección manda también cuando YA está en el perfil: el menú de la cuenta y la columna del
+       Hoy enlazan a `?section=billing`, y sin esto sólo valía al entrar por primera vez */
+    useEffect(() => {
+        if (isProfileSectionKey(requested)) setSection(requested)
+    }, [requested])
+
     const { user } = useAuth()
     const { canSeeBilling } = useBillingAccess()
 
