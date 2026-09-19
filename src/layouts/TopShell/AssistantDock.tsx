@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { ArrowLeftIcon, HistoryIcon, PlusIcon, XIcon } from 'lucide-react'
 
 import ChatComposer from '@/components/assistant/ChatComposer'
-import ChatThread from '@/components/assistant/ChatThread'
+import ChatThread, { ChatIntro } from '@/components/assistant/ChatThread'
 import ConversationList from '@/components/assistant/ConversationList'
 import useAssistantChat from '@/components/assistant/useAssistantChat'
+import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
+import useAuthStore from '@/store/auth'
 
 const ACTION = 'flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground'
 
@@ -14,6 +16,32 @@ const Orb = ({ className }: { className?: string }) => (
         <img src="/images/isotipo-blanco.png" alt="" className="relative w-1/2" />
     </span>
 )
+
+/**
+ * El saludo depende del plan, igual que en la app (su `pages/Assistant`): a quien su plan no le
+ * trae los pedidos de diseño no se le ofrece preguntar por ellos.
+ *
+ * Todavía NO dice «pídeme un diseño» ni «pídeme un reto» como la app: allá son flujos guiados que
+ * acaban creando el pedido o el reto, y la web aún no los tiene. Aquí el chat es el libre
+ * (`/chat/services`, que sabe de pedidos, indicadores y retos pero sólo LEE), así que las
+ * sugerencias son preguntas que sí puede contestar. Cuando se porten los flujos, usar su copy.
+ */
+const buildIntro = (name: string | undefined, hasServices: boolean): ChatIntro => {
+    const first = (name ?? '').trim().split(/\s+/)[0] ?? ''
+    const hola = first ? `Hola, ${first.charAt(0).toUpperCase()}${first.slice(1).toLowerCase()}` : 'Hola'
+
+    return hasServices
+        ? {
+            title: `${hola}.`,
+            text: 'Pregúntame cómo va tu unidad este mes, cómo van tus pedidos de diseño o qué retos tienes.',
+            suggestions: ['¿Cómo va mi unidad este mes?', '¿Cómo van mis pedidos?', '¿Qué retos tengo activos?'],
+        }
+        : {
+            title: `${hola}.`,
+            text: 'Pregúntame cómo va tu unidad este mes o qué retos tienes.',
+            suggestions: ['¿Cómo va mi unidad este mes?', '¿Qué retos tengo activos?'],
+        }
+}
 
 interface Props {
     open: boolean
@@ -36,6 +64,10 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
         conversationId, messages, sending, loadingHistory, deleting,
         send, openConversation, startNewChat, removeConversation,
     } = useAssistantChat()
+
+    const user = useAuthStore(state => state.user)
+    const permissions = useAuthStore(state => state.permissions)
+    const intro = buildIntro(user?.name, permissions.includes(PermissionKeys.SERVICES))
 
     const isHistory = view === 'history'
 
@@ -96,7 +128,7 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
                         />
                     ) : (
                         <>
-                            <ChatThread messages={messages} sending={sending} loadingHistory={loadingHistory} onSuggestion={send} />
+                            <ChatThread messages={messages} sending={sending} loadingHistory={loadingHistory} onSuggestion={send} intro={intro} />
                             <ChatComposer sending={sending} onSend={send} />
                         </>
                     )}

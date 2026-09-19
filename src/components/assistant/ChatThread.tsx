@@ -5,11 +5,25 @@ import { IChatMessage } from '@/interfaces/chat'
 import { CHAT_SUGGESTIONS } from './utils'
 import ChatMessageBubble, { AssistantAvatar } from './ChatMessageBubble'
 
+/** Cómo se presenta el chat vacío. Sin esto sale el saludo de siempre (asistente de servicios). */
+export interface ChatIntro {
+	title: string
+	text: string
+	suggestions: string[]
+}
+
+const DEFAULT_INTRO: ChatIntro = {
+	title: 'Tu asistente de servicios',
+	text: 'Pregúntale por el estado de tus solicitudes de diseño, correcciones pendientes o próximas entregas.',
+	suggestions: CHAT_SUGGESTIONS,
+}
+
 interface Props {
 	messages: IChatMessage[]
 	sending: boolean
 	loadingHistory: boolean
 	onSuggestion: (text: string) => void
+	intro?: ChatIntro
 }
 
 /** Burbuja de "escribiendo…" mientras responde el asistente */
@@ -28,15 +42,13 @@ const TypingIndicator = () => (
 	</div>
 )
 
-const EmptyState = ({ onSuggestion }: { onSuggestion: (text: string) => void }) => (
+const EmptyState = ({ intro, onSuggestion }: { intro: ChatIntro, onSuggestion: (text: string) => void }) => (
 	<div className="m-auto flex max-w-md flex-col items-center gap-3 px-4 text-center">
 		<AssistantAvatar className="size-14 rounded-2xl [&_svg]:size-6" />
-		<h2 className="text-lg font-bold tracking-tight text-foreground">Tu asistente de servicios</h2>
-		<p className="text-sm text-muted-foreground">
-			Pregúntale por el estado de tus solicitudes de diseño, correcciones pendientes o próximas entregas.
-		</p>
+		<h2 className="text-lg font-bold tracking-tight text-foreground">{intro.title}</h2>
+		<p className="text-sm text-muted-foreground">{intro.text}</p>
 		<div className="mt-2 flex flex-wrap justify-center gap-2">
-			{CHAT_SUGGESTIONS.map(suggestion => (
+			{intro.suggestions.map(suggestion => (
 				<button
 					key={suggestion}
 					className="cursor-pointer rounded-full border border-primary/25 px-3.5 py-2 text-[12.5px] font-semibold text-primary transition-colors hover:bg-primary/5"
@@ -58,7 +70,7 @@ const HistorySkeleton = () => (
 	</div>
 )
 
-const ChatThread = ({ messages, sending, loadingHistory, onSuggestion }: Props) => {
+const ChatThread = ({ messages, sending, loadingHistory, onSuggestion, intro = DEFAULT_INTRO }: Props) => {
 	const bottomRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
@@ -70,7 +82,7 @@ const ChatThread = ({ messages, sending, loadingHistory, onSuggestion }: Props) 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5 sm:px-6">
 			{loadingHistory && <HistorySkeleton />}
-			{isEmpty && <EmptyState onSuggestion={onSuggestion} />}
+			{isEmpty && <EmptyState intro={intro} onSuggestion={onSuggestion} />}
 
 			{messages.length > 0 && (
 				<div className="flex flex-col gap-4">
