@@ -246,7 +246,9 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             response = respond({ newsletters })
         }
         else if (path.startsWith('/trainings')) response = owned.has('trainings') ? respond(path === '/trainings' ? { recently: { items: [] }, categories: [] } : page([])) : respond(null, 403)
-        else if (path === '/chat/services') response = respond({ conversation_id: 'demo', message: { id: `m-${Date.now()}`, role: 'assistant', content: 'Esto es el simulador: aquí el Asistente no está conectado. Con tu sesión real contesta con tus datos.' } })
+        /* Misma forma que la API real: el texto de la respuesta va suelto en `message` */
+        else if (path === '/chat/services') response = respond({ conversation_id: 'demo', message: 'Esto es el simulador: aquí el Asistente no está conectado. Con tu sesión real contesta con tus datos.' })
+        else if (/^\/chat\/conversations\/[^/]+\/messages$/.test(path)) response = respond([])
         else if (path === '/chat/conversations' || path === '/request-services' || path === '/events' || path === '/customers/client' || path === '/sponsored') response = respond(page([]))
         else { known = false; response = respond(method === 'GET' ? page([]) : null) }
 

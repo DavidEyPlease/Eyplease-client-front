@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router'
-import { PlusIcon, SparklesIcon } from 'lucide-react'
+import { MessageCircleIcon, PlusIcon, SparklesIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { API_ROUTES } from '@/constants/api'
@@ -8,6 +8,7 @@ import { APP_ROUTES } from '@/constants/app'
 import useChallenges from '@/hooks/useChallenges'
 import useFetchQuery from '@/hooks/useFetchQuery'
 import { BusinessIndicators, IChallenge, NewChallenge } from '@/interfaces/challenges'
+import { askAssistant } from '@/layouts/TopShell/assistantBridge'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
 import useUnitFollowUp, { ESCALONES } from '@/pages/Dashboard/components/useUnitFollowUp'
@@ -95,9 +96,15 @@ const IndicatorsPage = () => {
                     <h1 className="hoy-title mt-1 text-[28px] leading-[1.1] font-extrabold tracking-tight">Así va <em>tu negocio</em></h1>
                     <p className="mt-1.5 max-w-[62ch] text-[13.5px] text-muted-foreground">Tu alcance por personas, cómo se mueve cada sección y los retos que aceptas o pones a tu unidad. Todo sale de tus reportes: no hay nada que capturar.</p>
                 </div>
-                <button type="button" onClick={() => setProposalOpen(true)} className="hoy-cta flex h-[38px] cursor-pointer items-center gap-2 rounded-[13px] px-4 text-[13px] font-bold text-white">
-                    <SparklesIcon className="size-[15px]" /> Proponme un reto
-                </button>
+                <div className="flex flex-wrap gap-2">
+                    {/* La página pide, el chat hace: el Asistente lee estos mismos números y los explica */}
+                    <button type="button" onClick={() => askAssistant('¿Cómo va mi unidad este mes?')} className="hidden h-[38px] cursor-pointer items-center gap-2 rounded-[13px] bg-[#6C47FF]/10 px-4 text-[13px] font-bold text-[#6C47FF] transition-colors hover:bg-[#6C47FF]/18 lg:flex dark:text-[#C4B5FF]">
+                        <MessageCircleIcon className="size-[15px]" /> Que me lo explique el Asistente
+                    </button>
+                    <button type="button" onClick={() => setProposalOpen(true)} className="hoy-cta flex h-[38px] cursor-pointer items-center gap-2 rounded-[13px] px-4 text-[13px] font-bold text-white">
+                        <SparklesIcon className="size-[15px]" /> Proponme un reto
+                    </button>
+                </div>
             </header>
 
             <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">

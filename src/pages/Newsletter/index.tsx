@@ -5,11 +5,8 @@ import { ArrowRightIcon, CheckIcon, DownloadIcon, EyeIcon, EyeOffIcon, FileTextI
 import ContentPreferencesSheet from '@/components/reportPreferences/ContentPreferencesSheet'
 import { hiddenSummaryLabel } from '@/components/reportPreferences/utils'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
-import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
-import useFetchQuery from '@/hooks/useFetchQuery'
 import { PermissionKeys } from '@/interfaces/permissions'
-import { IReportUpload } from '@/interfaces/reportUpload'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
 import AnnualReport from '@/pages/Dashboard/components/AnnualReport'
@@ -18,9 +15,9 @@ import { useNewsletterWizard } from '@/pages/Dashboard/components/Newsletter/use
 import { NEWSLETTER_TYPE_META, ReportFileType } from '@/pages/Dashboard/components/Newsletter/wizardSteps'
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import '@/pages/Hoy/hoy.css'
-import { getImportableSections, NEWSLETTER_TAG, resolveSectionReport } from '@/pages/Reports/lib'
+import { NEWSLETTER_TAG } from '@/pages/Reports/lib'
+import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
-import { queryKeys } from '@/utils/cache'
 import { reportMonthLabel } from '@/utils/dates'
 
 const CARD = 'shell-glass hoy-rise rounded-[22px] p-[18px]'
@@ -62,19 +59,8 @@ const NewsletterStudio = () => {
         if (!templateId && newest) setTemplateId(newest.id)
     }, [templateId, newest, setTemplateId])
 
-    const { response: uploads } = useFetchQuery<IReportUpload[]>(API_ROUTES.REPORTS.LIST_UPLOADS, {
-        customQueryKey: queryKeys.list('report-uploads'),
-        enabled: !!newsletters.length,
-    })
-
     /* Los reportes de ESTE boletín: son los que deciden si sale completo */
-    const reports = useMemo(() => {
-        const newsletter = newsletters.find(item => item.code === type)
-        if (!newsletter) return { total: 0, loaded: 0, missing: [] as string[] }
-        const sections = getImportableSections(newsletter)
-        const missing = sections.filter(section => resolveSectionReport(uploads?.data ?? [], section.id).status !== 'completed').map(section => section.name)
-        return { total: sections.length, loaded: sections.length - missing.length, missing }
-    }, [newsletters, type, uploads])
+    const reports = useReportsStatus(type)
 
     const selected = wizard.selectedTemplate
     const selectable = wizard.availableSections.filter(section => !wizard.hiddenSectionKeys.has(section.sectionKey))

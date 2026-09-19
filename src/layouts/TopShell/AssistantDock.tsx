@@ -8,6 +8,7 @@ import useAssistantChat from '@/components/assistant/useAssistantChat'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
 import useAuthStore from '@/store/auth'
+import { useAssistantRequests } from './assistantBridge'
 
 const ACTION = 'flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground'
 
@@ -70,6 +71,13 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
     const intro = buildIntro(user?.name, permissions.includes(PermissionKeys.SERVICES))
 
     const isHistory = view === 'history'
+
+    /* Los encargos que llegan de las páginas o de ⌘K: se abre, vuelve al chat y lo manda */
+    useAssistantRequests(text => {
+        onOpenChange(true)
+        setView('chat')
+        send(text)
+    })
 
     if (!open) {
         return (

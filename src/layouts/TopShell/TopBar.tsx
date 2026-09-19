@@ -14,6 +14,7 @@ import { MenuItem, MenuKeys } from '@/interfaces/common'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
 import useAuthStore from '@/store/auth'
+import CommandBar from './CommandBar'
 import { setNewShell } from './useNewShell'
 
 /**
@@ -148,6 +149,8 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
 
                 {pick(DIRECT_LAST).map(direct)}
             </nav>
+
+            <CommandBar labelOf={(key, fallback) => COPY[key as MenuKeys]?.label ?? fallback} />
 
             <div className="ml-auto flex items-center gap-1">
                 <button

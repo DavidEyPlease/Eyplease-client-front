@@ -1,7 +1,12 @@
+import { Link } from 'react-router'
+import { ChevronRightIcon } from 'lucide-react'
+
 import { IconBySection } from '@/components/generics/IconBySection'
+import { APP_ROUTES } from '@/constants/app'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
 import useUnitFollowUp, { ESCALONES } from '@/pages/Dashboard/components/useUnitFollowUp'
+import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
 import { titleCaseName } from '../lib'
 import RingMeter from './RingMeter'
@@ -20,6 +25,9 @@ interface Props {
 const HoyRail = ({ onPickSection }: Props) => {
     const user = useAuthStore(state => state.user)
     const { loading, pendientes, enviadas, cobertura } = useUnitFollowUp()
+
+    const reports = useReportsStatus()
+    const canUploadReports = useAuthStore(state => state.permissions.includes(PermissionKeys.REPORTS_UPLOAD))
 
     const hasCoverage = !!cobertura && cobertura.people_count > 0
     const total = pendientes.reduce((sum, fila) => sum + fila.pendientes, 0)
@@ -109,6 +117,24 @@ const HoyRail = ({ onPickSection }: Props) => {
                         </>
                     )}
                 </section>
+            )}
+
+            {/* De los reportes sale todo lo demás: si falta uno, que se vea aquí y no al generar el boletín */}
+            {canUploadReports && !reports.loading && reports.total > 0 && (
+                <Link to={APP_ROUTES.REPORTS} className="shell-glass hoy-rise flex items-center gap-3 rounded-[22px] p-3.5 transition-colors hover:border-[#6C47FF]/40" style={{ '--i': 2 } as React.CSSProperties}>
+                    <RingMeter percent={Math.round(reports.loaded / reports.total * 100)} size={44} stroke={5} label="">
+                        <b className="text-[10.5px] font-extrabold tabular-nums">{reports.loaded}/{reports.total}</b>
+                    </RingMeter>
+                    <span className="min-w-0 flex-1 leading-tight">
+                        <b className="block text-[13px] font-extrabold">Reportes del mes</b>
+                        <small className="block truncate text-[11.5px] text-muted-foreground">
+                            {reports.missing.length === 0 ? 'Todos cargados' : `Falta${reports.missing.length === 1 ? '' : 'n'}: ${reports.missing.slice(0, 2).join(', ')}${reports.missing.length > 2 ? '…' : ''}`}
+                        </small>
+                    </span>
+                    {reports.missing.length === 0
+                        ? <span className={cn(TAG, 'bg-emerald-500/14 text-emerald-700 dark:text-emerald-400')}>al día</span>
+                        : <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />}
+                </Link>
             )}
         </>
     )
