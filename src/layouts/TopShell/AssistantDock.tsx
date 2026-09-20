@@ -5,7 +5,7 @@ import { ArrowLeftIcon, HistoryIcon, PlusIcon, XIcon } from 'lucide-react'
 import ChatComposer from '@/components/assistant/ChatComposer'
 import ChatThread, { ChatIntro } from '@/components/assistant/ChatThread'
 import ConversationList from '@/components/assistant/ConversationList'
-import useAssistantChat from '@/components/assistant/useAssistantChat'
+import useAssistantChat, { ChatSendExtras } from '@/components/assistant/useAssistantChat'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
 import useAuthStore from '@/store/auth'
@@ -85,8 +85,8 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
      * respuesta no lo dice de forma fiable: tras cada respuesta se da por vieja la lista de Pedidos
      * de diseño (entidad `services`), que es barato y evita verla desactualizada.
      */
-    const onSend = async (text: string) => {
-        const sent = await send(text)
+    const onSend = async (text: string, extras?: ChatSendExtras) => {
+        const sent = await send(text, extras)
         if (sent && hasServices) queryClient.invalidateQueries({ queryKey: queryKeys.entity('services') })
         return sent
     }
@@ -161,7 +161,7 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
                     ) : (
                         <>
                             <ChatThread messages={messages} sending={sending} loadingHistory={loadingHistory} onSuggestion={onSend} intro={intro} />
-                            <ChatComposer sending={sending} onSend={onSend} placeholder={hasServices ? 'Pídeme un diseño o pregúntame algo…' : 'Pregúntame algo…'} />
+                            <ChatComposer sending={sending} onSend={onSend} allowAttachments={hasServices} placeholder={hasServices ? 'Pídeme un diseño o pregúntame algo…' : 'Pregúntame algo…'} />
                         </>
                     )}
                 </div>

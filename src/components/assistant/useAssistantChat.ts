@@ -6,18 +6,25 @@ import { API_ROUTES } from '@/constants/api'
 import useFetchQuery from '@/hooks/useFetchQuery'
 import useRequestQuery from '@/hooks/useRequestQuery'
 import { ApiResponse } from '@/interfaces/common'
-import { ChatRole, IChatMessage, IChatSendPayload, IChatSendResponse } from '@/interfaces/chat'
+import { ChatRole, IChatAttachmentRef, IChatMessage, IChatSendPayload, IChatSendResponse } from '@/interfaces/chat'
 import { queryKeys } from '@/utils/cache'
 import { CONVERSATIONS_ENTITY, messagesKey } from './utils'
 
 const HISTORY_STALE_TIME_MS = 60_000
 
-const buildMessage = (role: ChatRole, text: string): IChatMessage => ({
+const buildMessage = (role: ChatRole, text: string, extra: Partial<IChatMessage> = {}): IChatMessage => ({
 	id: crypto.randomUUID(),
 	role,
 	text,
 	created_at: new Date().toISOString(),
+	...extra,
 })
+
+/** Lo que acompaña a un mensaje: las referencias para el servidor y las miniaturas para pintarlo ya */
+export interface ChatSendExtras {
+	attachments?: IChatAttachmentRef[]
+	images?: string[]
+}
 
 /**
  * Estado del hilo activo. El front solo persiste el conversation_id: los mensajes
@@ -72,18 +79,23 @@ const useAssistantChat = () => {
 	}
 
 	/** @returns false si falló, para que el composer restaure el texto */
-	const send = async (text: string) => {
-		const message = text.trim()
+	const send = async (text: string, extras: ChatSendExtras = {}) => {
+		const attachments = extras.attachments ?? []
+		/* El servidor pide texto: si sólo manda archivos, el mensaje lo dice por ella */
+		const message = text.trim() || (attachments.length ? (attachments.length === 1 ? 'Te comparto este archivo.' : 'Te comparto estos archivos.') : '')
 		if (!message || requestState.loading) return false
 
 		sendingRef.current = true
-		setMessages(prev => [...prev, buildMessage('user', message)])
+		setMessages(prev => [...prev, buildMessage('user', message, {
+			attachments: attachments.map(item => item.name),
+			images: extras.images,
+		})])
 
 		try {
 			const response = await request<IChatSendPayload, IChatSendResponse>(
 				'POST',
 				API_ROUTES.CHAT.SEND_SERVICES_MESSAGE,
-				{ message, conversation_id: conversationId },
+				{ message, conversation_id: conversationId, ...(attachments.length ? { attachments } : {}) },
 			)
 
 			const thread = [...messagesRef.current, buildMessage('assistant', response.data.message)]
