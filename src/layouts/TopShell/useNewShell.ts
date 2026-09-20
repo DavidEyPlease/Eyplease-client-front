@@ -1,12 +1,12 @@
 const KEY = 'eyplease:shell'
 
 /**
- * El marco nuevo se enciende por persona, no para todas a la vez.
+ * El marco nuevo es el de TODAS desde el 20-sep-2026 (lo lanzó David).
  *
- * `?nuevo=1` lo enciende y `?nuevo=0` lo apaga; la elección se recuerda en este
- * navegador. Sin elección, en producción sale el marco de siempre: así el código
- * puede desplegarse sin que ninguna clienta vea un cambio que todavía no se ha
- * probado con sesiones reales. En local sale el nuevo, que es lo que se revisa.
+ * Antes venía apagado y se encendía por persona con `?nuevo=1`, mientras se construía.
+ * Ese interruptor sigue vivo y ahora sirve al revés: **`?nuevo=0` devuelve a una clienta
+ * al diseño anterior**, y la elección se recuerda en su navegador. Es la escapatoria si a
+ * alguien le estorba algo del rediseño; el menú de su cuenta también la ofrece.
  */
 export const isNewShell = (): boolean => {
     try {
@@ -19,7 +19,7 @@ export const isNewShell = (): boolean => {
         /* Navegación privada o almacenamiento bloqueado: vale el valor por defecto */
     }
 
-    return import.meta.env.DEV
+    return true
 }
 
 export const setNewShell = (on: boolean) => {
