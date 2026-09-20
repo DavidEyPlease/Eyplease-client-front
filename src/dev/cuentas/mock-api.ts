@@ -304,6 +304,8 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         /* Pedir un diseño desde el chat: el pedido «se crea» y cerrar sesión responde, como en la API real */
         else if (path === '/request-services' && method === 'POST') response = respond({ id: `req-${Date.now()}`, ...JSON.parse(String(init?.body ?? '{}')) })
         else if (path === '/logout') response = respond(null)
+        /* Aquí nadie inicia sesión: la demo no conoce cuentas reales (el aviso de arriba dice a dónde ir) */
+        else if (path === '/sign-in') response = respond(null, 401)
         /* Misma forma que la API real: el texto de la respuesta va suelto en `message` */
         else if (path === '/chat/services') response = respond({ conversation_id: 'demo', message: 'Esto es el simulador: aquí el Asistente no está conectado. Con tu sesión real contesta con tus datos.' })
         else if (/^\/chat\/conversations\/[^/]+\/messages$/.test(path)) response = respond([])

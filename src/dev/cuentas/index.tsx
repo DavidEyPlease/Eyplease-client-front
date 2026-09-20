@@ -46,17 +46,22 @@ if (shell === '0' || shell === '1') localStorage.setItem('eyplease:shell', shell
 const startAt = params.get('ir') ?? ''
 window.history.replaceState(null, '', startAt.startsWith('/') && !startAt.startsWith('//') ? startAt : '/dashboard')
 
-/** En la demo no hay contraseña con la que volver: tras cerrar sesión se ofrece entrar otra vez. */
+/**
+ * La pantalla de acceso DENTRO de la demo no puede iniciar sesión: aquí la API es de mentira. David
+ * intentó entrar con su cuenta desde ella y «no pudo» sin saber por qué. Se dice arriba, bien claro,
+ * con las dos salidas: volver a la demo o ir a la web real (carga completa, ya sin la API de mentira).
+ */
 const BackToDemo = () => {
     const { pathname } = useLocation()
     if (!pathname.startsWith('/auth')) return null
+
+    const link = { padding: '8px 16px', borderRadius: 999, font: '800 12.5px Inter, Arial', textDecoration: 'none' } as const
     return (
-        <a
-            href={`/cuentas.html?plan=${slug(plan.name)}`}
-            style={{ position: 'fixed', bottom: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 2147483647, padding: '10px 18px', borderRadius: 999, background: '#fff', color: '#4E31C0', font: '800 13px Inter, Arial', boxShadow: '0 12px 30px -10px rgba(10,5,60,.6)', textDecoration: 'none' }}
-        >
-            Demo · volver a entrar como {plan.name}
-        </a>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2147483647, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '10px 16px', background: '#FDE68A', color: '#1A1830', font: '700 13px Inter, Arial', boxShadow: '0 8px 24px -10px rgba(10,5,60,.5)' }}>
+            <span>Estás en la DEMO: aquí no se entra con tu usuario y contraseña.</span>
+            <a href={`/cuentas.html?plan=${slug(plan.name)}`} style={{ ...link, background: '#4E31C0', color: '#fff' }}>Volver a la demo ({plan.name})</a>
+            <a href="/auth/sign-in" style={{ ...link, background: '#fff', color: '#4E31C0' }}>Ir a la web real para entrar con mi cuenta</a>
+        </div>
     )
 }
 
