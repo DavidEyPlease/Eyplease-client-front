@@ -28,6 +28,10 @@
 
 .shell-grad { background: linear-gradient(135deg, #4E31C0 0%, #6C47FF 48%, #2CD4D9 120%); }
 
+/* Botón principal del marco (mismo degradado que el de las páginas) */
+.shell-cta { background: linear-gradient(135deg, #4E31C0 0%, #6C47FF 48%, #2CD4D9 120%); box-shadow: 0 10px 24px -10px rgba(108, 71, 255, .9); transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), box-shadow .25s, filter .2s; }
+.shell-cta:hover:not(:disabled) { transform: translateY(-1px); filter: saturate(1.15); }
+
 /* La marca: un destello cruza el isotipo de vez en cuando */
 .shell-mark { position: relative; overflow: hidden; }
 .shell-mark::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .55) 50%, transparent 65%); transform: translateX(-120%); animation: shell-sheen 5s ease-in-out infinite; }

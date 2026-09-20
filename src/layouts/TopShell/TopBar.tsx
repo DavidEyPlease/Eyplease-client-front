@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/utils'
 import useAuthStore from '@/store/auth'
 import CommandBar from './CommandBar'
+import { requestLogout } from './logoutBridge'
 import ThemeModeSelector from './ThemeModeSelector'
 import { setNewShell } from './useNewShell'
 
@@ -65,7 +66,7 @@ interface Props {
 }
 
 const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
-    const { user, handleLogout } = useAuth()
+    const { user } = useAuth()
     const sidebarMenu = useAuthStore(state => state.sidebarMenu)
     /* El boletín no es una entrada del menú de siempre (vivía dentro del Inicio): con el marco
        nuevo tiene su página, y el enlace sale sólo si el plan trae algún boletín. */
@@ -204,7 +205,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                             <UndoIcon /> Volver al diseño anterior
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-xl px-2.5 py-2" onClick={handleLogout}>
+                        <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-xl px-2.5 py-2" onClick={requestLogout}>
                             <LogOutIcon /> Cerrar sesión
                         </DropdownMenuItem>
                     </DropdownMenuContent>

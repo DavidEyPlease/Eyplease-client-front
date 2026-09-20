@@ -1,9 +1,10 @@
-import { ChevronRightIcon, CreditCardIcon, FileTextIcon, UserRoundIcon } from 'lucide-react'
+import { ChevronRightIcon, CreditCardIcon, FileTextIcon, LogOutIcon, UserRoundIcon } from 'lucide-react'
 
 import { IconHelpCenter } from '@/components/Svg/IconHelpCenter'
 import { IconLock } from '@/components/Svg/IconLock'
 import { IconPreferences } from '@/components/Svg/IconPreferences'
 import useBillingAccess from '@/components/billing/useBillingAccess'
+import { requestLogout } from '@/layouts/TopShell/logoutBridge'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
 import { ProfileSectionKey } from '../utils'
@@ -52,6 +53,13 @@ const SectionNav = ({ active, onChange }: Props) => {
                     </button>
                 )
             })}
+
+            {/* Con el marco de siempre el cierre de sesión va en el menú lateral; aquí se busca en el perfil */}
+            {isNewShell() && (
+                <button type="button" onClick={requestLogout} className="mt-1 flex w-full cursor-pointer items-center gap-2.5 rounded-xl border-t px-3.5 pt-3 pb-2.5 text-left text-[13px] font-bold text-red-600 transition-colors hover:bg-red-500/8 dark:text-red-400 [&_svg]:size-4">
+                    <LogOutIcon aria-hidden /> Cerrar sesión
+                </button>
+            )}
         </nav>
     )
 }

@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router'
 
 import GlobalPaymentBanner from '@/components/billing/enforcement/GlobalPaymentBanner'
 import AssistantDock from './AssistantDock'
+import LogoutDialog from './LogoutDialog'
 import TopBar from './TopBar'
 import './shell.css'
 
@@ -54,6 +55,8 @@ const TopShell = () => {
                     <AssistantDock open={dockOpen} onOpenChange={setDockOpen} />
                 </div>
             </div>
+
+            <LogoutDialog />
         </div>
     )
 }

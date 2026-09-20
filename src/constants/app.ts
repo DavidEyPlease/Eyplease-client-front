@@ -51,6 +51,8 @@ export const APP_ROUTES = {
 }
 
 export const SESSION_KEY = 'eyWebPleaseToken'
+/** Nombre de quien acaba de cerrar sesión: el acceso lo lee una vez para despedirla */
+export const FAREWELL_KEY = 'eyplease:farewell'
 
 export const SIDEBAR_ITEMS: MenuItem[] = [
     {

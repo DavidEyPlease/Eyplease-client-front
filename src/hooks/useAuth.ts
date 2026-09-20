@@ -4,7 +4,7 @@ import HttpService from '@/services/http'
 import { ApiResponse, GlobalUtilData } from "@/interfaces/common"
 import { useLocation, useNavigate } from "react-router"
 import useAuthStore from "@/store/auth"
-import { APP_ROUTES, SESSION_KEY } from "@/constants/app"
+import { APP_ROUTES, FAREWELL_KEY, SESSION_KEY } from "@/constants/app"
 import { API_ROUTES } from "@/constants/api"
 import { IChangePasswordData, IUser, IUserUpdate } from "@/interfaces/users"
 import { toast } from "sonner"
@@ -45,6 +45,14 @@ const useAuth = () => {
     }
 
     const handleLogout = () => {
+        /* El acceso la despide por su nombre. Va en la pestaña y no en el estado de la ruta: al vaciarse
+           la sesión MainLayout redirige por su cuenta (sin estado) y pisaba lo que se mandara aquí. */
+        try {
+            sessionStorage.setItem(FAREWELL_KEY, (user?.name ?? '').trim().split(/\s+/)[0] ?? '')
+        } catch {
+            /* Sin almacenamiento sólo se pierde la despedida */
+        }
+
         HttpService.post(API_ROUTES.LOGOUT, {}).finally(() => {
             /* Primero sin token: cualquier petición que se cuele ya no lleva sesión */
             localStorage.removeItem(SESSION_KEY)
