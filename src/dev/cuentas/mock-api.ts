@@ -150,21 +150,42 @@ const RANK_NAMES: Record<string, string> = { director: 'Directora', executive_di
 
 /* Se lee AL CARGAR: la app reescribe la URL a /dashboard y el parámetro se perdería. */
 const CON_DOS_CUENTAS = new URLSearchParams(location.search).get('cuentas') === '1'
+    || sessionStorage.getItem('cuentas:dos') === '1'
+if (CON_DOS_CUENTAS) sessionStorage.setItem('cuentas:dos', '1')
+
+/**
+ * Las dos cuentas de la misma persona. Cuál está ACTIVA se guarda en la pestaña porque cambiar de
+ * cuenta recarga la página entera: sin esto, al volver siempre estarías en México y el cambio no se
+ * podría comprobar de punta a punta, que es justo lo que no se ha probado nunca con cuentas reales.
+ */
+const CUENTAS = [
+    { id: 'liga-mex', country: 'MEX', plan: 'Plan Nacional' },
+    { id: 'liga-col', country: 'COL', plan: 'Plan Elite' },
+] as const
+
+const cuentaActiva = () => sessionStorage.getItem('cuentas:activa') ?? 'liga-mex'
+
+/* `?sincobro=1` finge que la de Colombia es la 186234MX, que está en BILLING_EXCLUDED_ACCOUNTS */
+const SIN_COBRO = new URLSearchParams(location.search).get('sincobro') === '1'
+
+const numeroDe = (id: string, role: 'director' | 'consultant') => id === 'liga-col'
+    ? (SIN_COBRO ? '186234MX' : role === 'consultant' ? 'DEMOCONSMX' : 'DEMOTIENDAMX')
+    : (role === 'consultant' ? 'DEMOCONS' : 'DEMOTIENDA')
 
 const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => ({
     id: 'demo-person', user_id: 'demo-user', email: 'demo@ejemplo.com',
     name: role === 'consultant' ? 'Carla Consultora Demo' : 'Mariana Directora Demo',
-    profile_picture: null, country: 'MEX', phone: '4610000000', account: role === 'consultant' ? 'DEMOCONS' : 'DEMOTIENDA', gender: 'female',
+    profile_picture: null, country: CON_DOS_CUENTAS ? (CUENTAS.find(c => c.id === cuentaActiva())?.country ?? 'MEX') : 'MEX',
+    phone: '4610000000', account: numeroDe(CON_DOS_CUENTAS ? cuentaActiva() : 'liga-mex', role), gender: 'female',
     user_role: { name: 'Cliente', slug: 'client' },
     client_role: rank ? { name: RANK_NAMES[rank] ?? rank, slug: rank } : role === 'consultant' ? { name: 'Consultora', slug: 'user_consultant' } : { name: 'Directora', slug: 'director' },
     on_biometric_auth: false, on_notifications: true, logotype: null,
     plan: { id: plan.id, name: plan.name, features: plan.features, price: plan.price, color: plan.color, trial_days: 0, accesses: plan.accesses },
     canva_connected: false, template_id: null, unread_notifications_count: 2, trial_ends_at: null, on_trial: false,
     // Dos cuentas de la MISMA persona, para poder ver el selector de países. Con `?cuentas=1`.
-    accounts: CON_DOS_CUENTAS ? [
-        { id: 'liga-mex', account: role === 'consultant' ? 'DEMOCONS' : 'DEMOTIENDA', country: 'MEX', name: 'Mariana Directora Demo', plan: 'Plan Nacional', active: true, current: true },
-        { id: 'liga-col', account: 'DEMOTIENDAMX', country: 'COL', name: 'Mariana Directora Demo', plan: 'Plan Elite', active: true, current: false },
-    ] : [],
+    accounts: CON_DOS_CUENTAS
+        ? CUENTAS.map(c => ({ id: c.id, account: numeroDe(c.id, role), country: c.country, name: 'Mariana Directora Demo', plan: c.plan, active: true, current: c.id === cuentaActiva() }))
+        : [],
 })
 
 const NO_ENFORCEMENT = { days_overdue: 0, show_reminder_popup: false, show_home_banner: false, show_global_banner: false, restricted_features: [], days_until_block: null, block_date: null, account_blocked: false, paused_reason: null }
@@ -263,7 +284,12 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         const scenario = sessionStorage.getItem('cuentas:cobro') ?? 'toca'
 
         if (path === '/me') response = respond(userFor(plan, role, rank))
-        else if (/^\/me\/accounts\/[^/]+\/switch$/.test(path)) response = respond({ token: 'demo-token-de-la-otra-cuenta', account: 'DEMOTIENDAMX', country: 'COL' })
+        /* Cambiar de cuenta: se apunta cuál queda activa para que la recarga abra en ESA */
+        else if (/^\/me\/accounts\/[^/]+\/switch$/.test(path)) {
+            const destino = path.split('/')[3]
+            sessionStorage.setItem('cuentas:activa', destino)
+            response = respond({ token: 'simulador', account: numeroDe(destino, role), country: CUENTAS.find(c => c.id === destino)?.country ?? 'MEX' })
+        }
         else if (path === '/util-data') response = respond(utilData)
         else if (path === '/billing/overview') response = respond(billingFor(plan, scenario))
         else if (path === '/billing/payments') response = respond(page(paymentsFor(plan, scenario)))

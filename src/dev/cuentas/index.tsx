@@ -28,6 +28,16 @@ else if (params.has('plan')) sessionStorage.removeItem('cuentas:rango')
 const cobro = params.get('cobro')
 if (cobro) sessionStorage.setItem('cuentas:cobro', cobro)
 
+/*
+ * OJO: cambiar de cuenta hace `location.replace('/dashboard')`, una recarga COMPLETA que SALE del
+ * simulador (la API de mentira la instala este archivo, y `index.html` no lo carga), así que acaba
+ * en el acceso. No se puede evitar parcheando `location.replace`: en el navegador es de sólo
+ * lectura y asignarla revienta la página entera. Para ver cómo queda la cuenta DESTINO se entra
+ * directo: `…/cuentas.html?cuentas=1&cuenta=col`.
+ */
+const cuenta = params.get('cuenta')
+if (cuenta === 'col' || cuenta === 'mex') sessionStorage.setItem('cuentas:activa', cuenta === 'col' ? 'liga-col' : 'liga-mex')
+
 installMockApi(plan, role, params.has('plan') && !params.has('rango') ? null : rank)
 // Para revisar desde la consola qué pidió la web y qué no estaba previsto
 Object.assign(window, { __cuentas: { plan, role, calls } })
@@ -45,6 +55,7 @@ if (shell === '0' || shell === '1') localStorage.setItem('eyplease:shell', shell
 // La web no conoce la ruta /cuentas.html: arranca en el Inicio, o donde diga `ir` (el plan ya quedó en sessionStorage)
 const startAt = params.get('ir') ?? ''
 window.history.replaceState(null, '', startAt.startsWith('/') && !startAt.startsWith('//') ? startAt : '/dashboard')
+
 
 /**
  * La pantalla de acceso DENTRO de la demo no puede iniciar sesión: aquí la API es de mentira. David

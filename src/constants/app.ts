@@ -208,7 +208,14 @@ export const BILLING_ERROR_CODES = {
 /**
  * Cuentas a las que no se les muestra nada de facturación: ni el estado de cobro
  * ni el acceso a pagos y facturas. Su cobro se lleva por fuera de la app.
+ *
+ * `186234MX` es la unidad de COLOMBIA de una Directora que también tiene la de México
+ * (`186234`, esa sí paga y ve todo): no se le cobra por estar abriéndonos ese mercado. Sin día de
+ * pago no se le genera ningún cobro, pero la pantalla seguiría anunciándole el precio del plan
+ * «MX$…» —el importe sale del plan y la moneda está fija en MXN (`BillingService::overview`)—, y
+ * eso en su cuenta colombiana no significa nada. Va aquí, y no en la de México, porque el
+ * interruptor es por NÚMERO de cuenta: al cambiar de país cambia el número.
  */
-export const BILLING_EXCLUDED_ACCOUNTS = ['028616']
+export const BILLING_EXCLUDED_ACCOUNTS = ['028616', '186234MX']
 
 export const TRANSPARENT_SHIELD = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
