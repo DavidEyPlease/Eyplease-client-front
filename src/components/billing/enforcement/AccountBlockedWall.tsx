@@ -1,4 +1,5 @@
 import { LockIcon, LogOutIcon, UploadCloudIcon } from 'lucide-react'
+import AccountSwitcher from "@/components/accounts/AccountSwitcher"
 
 import Button from '@/components/common/Button'
 import useAuth from '@/hooks/useAuth'
@@ -57,6 +58,10 @@ const AccountBlockedWall = ({ payment, debt, paymentMethod, onUpload }: Props) =
                         <PaymentAccounts accounts={paymentMethod.accounts} instructions={paymentMethod.instructions} />
                     </div>
                 )}
+
+                {/* El muro tapa la pantalla entera: sin esto, una cuenta al corriente en otro país
+                    quedaría inalcanzable por el atraso de ésta. */}
+                <AccountSwitcher variant="plain" className="mt-6 rounded-2xl border border-border p-2 text-left" />
 
                 <div className="mt-6 flex flex-col gap-3">
                     {payment?.can_upload_receipt && (

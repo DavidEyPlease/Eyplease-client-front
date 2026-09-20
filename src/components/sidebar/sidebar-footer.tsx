@@ -32,6 +32,7 @@ import { APP_ROUTES } from "@/constants/app"
 import LoggedUserAvatar from "@/components/generics/LoggedUserAvatar"
 // import UpgradePlan from "@/components/generics/UpgradePlan"
 import { IAuthUser } from "@/interfaces/auth"
+import AccountSwitcher from "@/components/accounts/AccountSwitcher"
 
 interface Props {
     user: IAuthUser
@@ -95,6 +96,8 @@ const SidebarFooter = ({ user }: Props) => {
                                     Actualizar Plan
                                 </DropdownMenuItem>
                             </DropdownMenuGroup> */}
+                            {/* Sólo aparece si tiene cuenta en más de un país */}
+                            <AccountSwitcher className="px-1 py-1" />
                             <DropdownMenuSeparator />
                             <DropdownMenuGroup>
                                 <DropdownMenuItem onClick={() => navigate(APP_ROUTES.HOME.PROFILE)}>

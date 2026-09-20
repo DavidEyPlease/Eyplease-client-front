@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/utils'
 import useAuthStore from '@/store/auth'
 import CommandBar from './CommandBar'
+import AccountSwitcher from '@/components/accounts/AccountSwitcher'
 import { requestLogout } from './logoutBridge'
 import ThemeModeSelector from './ThemeModeSelector'
 import { setNewShell } from './useNewShell'
@@ -186,6 +187,8 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" sideOffset={12} className="shell-drop min-w-60 rounded-[20px] p-2">
                         <DropdownMenuLabel className="px-2.5 pt-2 pb-1 text-[10px] font-extrabold tracking-[.12em] text-muted-foreground uppercase">Tu cuenta</DropdownMenuLabel>
+                        {/* Sólo aparece si tiene cuenta en más de un país */}
+                        <AccountSwitcher />
                         <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-xl px-2.5 py-2" onClick={() => navigate(APP_ROUTES.HOME.PROFILE)}>
                             <BadgeCheckIcon /> Perfil
                         </DropdownMenuItem>

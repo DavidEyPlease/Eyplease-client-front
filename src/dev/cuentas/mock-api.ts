@@ -114,6 +114,9 @@ const page = <T,>(items: T[]) => ({ items, current_page: 1, last_page: 1, per_pa
 
 const RANK_NAMES: Record<string, string> = { director: 'Directora', executive_director: 'Directora Ejecutiva', national_director: 'Directora Nacional', elite_director: 'Directora Élite', user_consultant: 'Consultora' }
 
+/* Se lee AL CARGAR: la app reescribe la URL a /dashboard y el parámetro se perdería. */
+const CON_DOS_CUENTAS = new URLSearchParams(location.search).get('cuentas') === '1'
+
 const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => ({
     id: 'demo-person', user_id: 'demo-user', email: 'demo@ejemplo.com',
     name: role === 'consultant' ? 'Carla Consultora Demo' : 'Mariana Directora Demo',
@@ -123,6 +126,11 @@ const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string 
     on_biometric_auth: false, on_notifications: true, logotype: null,
     plan: { id: plan.id, name: plan.name, features: plan.features, price: plan.price, color: plan.color, trial_days: 0, accesses: plan.accesses },
     canva_connected: false, template_id: null, unread_notifications_count: 2, trial_ends_at: null, on_trial: false,
+    // Dos cuentas de la MISMA persona, para poder ver el selector de países. Con `?cuentas=1`.
+    accounts: CON_DOS_CUENTAS ? [
+        { id: 'liga-mex', account: role === 'consultant' ? 'DEMOCONS' : 'DEMOTIENDA', country: 'MEX', name: 'Mariana Directora Demo', plan: 'Plan Nacional', active: true, current: true },
+        { id: 'liga-col', account: 'DEMOTIENDAMX', country: 'COL', name: 'Mariana Directora Demo', plan: 'Plan Elite', active: true, current: false },
+    ] : [],
 })
 
 const NO_ENFORCEMENT = { days_overdue: 0, show_reminder_popup: false, show_home_banner: false, show_global_banner: false, restricted_features: [], days_until_block: null, block_date: null, account_blocked: false, paused_reason: null }
@@ -221,6 +229,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         const scenario = sessionStorage.getItem('cuentas:cobro') ?? 'toca'
 
         if (path === '/me') response = respond(userFor(plan, role, rank))
+        else if (/^\/me\/accounts\/[^/]+\/switch$/.test(path)) response = respond({ token: 'demo-token-de-la-otra-cuenta', account: 'DEMOTIENDAMX', country: 'COL' })
         else if (path === '/util-data') response = respond(utilData)
         else if (path === '/billing/overview') response = respond(billingFor(plan, scenario))
         else if (path === '/billing/payments') response = respond(page(paymentsFor(plan, scenario)))
