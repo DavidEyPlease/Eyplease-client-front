@@ -1,17 +1,15 @@
-import { useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftIcon, HistoryIcon, PlusIcon, XIcon } from 'lucide-react'
 
 import ChatComposer from '@/components/assistant/ChatComposer'
 import ChatThread, { ChatIntro } from '@/components/assistant/ChatThread'
 import ConversationList from '@/components/assistant/ConversationList'
 import useAssistantChat from '@/components/assistant/useAssistantChat'
-import useDesignRequest, { wantsDesign } from '@/components/assistant/useDesignRequest'
-import { APP_ROUTES } from '@/constants/app'
-import { IChatOption } from '@/interfaces/chat'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
 import useAuthStore from '@/store/auth'
+import { queryKeys } from '@/utils/cache'
 import { useAssistantRequests } from './assistantBridge'
 
 const ACTION = 'flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground'
@@ -22,16 +20,18 @@ const Orb = ({ className }: { className?: string }) => (
     </span>
 )
 
-/** Lo que dispara el flujo guiado desde el saludo o desde ⌘K */
-export const DESIGN_REQUEST_LABEL = 'Pídeme un diseño'
+/** Con lo que arranca un pedido de diseño desde el saludo o desde ⌘K: es un mensaje para la IA, como cualquier otro */
+export const DESIGN_REQUEST_LABEL = 'Quiero pedir un diseño'
 
 /**
  * El saludo depende del plan, igual que en la app (su `pages/Assistant`): a quien su plan no le
  * trae los pedidos de diseño no se le ofrece pedirlos ni preguntar por ellos.
  *
- * «Pídeme un diseño» es un flujo GUIADO (`useDesignRequest`) que acaba creando el pedido; lo demás
- * son preguntas al chat libre (`/chat/services`), que sabe de pedidos, indicadores y retos pero
- * sólo LEE. Los retos se piden en Indicadores («Proponme un reto»), no aquí.
+ * TODO lo que escribe va a la IA (`/chat/services`, Claude con herramientas): ella SÍ crea pedidos
+ * de diseño, pide correcciones y los cancela, además de leer sus números y sus retos. Aquí hubo un
+ * guion de preguntas fijas que interceptaba «pídeme un diseño» creyendo que el chat sólo leía; se
+ * quitó: repetía preguntas, no notaba lo que faltaba y registraba el pedido con la petición entera
+ * como título. Cómo entrevista y cómo redacta el pedido se afina en la API (el prompt), no aquí.
  */
 const buildIntro = (name: string | undefined, hasServices: boolean): ChatIntro => {
     const first = (name ?? '').trim().split(/\s+/)[0] ?? ''
@@ -40,7 +40,7 @@ const buildIntro = (name: string | undefined, hasServices: boolean): ChatIntro =
     return hasServices
         ? {
             title: `${hola}.`,
-            text: 'Pídeme un diseño y yo lo mando a hacer, o pregúntame cómo va tu unidad este mes, tus pedidos o tus retos.',
+            text: 'Pídeme un diseño con tus palabras y yo lo mando a hacer, o pregúntame cómo va tu unidad este mes, tus pedidos o tus retos.',
             suggestions: [DESIGN_REQUEST_LABEL, '¿Cómo va mi unidad este mes?', '¿Cómo van mis pedidos?', '¿Qué retos tengo activos?'],
         }
         : {
@@ -72,10 +72,7 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
         send, openConversation, startNewChat, removeConversation,
     } = useAssistantChat()
 
-    const navigate = useNavigate()
-    const design = useDesignRequest()
-    const referenceInput = useRef<HTMLInputElement>(null)
-
+    const queryClient = useQueryClient()
     const user = useAuthStore(state => state.user)
     const permissions = useAuthStore(state => state.permissions)
     const hasServices = permissions.includes(PermissionKeys.SERVICES)
@@ -83,39 +80,23 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
 
     const isHistory = view === 'history'
 
-    /* El flujo guiado vive sólo en pantalla: sus burbujas se intercalan con las del chat por hora */
-    const thread = useMemo(
-        () => [...messages, ...design.messages].sort((a, b) => a.created_at.localeCompare(b.created_at)),
-        [messages, design.messages],
-    )
-
     /**
-     * Todo lo que se escribe pasa por aquí: si el flujo de diseño está esperando texto, es para él;
-     * si lo que escribe es pedir un diseño, arranca el flujo (el chat libre sólo lee y no podría
-     * crearlo); lo demás va al chat.
+     * La IA puede haber creado, corregido o cancelado un pedido en este turno, y el texto de su
+     * respuesta no lo dice de forma fiable: tras cada respuesta se da por vieja la lista de Pedidos
+     * de diseño (entidad `services`), que es barato y evita verla desactualizada.
      */
     const onSend = async (text: string) => {
-        if (design.capturesText) return design.onText(text)
-        if (hasServices && (text === DESIGN_REQUEST_LABEL || wantsDesign(text))) {
-            design.start(text)
-            return true
-        }
-        return send(text)
-    }
-
-    const onOption = async (option: IChatOption) => {
-        const next = await design.onOption(option.value, option.label)
-        if (next === 'attach') referenceInput.current?.click()
-        if (next === 'orders') navigate(APP_ROUTES.SERVICES)
+        const sent = await send(text)
+        if (sent && hasServices) queryClient.invalidateQueries({ queryKey: queryKeys.entity('services') })
+        return sent
     }
 
     const newChat = () => {
-        design.reset()
         startNewChat()
         setView('chat')
     }
 
-    /* Los encargos que llegan de las páginas o de ⌘K: se abre, vuelve al chat y lo atiende */
+    /* Los encargos que llegan de las páginas o de ⌘K: se abre, vuelve al chat y se lo manda a la IA */
     useAssistantRequests(text => {
         onOpenChange(true)
         setView('chat')
@@ -173,30 +154,14 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
                             className="flex-1"
                             activeId={conversationId}
                             deleting={deleting}
-                            onSelect={(id) => { design.reset(); openConversation(id); setView('chat') }}
+                            onSelect={(id) => { openConversation(id); setView('chat') }}
                             onNew={newChat}
                             onDelete={removeConversation}
                         />
                     ) : (
                         <>
-                            <ChatThread messages={thread} sending={sending || design.busy} loadingHistory={loadingHistory} onSuggestion={onSend} onOption={onOption} intro={intro} />
-                            <ChatComposer
-                                sending={sending || design.busy}
-                                onSend={onSend}
-                                placeholder={design.step === 'brief' ? 'Cuéntame qué necesitas…' : design.step === 'when' ? 'O escribe una fecha…' : hasServices ? 'Pídeme un diseño o pregúntame algo…' : 'Pregúntame algo…'}
-                            />
-                            {/* La referencia del pedido se elige aquí; se limpia para poder elegir el mismo archivo otra vez */}
-                            <input
-                                ref={referenceInput}
-                                type="file"
-                                accept="image/*,application/pdf"
-                                className="hidden"
-                                onChange={event => {
-                                    const file = event.target.files?.[0]
-                                    if (file) design.attach(file)
-                                    event.target.value = ''
-                                }}
-                            />
+                            <ChatThread messages={messages} sending={sending} loadingHistory={loadingHistory} onSuggestion={onSend} intro={intro} />
+                            <ChatComposer sending={sending} onSend={onSend} placeholder={hasServices ? 'Pídeme un diseño o pregúntame algo…' : 'Pregúntame algo…'} />
                         </>
                     )}
                 </div>
