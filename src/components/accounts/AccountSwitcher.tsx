@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CheckIcon, Loader2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { SESSION_KEY } from '@/constants/app'
+import { APP_ROUTES, SESSION_KEY } from '@/constants/app'
 import useRequestQuery from '@/hooks/useRequestQuery'
 import { ILinkedAccount } from '@/interfaces/auth'
 import { cn } from '@/lib/utils'
@@ -69,8 +69,11 @@ const AccountSwitcher = ({ variant = 'menu', className }: Props) => {
 
             localStorage.setItem(SESSION_KEY, token)
 
-            /* Recarga completa: es lo que garantiza que no quede en memoria nada de la otra cuenta */
-            window.location.replace('/')
+            /* Recarga completa: es lo que garantiza que no quede en memoria nada de la otra cuenta.
+               Va al inicio y no a `/`, que no es ninguna ruta: ahí la pantalla queda en blanco hasta
+               que /me responde y redirige. En /dashboard el marco pinta su esqueleto desde el
+               primer cuadro, porque el token nuevo ya está guardado. */
+            window.location.replace(APP_ROUTES.HOME.INITIAL)
         } catch {
             setCambiando(null)
             toast.error('No se pudo cambiar de cuenta. Inténtalo de nuevo.')
