@@ -134,3 +134,9 @@
     .auth-rise { opacity: 1; transform: none; animation: none !important; }
     .auth-ring { stroke-dashoffset: 62; animation: none !important; }
 }
+
+/* Arranque (`BootShell`): el esqueleto late despacio, lo justo para que se lea «cargando» y no
+   «se rompió». Con `prefers-reduced-motion` se queda quieto, como todo lo de arriba. */
+.boot-bar { animation: boot-pulse 1.6s ease-in-out infinite; }
+@keyframes boot-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .boot-bar { animation: none !important; } }

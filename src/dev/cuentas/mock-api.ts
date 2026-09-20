@@ -262,6 +262,8 @@ const suggestions = [
 /** Lo que se pidió y a qué se contestó: `window.__cuentas.calls` dice qué no estaba previsto. */
 export const calls: Array<{ method: string, path: string, mocked: boolean }> = []
 
+const LENTO = Number(new URLSearchParams(location.search).get('lento') ?? 0) || 0
+
 const respond = (data: unknown, status = 200) => new Response(JSON.stringify({ success: status < 400, data, message: status < 400 ? 'OK' : 'Sin permiso (simulado)' }), { status, headers: { 'Content-Type': 'application/json' } })
 
 export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => {
@@ -396,6 +398,9 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else { known = false; response = respond(method === 'GET' ? page([]) : null) }
 
         calls.push({ method, path: path + (url.search || ''), mocked: known })
+        /* `?lento=N` retrasa cada respuesta N ms: es la única forma de MIRAR el arranque (`BootShell`),
+           que con la API de mentira dura un parpadeo. Sin la marca no cambia nada. */
+        if (LENTO) await new Promise(listo => setTimeout(listo, LENTO))
         return response
     }
 }
