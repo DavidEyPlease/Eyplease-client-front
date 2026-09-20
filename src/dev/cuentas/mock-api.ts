@@ -301,13 +301,25 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             response = respond({ newsletters })
         }
         else if (path.startsWith('/trainings')) response = owned.has('trainings') ? respond(path === '/trainings' ? { recently: { items: [] }, categories: [] } : page([])) : respond(null, 403)
+        /* Adjuntar en el chat: la «subida» va a una dirección de la propia API de mentira, que la da por buena */
+        else if (path === '/files/sign-url') { const body = JSON.parse(String(init?.body ?? '{}')); response = respond({ url: `${base}/__subida-demo`, key: body.fileName, disk: 'private' }) }
+        else if (path === '/__subida-demo') response = new Response(null, { status: 200 })
         /* Pedir un diseño desde el chat: el pedido «se crea» y cerrar sesión responde, como en la API real */
         else if (path === '/request-services' && method === 'POST') response = respond({ id: `req-${Date.now()}`, ...JSON.parse(String(init?.body ?? '{}')) })
         else if (path === '/logout') response = respond(null)
         /* Aquí nadie inicia sesión: la demo no conoce cuentas reales (el aviso de arriba dice a dónde ir) */
         else if (path === '/sign-in') response = respond(null, 401)
         /* Misma forma que la API real: el texto de la respuesta va suelto en `message` */
-        else if (path === '/chat/services') response = respond({ conversation_id: 'demo', message: 'Esto es el simulador: aquí el Asistente no está conectado. Con tu sesión real contesta con tus datos.' })
+        else if (path === '/chat/services') {
+            const sent = JSON.parse(String(init?.body ?? '{}'))
+            const files = (sent.attachments ?? []) as Array<{ name: string, previewUri?: string | null }>
+            response = respond({
+                conversation_id: 'demo',
+                message: files.length
+                    ? `Esto es el simulador: recibí ${files.length} ${files.length === 1 ? 'archivo' : 'archivos'} (${files.map(f => f.name).join(', ')}); ${files.filter(f => f.previewUri).length} con copia ligera para que la IA los vea. Con tu sesión real la IA los mira y los adjunta al pedido.`
+                    : 'Esto es el simulador: aquí el Asistente no está conectado. Con tu sesión real contesta con tus datos.',
+            })
+        }
         else if (/^\/chat\/conversations\/[^/]+\/messages$/.test(path)) response = respond([])
         else if (path === '/chat/conversations' || path === '/request-services' || path === '/events' || path === '/customers/client' || path === '/sponsored') response = respond(page([]))
         else { known = false; response = respond(method === 'GET' ? page([]) : null) }
