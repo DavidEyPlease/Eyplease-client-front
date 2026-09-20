@@ -57,7 +57,9 @@ const TrainingsPage = () => {
         }
 
         if (category !== TrainingFilterTypes.RECENT) {
-            Object.entries(data.groupByCategory).forEach(([slug, trainings]) => {
+            /* `?? {}` como en `total` y `categorySlugs`: sin él, una respuesta sin el grupo deja la
+               pantalla EN BLANCO («Cannot convert undefined or null to object»), no vacía. */
+            Object.entries(data.groupByCategory ?? {}).forEach(([slug, trainings]) => {
                 if (category !== ALL_CATEGORIES && category !== slug) return
                 groups.push({ key: slug, title: categoryNames.get(slug) ?? '', trainings, isRecent: false })
             })

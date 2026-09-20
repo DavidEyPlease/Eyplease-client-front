@@ -112,6 +112,40 @@ const toolsFor = (section: string) => [0, 1, 2].map(index => ({
 
 const page = <T,>(items: T[]) => ({ items, current_page: 1, last_page: 1, per_page: items.length || 15, total_items: items.length, next_cursor: null })
 
+/**
+ * Entrenamientos de ejemplo, agrupados por categoría como los agrupa la API
+ * (`TrainingController`: `groupBy(category->slug)`). Los slugs salen de `util-data.json`, que es de
+ * donde la pantalla saca el NOMBRE de cada grupo: uno inventado sale con el título vacío.
+ */
+const TRAINING_FILE_TYPES = ['training_pptx', 'training_pptx_to_pdf', 'training_pdf_reading'] as const
+
+const training = (id: string, title: string, category: string, hue: number) => ({
+    id,
+    title,
+    category,
+    created_at: '2026-09-15T17:00:00.000000Z',
+    updated_at: '2026-09-15T17:00:00.000000Z',
+    files: [
+        { id: `${id}-cover`, type: 'training_cover', url: piece(title, 'Entrenamiento', hue, '1:1'), uri: `demo/${id}-cover.svg`, name: `${id}.svg`, ext: 'svg' },
+        /* Sin `url` a propósito: descargar va por `uri` → /files/download, que la API de mentira ya atiende */
+        ...TRAINING_FILE_TYPES.map((type, i) => ({
+            id: `${id}-${i}`, type, url: '', uri: `demo/${id}-${i}`, name: `${title}.${type === 'training_pptx' ? 'pptx' : 'pdf'}`, ext: type === 'training_pptx' ? 'pptx' : 'pdf',
+        })),
+    ],
+})
+
+const TRAININGS: Array<[string, ReturnType<typeof training>[]]> = [
+    ['sales', [training('tr-1', 'Cierra la venta sin descuentos', 'sales', 265), training('tr-2', 'El guion de la cita de seguimiento', 'sales', 300)]],
+    ['leadership', [training('tr-3', 'Tu junta de unidad en 30 minutos', 'leadership', 190)]],
+    ['initiation', [training('tr-4', 'Cómo invitar sin sonar a venta', 'initiation', 330)]],
+]
+
+const trainingsResponse = () => ({
+    recently: { count: 1, items: [TRAININGS[0][1][0]] },
+    groupByCategory: Object.fromEntries(TRAININGS),
+    quota: { limit: 10, used: 2, remaining: 8 },
+})
+
 const RANK_NAMES: Record<string, string> = { director: 'Directora', executive_director: 'Directora Ejecutiva', national_director: 'Directora Nacional', elite_director: 'Directora Élite', user_consultant: 'Consultora' }
 
 /* Se lee AL CARGAR: la app reescribe la URL a /dashboard y el parámetro se perdería. */
@@ -309,7 +343,9 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
                 .map(n => ({ code: n.code, name: n.name, sections: n.sections.filter(sec => owned.has(sec.sectionKey)).map(sec => ({ section_key: sec.sectionKey, name: sec.name, is_hidden: false, positions: [], sub_sections: [] })) }))
             response = respond({ newsletters })
         }
-        else if (path.startsWith('/trainings')) response = owned.has('trainings') ? respond(path === '/trainings' ? { recently: { items: [] }, categories: [] } : page([])) : respond(null, 403)
+        else if (path.startsWith('/trainings')) response = owned.has('trainings')
+            ? respond(path === '/trainings' ? trainingsResponse() : page(TRAININGS.flatMap(([, items]) => items)))
+            : respond(null, 403)
         /* Adjuntar en el chat: la «subida» va a una dirección de la propia API de mentira, que la da por buena */
         else if (path === '/files/sign-url') { const body = JSON.parse(String(init?.body ?? '{}')); response = respond({ url: `${base}/__subida-demo`, key: body.fileName, disk: 'private' }) }
         else if (path === '/__subida-demo') response = new Response(null, { status: 200 })
