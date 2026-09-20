@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { Skeleton } from '@/components/ui/skeleton'
-import { IChatMessage } from '@/interfaces/chat'
+import { IChatOption, IGuidedMessage } from '@/interfaces/chat'
 import { CHAT_SUGGESTIONS } from './utils'
 import ChatMessageBubble, { AssistantAvatar } from './ChatMessageBubble'
 
@@ -19,11 +19,13 @@ const DEFAULT_INTRO: ChatIntro = {
 }
 
 interface Props {
-	messages: IChatMessage[]
+	messages: IGuidedMessage[]
 	sending: boolean
 	loadingHistory: boolean
 	onSuggestion: (text: string) => void
 	intro?: ChatIntro
+	/** Botones de los flujos guiados; sin él las burbujas son sólo texto, como siempre */
+	onOption?: (option: IChatOption) => void
 }
 
 /** Burbuja de "escribiendo…" mientras responde el asistente */
@@ -70,7 +72,7 @@ const HistorySkeleton = () => (
 	</div>
 )
 
-const ChatThread = ({ messages, sending, loadingHistory, onSuggestion, intro = DEFAULT_INTRO }: Props) => {
+const ChatThread = ({ messages, sending, loadingHistory, onSuggestion, intro = DEFAULT_INTRO, onOption }: Props) => {
 	const bottomRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
@@ -86,7 +88,9 @@ const ChatThread = ({ messages, sending, loadingHistory, onSuggestion, intro = D
 
 			{messages.length > 0 && (
 				<div className="flex flex-col gap-4">
-					{messages.map(message => <ChatMessageBubble key={message.id} message={message} />)}
+					{messages.map((message, index) => (
+						<ChatMessageBubble key={message.id} message={message} optionsActive={!sending && index === messages.length - 1} onOption={onOption} />
+					))}
 					{sending && <TypingIndicator />}
 				</div>
 			)}

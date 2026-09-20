@@ -6,9 +6,10 @@ import { Textarea } from '@/components/ui/textarea'
 interface Props {
 	sending: boolean
 	onSend: (text: string) => Promise<boolean>
+	placeholder?: string
 }
 
-const ChatComposer = ({ sending, onSend }: Props) => {
+const ChatComposer = ({ sending, onSend, placeholder = 'Pregunta por tus servicios…' }: Props) => {
 	const [text, setText] = useState('')
 
 	const submit = async () => {
@@ -34,7 +35,7 @@ const ChatComposer = ({ sending, onSend }: Props) => {
 				<Textarea
 					rows={1}
 					value={text}
-					placeholder="Pregunta por tus servicios…"
+					placeholder={placeholder}
 					className="max-h-36 min-h-11 flex-1 resize-none"
 					disabled={sending}
 					onChange={event => setText(event.target.value)}

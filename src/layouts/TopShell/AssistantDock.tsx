@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { ArrowLeftIcon, HistoryIcon, PlusIcon, XIcon } from 'lucide-react'
 
 import ChatComposer from '@/components/assistant/ChatComposer'
 import ChatThread, { ChatIntro } from '@/components/assistant/ChatThread'
 import ConversationList from '@/components/assistant/ConversationList'
 import useAssistantChat from '@/components/assistant/useAssistantChat'
+import useDesignRequest, { wantsDesign } from '@/components/assistant/useDesignRequest'
+import { APP_ROUTES } from '@/constants/app'
+import { IChatOption } from '@/interfaces/chat'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
 import useAuthStore from '@/store/auth'
@@ -18,14 +22,16 @@ const Orb = ({ className }: { className?: string }) => (
     </span>
 )
 
+/** Lo que dispara el flujo guiado desde el saludo o desde ⌘K */
+export const DESIGN_REQUEST_LABEL = 'Pídeme un diseño'
+
 /**
  * El saludo depende del plan, igual que en la app (su `pages/Assistant`): a quien su plan no le
- * trae los pedidos de diseño no se le ofrece preguntar por ellos.
+ * trae los pedidos de diseño no se le ofrece pedirlos ni preguntar por ellos.
  *
- * Todavía NO dice «pídeme un diseño» ni «pídeme un reto» como la app: allá son flujos guiados que
- * acaban creando el pedido o el reto, y la web aún no los tiene. Aquí el chat es el libre
- * (`/chat/services`, que sabe de pedidos, indicadores y retos pero sólo LEE), así que las
- * sugerencias son preguntas que sí puede contestar. Cuando se porten los flujos, usar su copy.
+ * «Pídeme un diseño» es un flujo GUIADO (`useDesignRequest`) que acaba creando el pedido; lo demás
+ * son preguntas al chat libre (`/chat/services`), que sabe de pedidos, indicadores y retos pero
+ * sólo LEE. Los retos se piden en Indicadores («Proponme un reto»), no aquí.
  */
 const buildIntro = (name: string | undefined, hasServices: boolean): ChatIntro => {
     const first = (name ?? '').trim().split(/\s+/)[0] ?? ''
@@ -34,8 +40,8 @@ const buildIntro = (name: string | undefined, hasServices: boolean): ChatIntro =
     return hasServices
         ? {
             title: `${hola}.`,
-            text: 'Pregúntame cómo va tu unidad este mes, cómo van tus pedidos de diseño o qué retos tienes.',
-            suggestions: ['¿Cómo va mi unidad este mes?', '¿Cómo van mis pedidos?', '¿Qué retos tengo activos?'],
+            text: 'Pídeme un diseño y yo lo mando a hacer, o pregúntame cómo va tu unidad este mes, tus pedidos o tus retos.',
+            suggestions: [DESIGN_REQUEST_LABEL, '¿Cómo va mi unidad este mes?', '¿Cómo van mis pedidos?', '¿Qué retos tengo activos?'],
         }
         : {
             title: `${hola}.`,
@@ -66,17 +72,54 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
         send, openConversation, startNewChat, removeConversation,
     } = useAssistantChat()
 
+    const navigate = useNavigate()
+    const design = useDesignRequest()
+    const referenceInput = useRef<HTMLInputElement>(null)
+
     const user = useAuthStore(state => state.user)
     const permissions = useAuthStore(state => state.permissions)
-    const intro = buildIntro(user?.name, permissions.includes(PermissionKeys.SERVICES))
+    const hasServices = permissions.includes(PermissionKeys.SERVICES)
+    const intro = buildIntro(user?.name, hasServices)
 
     const isHistory = view === 'history'
 
-    /* Los encargos que llegan de las páginas o de ⌘K: se abre, vuelve al chat y lo manda */
+    /* El flujo guiado vive sólo en pantalla: sus burbujas se intercalan con las del chat por hora */
+    const thread = useMemo(
+        () => [...messages, ...design.messages].sort((a, b) => a.created_at.localeCompare(b.created_at)),
+        [messages, design.messages],
+    )
+
+    /**
+     * Todo lo que se escribe pasa por aquí: si el flujo de diseño está esperando texto, es para él;
+     * si lo que escribe es pedir un diseño, arranca el flujo (el chat libre sólo lee y no podría
+     * crearlo); lo demás va al chat.
+     */
+    const onSend = async (text: string) => {
+        if (design.capturesText) return design.onText(text)
+        if (hasServices && (text === DESIGN_REQUEST_LABEL || wantsDesign(text))) {
+            design.start(text)
+            return true
+        }
+        return send(text)
+    }
+
+    const onOption = async (option: IChatOption) => {
+        const next = await design.onOption(option.value, option.label)
+        if (next === 'attach') referenceInput.current?.click()
+        if (next === 'orders') navigate(APP_ROUTES.SERVICES)
+    }
+
+    const newChat = () => {
+        design.reset()
+        startNewChat()
+        setView('chat')
+    }
+
+    /* Los encargos que llegan de las páginas o de ⌘K: se abre, vuelve al chat y lo atiende */
     useAssistantRequests(text => {
         onOpenChange(true)
         setView('chat')
-        send(text)
+        onSend(text)
     })
 
     if (!open) {
@@ -117,7 +160,7 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
                         {isHistory ? 'Volver al chat' : 'Historial'}
                     </button>
                     {!isHistory && (
-                        <button type="button" className={cn(ACTION, 'text-primary hover:text-primary')} onClick={() => { startNewChat(); setView('chat') }}>
+                        <button type="button" className={cn(ACTION, 'text-primary hover:text-primary')} onClick={newChat}>
                             <PlusIcon className="size-3.5" /> Nueva
                         </button>
                     )}
@@ -130,14 +173,30 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
                             className="flex-1"
                             activeId={conversationId}
                             deleting={deleting}
-                            onSelect={(id) => { openConversation(id); setView('chat') }}
-                            onNew={() => { startNewChat(); setView('chat') }}
+                            onSelect={(id) => { design.reset(); openConversation(id); setView('chat') }}
+                            onNew={newChat}
                             onDelete={removeConversation}
                         />
                     ) : (
                         <>
-                            <ChatThread messages={messages} sending={sending} loadingHistory={loadingHistory} onSuggestion={send} intro={intro} />
-                            <ChatComposer sending={sending} onSend={send} />
+                            <ChatThread messages={thread} sending={sending || design.busy} loadingHistory={loadingHistory} onSuggestion={onSend} onOption={onOption} intro={intro} />
+                            <ChatComposer
+                                sending={sending || design.busy}
+                                onSend={onSend}
+                                placeholder={design.step === 'brief' ? 'Cuéntame qué necesitas…' : design.step === 'when' ? 'O escribe una fecha…' : hasServices ? 'Pídeme un diseño o pregúntame algo…' : 'Pregúntame algo…'}
+                            />
+                            {/* La referencia del pedido se elige aquí; se limpia para poder elegir el mismo archivo otra vez */}
+                            <input
+                                ref={referenceInput}
+                                type="file"
+                                accept="image/*,application/pdf"
+                                className="hidden"
+                                onChange={event => {
+                                    const file = event.target.files?.[0]
+                                    if (file) design.attach(file)
+                                    event.target.value = ''
+                                }}
+                            />
                         </>
                     )}
                 </div>

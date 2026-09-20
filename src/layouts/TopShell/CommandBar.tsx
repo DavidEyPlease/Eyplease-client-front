@@ -13,6 +13,8 @@ const IS_MAC = typeof navigator !== 'undefined' && /mac/i.test(navigator.platfor
 
 /** Sólo lo que el chat libre de la web sí sabe contestar (lee su unidad, sus pedidos y sus retos): las mismas del saludo del panel. */
 const QUESTIONS: Array<{ text: string, needs: PermissionKeys }> = [
+    /* Éste no es una pregunta: arranca el flujo guiado que crea el pedido */
+    { text: 'Pídeme un diseño', needs: PermissionKeys.SERVICES },
     { text: '¿Cómo va mi unidad este mes?', needs: PermissionKeys.POSTS_UNITY },
     { text: '¿Cómo van mis pedidos?', needs: PermissionKeys.SERVICES },
     { text: '¿Qué retos tengo activos?', needs: PermissionKeys.POSTS_UNITY },
@@ -99,7 +101,7 @@ const CommandBar = ({ labelOf }: Props) => {
                         ))}
                     </CommandGroup>
 
-                    <CommandGroup heading="Pregúntale al Asistente">
+                    <CommandGroup heading="Pídele al Asistente">
                         {QUESTIONS.filter(question => permissions.includes(question.needs)).map(({ text }) => (
                             <CommandItem key={text} value={text} onSelect={() => ask(text)} className="cursor-pointer gap-3 rounded-xl">
                                 <span className="shell-drop-icon grid size-8 shrink-0 place-items-center rounded-[10px] text-primary"><SparklesIcon className="!size-4" /></span>
