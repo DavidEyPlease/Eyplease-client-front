@@ -6,7 +6,7 @@
 //   …&cobro=aldia|toca|atrasado                            (cómo va su pago; por defecto «toca»)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router'
+import { BrowserRouter, useLocation } from 'react-router'
 
 import '../../index.css'
 import { SESSION_KEY } from '@/constants/app'
@@ -46,6 +46,20 @@ if (shell === '0' || shell === '1') localStorage.setItem('eyplease:shell', shell
 const startAt = params.get('ir') ?? ''
 window.history.replaceState(null, '', startAt.startsWith('/') && !startAt.startsWith('//') ? startAt : '/dashboard')
 
+/** En la demo no hay contraseña con la que volver: tras cerrar sesión se ofrece entrar otra vez. */
+const BackToDemo = () => {
+    const { pathname } = useLocation()
+    if (!pathname.startsWith('/auth')) return null
+    return (
+        <a
+            href={`/cuentas.html?plan=${slug(plan.name)}`}
+            style={{ position: 'fixed', bottom: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 2147483647, padding: '10px 18px', borderRadius: 999, background: '#fff', color: '#4E31C0', font: '800 13px Inter, Arial', boxShadow: '0 12px 30px -10px rgba(10,5,60,.6)', textDecoration: 'none' }}
+        >
+            Demo · volver a entrar como {plan.name}
+        </a>
+    )
+}
+
 const Switcher = () => (
     <select
         aria-label="Entrar como…"
@@ -63,6 +77,7 @@ import('../../App').then(({ default: App }) => {
         <BrowserRouter>
             <App />
             <Switcher />
+            <BackToDemo />
         </BrowserRouter>,
     )
 })
