@@ -1,5 +1,6 @@
 import { FlagIcon, TargetIcon } from 'lucide-react'
 
+import { MAP_STATUS_USER_REQUEST_SERVICES } from '@/constants/app'
 import { IChallenge } from '@/interfaces/challenges'
 import { cn } from '@/lib/utils'
 import { dayLabel, progressChip, progressPercent } from '../helpers'
@@ -8,6 +9,10 @@ interface Props {
     challenge: IChallenge
     onOpen: (challenge: IChallenge) => void
 }
+
+/** El estado de su pedido con los mismos nombres que ve en Pedidos de diseño */
+const pieceStatus = (piece: NonNullable<IChallenge['piece']>) =>
+    MAP_STATUS_USER_REQUEST_SERVICES[piece.status as keyof typeof MAP_STATUS_USER_REQUEST_SERVICES] ?? piece.status_name ?? 'En proceso'
 
 /** Tarjeta de un reto: qué es, cuánto lleva y, si es de la unidad, el premio y hasta cuándo. */
 const ChallengeCard = ({ challenge, onOpen }: Props) => {
@@ -49,6 +54,14 @@ const ChallengeCard = ({ challenge, onOpen }: Props) => {
                 <i className="shell-grad block h-full rounded-full transition-[width] duration-1000" style={{ width: `${Math.max(progressPercent(challenge), 3)}%` }} />
             </span>
             <span className="block text-[12px] text-muted-foreground">{footer}</span>
+            {/* Su pieza y las de sus ganadoras entran solas como pedidos de diseño (retos que se premian solos) */}
+            {isUnit && (!!challenge.piece || !!challenge.celebrated_count) && (
+                <span className="mt-1 block text-[11.5px] text-muted-foreground">
+                    {challenge.piece && <>Su pieza: <b className="text-foreground">{pieceStatus(challenge.piece)}</b></>}
+                    {challenge.piece && !!challenge.celebrated_count && ' · '}
+                    {!!challenge.celebrated_count && `${challenge.celebrated_count} ${challenge.celebrated_count === 1 ? 'ganadora ya tiene' : 'ganadoras ya tienen'} su pieza`}
+                </span>
+            )}
         </button>
     )
 }

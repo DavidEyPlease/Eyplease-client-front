@@ -259,6 +259,7 @@ const challengeStore = {
     unit: [{
         id: 'ch-points', scope: 'unit', type: 'unit_points', title: '1,800 puntos antes de fin de mes', description: null,
         target: 1800, prize: 'Set de brochas + reconocimiento en el boletín', period: monthKey(), ends_on: monthEnd(), is_open: true, awards_count: 0,
+        piece: { service_id: 'req-demo', status: 'ready-for-review', status_name: 'Lista para revisión' }, celebrated_count: 2,
         progress: { current: 2, goal: 52, measure: 'people', done: false, detail: null, data_missing: false },
     }, {
         /* Puesto para el mes siguiente (así lo deja el Asistente con month=next): se ve como «Próximo» */
@@ -351,6 +352,8 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
                 id: `ch-${Date.now()}`, scope: unit ? 'unit' : 'personal', type: body.type, description: null, target: body.target, prize: body.prize ?? null,
                 title: body.title ?? (unit ? `${Number(body.target).toLocaleString('es-MX')} ${body.type === 'unit_hearts' ? 'corazones' : 'puntos'} antes del cierre` : suggestions.find(item => item.type === body.type)?.title ?? 'Nuevo reto'),
                 period: monthKey(), ends_on: body.ends_on ?? monthEnd(), is_open: true, awards_count: 0,
+                /* Como la API: un reto a la unidad trae su pieza, un pedido de diseño que entra solo */
+                piece: unit ? { service_id: `req-${Date.now()}`, status: 'unassigned', status_name: 'Sin asignar' } : null, celebrated_count: 0,
                 progress: { current: 0, goal: unit ? 52 : body.target, measure: unit ? 'people' : 'pieces', done: false, detail: null, data_missing: false },
             }
             challengeStore[unit ? 'unit' : 'personal'].push(created)
