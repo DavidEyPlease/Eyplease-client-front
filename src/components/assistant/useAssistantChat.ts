@@ -66,6 +66,9 @@ const useAssistantChat = () => {
 			enabled: !!conversationId,
 			customQueryKey: messagesKey(conversationId ?? 'new'),
 			staleTime: HISTORY_STALE_TIME_MS,
+			/* Una entrega de diseño llega sola al hilo (la deja la API cuando el pedido queda listo): al volver a la
+			   ventana se relee, así aparece sin recargar */
+			refetchOnWindowFocus: true,
 		},
 	)
 

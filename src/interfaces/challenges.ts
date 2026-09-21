@@ -8,11 +8,23 @@ export interface ChallengePerson {
     photo: { url: string, has_photo: boolean } | null
 }
 
+/** Un pedido de diseño con una pieza del reto: «se está haciendo» o, ya entregado, su imagen */
+export interface ChallengePiece {
+    service_id: string
+    status: string | null
+    status_name: string | null
+    url?: string | null
+    uri?: string | null
+    ext?: string | null
+}
+
 export interface ChallengeRow extends ChallengePerson {
     current: number
     goal: number
     done: boolean
     awarded: boolean
+    /** Su pieza de ganadora (Elite y Nacional: se pide sola al llegar a la meta) */
+    piece?: ChallengePiece
 }
 
 export interface ChallengeProgress {
@@ -43,7 +55,7 @@ export interface IChallenge {
     /** YYYY-MM-DD: el día 1 de su mes */
     starts_on?: string
     /** Retos a la unidad: el pedido de diseño con su pieza, que entra solo al ponerlo (lo fabrica el estudio) */
-    piece?: { service_id: string, status: string | null, status_name: string | null } | null
+    piece?: ChallengePiece | null
     /** Cuántas ganadoras ya tienen su pieza (Elite y Nacional: llegan solas al llegar a la meta) */
     celebrated_count?: number
     is_open: boolean

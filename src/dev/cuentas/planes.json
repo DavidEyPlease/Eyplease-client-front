@@ -702,6 +702,10 @@
      {
       "key": "road_to_success",
       "label": "Camino al éxito"
+     },
+     {
+      "key": "challenges",
+      "label": "Retos"
      }
     ]
    },
@@ -963,6 +967,10 @@
      {
       "key": "road_to_success",
       "label": "Camino al éxito"
+     },
+     {
+      "key": "challenges",
+      "label": "Retos"
      }
     ]
    },
@@ -1238,6 +1246,10 @@
      {
       "key": "road_to_success",
       "label": "Camino al éxito"
+     },
+     {
+      "key": "challenges",
+      "label": "Retos"
      }
     ]
    },

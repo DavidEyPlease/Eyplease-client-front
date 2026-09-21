@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { TrophyIcon } from 'lucide-react'
+import { DownloadIcon, ImageIcon, TrophyIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import Modal from '@/components/common/Modal'
 import { APP_ROUTES } from '@/constants/app'
 import useChallenges, { useChallengeDetail } from '@/hooks/useChallenges'
-import { ChallengeRow, IChallenge } from '@/interfaces/challenges'
+import useFiles from '@/hooks/useFiles'
+import { ChallengePiece, ChallengeRow, IChallenge } from '@/interfaces/challenges'
 import { cn } from '@/lib/utils'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { dayLabel, formatNumber, progressChip, progressPercent, rowUnit, sourceName } from '../helpers'
@@ -27,6 +28,12 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
     const { award, awardingId, remove, removing } = useChallenges()
     const { data: detail, isLoading } = useChallengeDetail(challenge?.id ?? null)
     const [confirmRemove, setConfirmRemove] = useState(false)
+    const { downloadFile } = useFiles()
+
+    /* Las piezas del reto (la suya y la de cada ganadora) las fabrica el estudio: se bajan como cualquier archivo */
+    const downloadPiece = (piece: ChallengePiece, name: string) => {
+        if (piece.uri) downloadFile(piece.uri, `${name}.${piece.ext ?? 'png'}`)
+    }
 
     const current = detail ?? challenge
     const rows = detail?.rows ?? []
@@ -92,6 +99,24 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
                         </div>
                     </div>
 
+                    {/* La pieza que lo anuncia: la fabrica el estudio al ponerlo y se publica en Mi unidad → Retos */}
+                    {isUnit && current.piece && (
+                        <div className="flex items-center gap-3 rounded-2xl border px-3.5 py-2.5">
+                            {current.piece.url
+                                ? <img src={current.piece.url} alt="Pieza del reto" className="h-14 w-10 shrink-0 rounded-lg object-cover" />
+                                : <span className="hoy-soft grid h-14 w-10 shrink-0 place-items-center rounded-lg text-primary"><ImageIcon className="size-4" /></span>}
+                            <span className="min-w-0 flex-1 text-[12.5px]">
+                                <b className="block">Pieza para anunciarlo</b>
+                                <span className="text-muted-foreground">{current.piece.url ? 'Ya está en Mi unidad, en Retos, lista para compartir.' : 'Se está haciendo; te avisamos en cuanto esté lista.'}</span>
+                            </span>
+                            {current.piece.url && (
+                                <button type="button" onClick={() => downloadPiece(current.piece!, `Reto - ${current.title}`)} className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-primary/25 px-3 py-1.5 text-[11.5px] font-semibold text-primary hover:bg-primary/5">
+                                    <DownloadIcon className="size-3.5" /> Descargar
+                                </button>
+                            )}
+                        </div>
+                    )}
+
                     {current.progress.data_missing && (
                         <div className="rounded-2xl bg-amber-500/12 px-3.5 py-3 text-[12.5px] text-amber-800 dark:text-amber-300">
                             El avance sale de tu reporte <b>{sourceName(current)}</b> y este mes todavía no se carga.
@@ -122,6 +147,14 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
                                                 {row.done ? ' ✓' : ''}
                                             </span>
                                         </span>
+                                        {row.piece && (row.piece.url ? (
+                                            <button type="button" title="Descargar su pieza de ganadora" onClick={() => downloadPiece(row.piece!, `Ganadora - ${titleCaseName(row.name)}`)} className="group relative shrink-0 cursor-pointer overflow-hidden rounded-lg border">
+                                                <img src={row.piece.url} alt="Su pieza de ganadora" className="h-12 w-8 object-cover" />
+                                                <span className="absolute inset-0 grid place-items-center bg-black/35 opacity-0 transition-opacity group-hover:opacity-100"><DownloadIcon className="size-3.5 text-white" /></span>
+                                            </button>
+                                        ) : (
+                                            <span className="shrink-0 text-[10.5px] font-semibold text-muted-foreground">Su pieza<br />se está haciendo</span>
+                                        ))}
                                         {isUnit && row.done && (row.awarded ? (
                                             <button type="button" onClick={() => congratulate(row)} className="shrink-0 cursor-pointer rounded-full border border-primary/25 px-3 py-1.5 text-[11.5px] font-semibold text-primary hover:bg-primary/5">Felicitar</button>
                                         ) : (

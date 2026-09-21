@@ -1,5 +1,5 @@
 import { PermissionKeys } from '@/interfaces/permissions'
-import { UsersIcon, CrownIcon, StarIcon, AwardIcon, HeartIcon, CakeIcon, SparkleIcon, TargetIcon, CalendarIcon, GraduationCapIcon, TrendingUpIcon, RocketIcon, TrophyIcon, UserStarIcon, BookCheckIcon } from 'lucide-react'
+import { UsersIcon, CrownIcon, StarIcon, AwardIcon, HeartIcon, CakeIcon, SparkleIcon, TargetIcon, CalendarIcon, GraduationCapIcon, TrendingUpIcon, RocketIcon, TrophyIcon, UserStarIcon, BookCheckIcon, FlagIcon } from 'lucide-react'
 
 interface Props {
     sectionKey: PermissionKeys
@@ -27,7 +27,9 @@ export const IconBySection = ({ sectionKey }: Props) => {
         [PermissionKeys.INITIATION_CUT]: RocketIcon,
         [PermissionKeys.NATIONAL_INITIATION_CUT]: RocketIcon,
         [PermissionKeys.UNIT_CLUB]: TrophyIcon,
-        [PermissionKeys.EARLY]: BookCheckIcon
+        [PermissionKeys.EARLY]: BookCheckIcon,
+        /* Retos: la bandera, como en Indicadores */
+        challenges: FlagIcon,
     }
 
     const Icon = ICONS_BY_SECTION[sectionKey as keyof typeof ICONS_BY_SECTION]

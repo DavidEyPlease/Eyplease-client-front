@@ -28,6 +28,8 @@ export enum NewsletterSectionKeys {
     NEW_BEGGININGS = 'new_beginnings',
     POINTS_CLUB = 'points_club',
     EARLY = 'early',
+    /** Piezas de los retos (la del reto y la de cada ganadora): las publica la API al entregarse, fuera del boletín */
+    CHALLENGES = 'challenges',
 
     // National
     NEW_DIRECTORS = 'new_directors',

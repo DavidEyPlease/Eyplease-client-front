@@ -66,6 +66,23 @@ const postsFor = (plan: DemoPlan, section: string): unknown[] => {
         }))
     }
 
+    /* Retos: la pieza de una ganadora y la del reto, publicadas hoy como en vivo (en la API las publica la entrega del estudio) */
+    if (section === 'challenges') {
+        return [
+            { ...base(0, PEOPLE[0]), id: 'post-challenges-winner', title: `${PEOPLE[0]} ganó el reto «1,800 puntos antes de fin de mes»` },
+            { ...base(5, 'Mariana Directora Demo'), id: 'post-challenges-reto', title: 'Reto de la unidad: 1,800 puntos antes de fin de mes' },
+        ].map((post, index) => ({
+            ...post,
+            newsletter_section: { sectionKey: 'challenges', name: label },
+            created_at: iso(0),
+            shared_at: null,
+            has_photo: true,
+            files: [file(post.id, piece(index === 0 ? '¡Ganadora!' : 'Reto', index === 0 ? PEOPLE[0] : '1,800 puntos', hue, '9:16'))],
+            newsletter_date: month(0),
+            live_event_at: iso(0),
+        }))
+    }
+
     if (section === 'pink_circle') {
         return PEOPLE.slice(0, 2).flatMap((name, index) => (['a', 'b'] as const).map(version => ({
             ...base(index, name),
@@ -259,7 +276,7 @@ const challengeStore = {
     unit: [{
         id: 'ch-points', scope: 'unit', type: 'unit_points', title: '1,800 puntos antes de fin de mes', description: null,
         target: 1800, prize: 'Set de brochas + reconocimiento en el boletín', period: monthKey(), ends_on: monthEnd(), is_open: true, awards_count: 0,
-        piece: { service_id: 'req-demo', status: 'ready-for-review', status_name: 'Lista para revisión' }, celebrated_count: 2,
+        piece: { service_id: 'req-demo', status: 'ready-for-review', status_name: 'Lista para revisión', url: piece('Reto', '1,800 puntos', 260, '9:16'), uri: 'demo/reto.svg', ext: 'svg' }, celebrated_count: 2,
         progress: { current: 2, goal: 52, measure: 'people', done: false, detail: null, data_missing: false },
     }, {
         /* Puesto para el mes siguiente (así lo deja el Asistente con month=next): se ve como «Próximo» */
@@ -269,7 +286,12 @@ const challengeStore = {
         progress: { current: 0, goal: 2, measure: 'people', done: false, detail: null, data_missing: false },
     }] as Array<Record<string, unknown>>,
 }
-const challengeRows = [2450, 1910, 1320, 880, 410].map((current, index) => ({ ...person(index), current, goal: 1800, done: current >= 1800, awarded: false }))
+const challengeRows = [2450, 1910, 1320, 880, 410].map((current, index) => ({
+    ...person(index), current, goal: 1800, done: current >= 1800, awarded: false,
+    /* Su pieza de ganadora: la primera ya entregada, la segunda todavía en el estudio */
+    ...(index === 0 ? { piece: { service_id: 'req-win-0', status: 'ready-for-review', status_name: 'Lista para revisión', url: piece('¡Ganadora!', PEOPLE[0], 300, '9:16'), uri: 'demo/ganadora.svg', ext: 'svg' } } : {}),
+    ...(index === 1 ? { piece: { service_id: 'req-win-1', status: 'in-progress', status_name: 'En proceso', url: null, uri: null, ext: null } } : {}),
+}))
 const suggestions = [
     { type: 'section_share', title: 'Comparte todo Círculo Rosa esta semana', description: 'Es la sección que nunca has enviado y hoy tiene piezas en vivo.\nSon 3 piezas: con mandarlas llegas a 3 consultoras más.', target: 3, params: { section: 'pink_circle' }, people: [] },
     { type: 'leaders_five', title: 'Reto de las 5', description: 'Dos de tus líderes están a una activa de tener 5 en su grupo.', target: 5, params: null, people: [0, 1].map(index => ({ ...person(index), actives: 4 })) },

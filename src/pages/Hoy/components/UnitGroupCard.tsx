@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { IconBySection } from '@/components/generics/IconBySection'
 import useFiles from '@/hooks/useFiles'
+import { NewsletterSectionKeys } from '@/interfaces/common'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { IPost, PostTypes } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
@@ -78,6 +79,8 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
     const sent = isPostSent(post)
     const hasPerson = !!post.vendorable && post.type !== PostTypes.EYPLEASE_CLIENTS
     const needsPhoto = post.has_photo === false && hasPerson
+    /* Pieza de un reto (sección Retos): la hizo el estudio como pedido de diseño, no el render */
+    const isChallengePiece = post.newsletter_section?.sectionKey === NewsletterSectionKeys.CHALLENGES
 
     const go = (step: number) => setPosition((current + step + total) % total)
 
@@ -249,7 +252,8 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
                         ))}
                     </div>
 
-                    <div className="flex gap-2">
+                    {/* Las piezas de retos no salen del render: se piden como pedido de diseño, así que aquí no se rehacen */}
+                    {!isChallengePiece && <div className="flex gap-2">
                         <button type="button" disabled={regenerating} onClick={onRegenerate} className={GHOST}>
                             <RefreshCwIcon className={cn(regenerating && 'animate-spin')} /> Rehacer
                         </button>
@@ -258,7 +262,7 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
                                 <CameraIcon /> Foto
                             </button>
                         )}
-                    </div>
+                    </div>}
                 </div>
 
                 <button
