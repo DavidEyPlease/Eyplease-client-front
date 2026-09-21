@@ -71,10 +71,18 @@ const usePersonPhotoUpload = ({ personType, personId, onUploaded }: Options) => 
             const croppedBlob = await getCroppedImg(imgRef.current, crop, selectedFile.type)
             if (!croppedBlob) return false
 
-            const croppedFile = new File([croppedBlob], selectedFile.name, { type: selectedFile.type })
+            const croppedFile = new File([croppedBlob], selectedFile.name, { type: croppedBlob.type || selectedFile.type })
+
+            /* Nombre ÚNICO. Con el original ("foto.jpg", "IMG_1234.jpg") dos fotos de la misma carpeta se
+               pisaban —todas las de su red viven en la carpeta de la Directora— y el recorte sin fondo del
+               boletín, que se deriva del nombre, se quedaba con el de la foto anterior. La extensión es la
+               del recorte: el lienzo no sabe escribir HEIC y entrega PNG o JPEG. */
+            const extension = croppedBlob.type === 'image/png' ? 'png' : croppedBlob.type === 'image/webp' ? 'webp' : 'jpg'
+            const filename = `${personId.slice(0, 8)}-${Date.now().toString(36)}.${extension}`
 
             await onUploadFile({
                 file: croppedFile,
+                filename,
                 fileType: config.fileType,
                 callback: async (fileUri: string) => {
                     const updated = await config.update(personId, fileUri)

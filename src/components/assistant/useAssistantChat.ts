@@ -106,7 +106,7 @@ const useAssistantChat = () => {
 				{ message, conversation_id: conversationId, ...(attachments.length ? { attachments } : {}) },
 			)
 
-			const thread = [...messagesRef.current, buildMessage('assistant', response.data.message)]
+			const thread = [...messagesRef.current, buildMessage('assistant', response.data.message, { pieces: response.data.pieces ?? [] })]
 			setMessages(thread)
 
 			/* Se siembra la caché del historial para que fijar el id no dispare un refetch */

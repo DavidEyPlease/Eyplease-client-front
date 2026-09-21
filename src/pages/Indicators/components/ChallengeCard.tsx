@@ -15,8 +15,12 @@ const ChallengeCard = ({ challenge, onOpen }: Props) => {
     const isUnit = challenge.scope === 'unit'
     const reached = isUnit ? progress.current > 0 : progress.done
     const Icon = isUnit ? FlagIcon : TargetIcon
+    /* Puesto para el mes siguiente: todavía no hay nada que medir */
+    const upcoming = !!challenge.is_upcoming && !!challenge.starts_on
 
-    const footer = progress.data_missing
+    const footer = upcoming
+        ? `Empieza a contar el ${dayLabel(challenge.starts_on!)}`
+        : progress.data_missing
         ? 'Falta cargar el reporte de este mes'
         : isUnit
             ? progress.current ? `${progress.current} ya ${progress.current === 1 ? 'llegó' : 'llegaron'} a la meta` : 'Nadie ha llegado todavía'
@@ -33,12 +37,12 @@ const ChallengeCard = ({ challenge, onOpen }: Props) => {
                     <b className="block text-[14px] leading-snug font-extrabold">{challenge.title}</b>
                     {isUnit && (
                         <small className="block text-[12px] text-muted-foreground">
-                            Premio: <b className="text-foreground">{challenge.prize}</b> · {challenge.is_open ? `hasta el ${dayLabel(challenge.ends_on)}` : `terminó el ${dayLabel(challenge.ends_on)}`}
+                            Premio: <b className="text-foreground">{challenge.prize}</b> · {upcoming ? `del ${dayLabel(challenge.starts_on!)} al ${dayLabel(challenge.ends_on)}` : challenge.is_open ? `hasta el ${dayLabel(challenge.ends_on)}` : `terminó el ${dayLabel(challenge.ends_on)}`}
                         </small>
                     )}
                 </span>
-                <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide whitespace-nowrap', reached ? 'bg-emerald-500/14 text-emerald-700 dark:text-emerald-400' : 'bg-amber-500/15 text-amber-700 dark:text-amber-400')}>
-                    {progressChip(challenge)}
+                <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide whitespace-nowrap', upcoming ? 'bg-primary/10 text-primary' : reached ? 'bg-emerald-500/14 text-emerald-700 dark:text-emerald-400' : 'bg-amber-500/15 text-amber-700 dark:text-amber-400')}>
+                    {upcoming ? 'Próximo' : progressChip(challenge)}
                 </span>
             </span>
             <span className="mt-3 mb-2 block h-1.5 overflow-hidden rounded-full bg-foreground/6">

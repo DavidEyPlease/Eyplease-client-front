@@ -260,6 +260,12 @@ const challengeStore = {
         id: 'ch-points', scope: 'unit', type: 'unit_points', title: '1,800 puntos antes de fin de mes', description: null,
         target: 1800, prize: 'Set de brochas + reconocimiento en el boletín', period: monthKey(), ends_on: monthEnd(), is_open: true, awards_count: 0,
         progress: { current: 2, goal: 52, measure: 'people', done: false, detail: null, data_missing: false },
+    }, {
+        /* Puesto para el mes siguiente (así lo deja el Asistente con month=next): se ve como «Próximo» */
+        id: 'ch-next', scope: 'unit', type: 'unit_hearts', title: 'Ganar 2 corazones este mes', description: null,
+        target: 2, prize: 'Desayuno con la Directora', period: month(-1).slice(0, 7), starts_on: month(-1), is_upcoming: true,
+        ends_on: dayOfThisMonth(new Date(now.getFullYear(), now.getMonth() + 2, 0).getDate(), 1), is_open: true, awards_count: 0,
+        progress: { current: 0, goal: 2, measure: 'people', done: false, detail: null, data_missing: false },
     }] as Array<Record<string, unknown>>,
 }
 const challengeRows = [2450, 1910, 1320, 880, 410].map((current, index) => ({ ...person(index), current, goal: 1800, done: current >= 1800, awarded: false }))
@@ -399,6 +405,26 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/chat/services' && TOPE) {
             await new Promise(listo => setTimeout(listo, 600))
             response = new Response(JSON.stringify({ success: false, message: 'Ya usaste los 120 mensajes de tu Asistente de este mes. Se renuevan el 1 de octubre. Si lo usas mucho, con el Plan Ejecutivo tienes más.', errors: { code: 'ASSISTANT_LIMIT' } }), { status: 429, headers: { 'Content-Type': 'application/json' } })
+        }
+        /* Pedirle una pieza («compárteme…», «enséñame…»): contesta con tarjetas, como show-pieces en la API real */
+        else if (path === '/chat/services' && /compart|ense[ñn]a|m[aá]nda|pieza/i.test(String(JSON.parse(String(init?.body ?? '{}')).message ?? ''))) {
+            await new Promise(listo => setTimeout(listo, 600))
+            const card = (id: string, section: string, name: string, extra: Record<string, unknown> = {}) => ({
+                id, title: `${section} · ${name}`, section, person: name, shared_at: null, is_regenerating: false, live: false, can_mark_sent: true,
+                files: [
+                    { artifact: 'image', label: 'Vertical', url: piece(section, name, hueOf(section), '9:16'), uri: `demo/${id}-v.svg`, ext: 'svg' },
+                    { artifact: 'image_square', label: 'Cuadrada', url: piece(section, name, hueOf(section), '1:1'), uri: `demo/${id}-c.svg`, ext: 'svg' },
+                ],
+                ...extra,
+            })
+            response = respond({
+                conversation_id: 'demo',
+                message: 'Claro, aquí las tienes. La de Ana salió hoy en vivo; la de Evangelina es la de cumpleaños.',
+                pieces: [
+                    card('demo-star', 'Estrellas', 'Ana Valadez Ángeles', { live: true }),
+                    card('demo-bday', 'Cumpleaños', 'Evangelina Caracheo', { shared_at: iso(0), files: [{ artifact: 'image', label: 'Vertical', url: piece('Cumpleaños', 'Evangelina Caracheo', 40, '9:16'), uri: 'demo/bday.svg', ext: 'svg' }] }),
+                ],
+            })
         }
         else if (path === '/chat/services') {
             const sent = JSON.parse(String(init?.body ?? '{}'))

@@ -2,6 +2,7 @@ import { PaperclipIcon, SparklesIcon } from 'lucide-react'
 
 import { IChatMessage } from '@/interfaces/chat'
 import { cn } from '@/lib/utils'
+import ChatPieceCard from './ChatPieceCard'
 import ChatRichText from './ChatRichText'
 
 /** Avatar del asistente: círculo con el gradiente de marca */
@@ -45,8 +46,14 @@ const ChatMessageBubble = ({ message }: { message: IChatMessage }) => {
 	return (
 		<div className="flex items-start gap-2.5">
 			<AssistantAvatar />
-			<div className="max-w-[85%] rounded-2xl rounded-tl-md border border-border bg-surface-soft px-4 py-2.5 text-sm leading-relaxed text-foreground sm:max-w-[80%]">
-				<ChatRichText text={message.text} />
+			{/* Las piezas que enseñó van debajo de su respuesta, como tarjetas con su botón de descargar */}
+			<div className="flex max-w-[85%] min-w-0 flex-col gap-2 sm:max-w-[80%]">
+				{!!message.text && (
+					<div className="self-start rounded-2xl rounded-tl-md border border-border bg-surface-soft px-4 py-2.5 text-sm leading-relaxed text-foreground">
+						<ChatRichText text={message.text} />
+					</div>
+				)}
+				{message.pieces?.map(piece => <ChatPieceCard key={piece.id} piece={piece} />)}
 			</div>
 		</div>
 	)

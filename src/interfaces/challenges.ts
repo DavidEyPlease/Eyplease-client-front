@@ -38,6 +38,10 @@ export interface IChallenge {
     period: string
     /** YYYY-MM-DD */
     ends_on: string
+    /** Puesto para el mes siguiente (p. ej. desde el Asistente): todavía no empieza a contar */
+    is_upcoming?: boolean
+    /** YYYY-MM-DD: el día 1 de su mes */
+    starts_on?: string
     is_open: boolean
     awards_count: number
     progress: ChallengeProgress

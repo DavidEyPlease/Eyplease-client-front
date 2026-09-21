@@ -16,7 +16,7 @@ const QUESTIONS: Array<{ text: string, needs: PermissionKeys }> = [
     /* La IA entrevista y crea el pedido: es un mensaje más, no un flujo aparte */
     { text: 'Quiero pedir un diseño', needs: PermissionKeys.SERVICES },
     { text: '¿Cómo va mi unidad este mes?', needs: PermissionKeys.POSTS_UNITY },
-    { text: '¿Quién no ha pedido este mes?', needs: PermissionKeys.POSTS_UNITY },
+    { text: '¿Qué activas no han pedido este mes?', needs: PermissionKeys.POSTS_UNITY },
     { text: '¿Qué piezas me faltan por compartir?', needs: PermissionKeys.POSTS_UNITY },
     { text: '¿Cómo van mis pedidos?', needs: PermissionKeys.SERVICES },
 ]

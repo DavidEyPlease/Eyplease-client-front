@@ -37,18 +37,20 @@ const buildIntro = (name: string | undefined, hasServices: boolean): ChatIntro =
     const first = (name ?? '').trim().split(/\s+/)[0] ?? ''
     const hola = first ? `Hola, ${first.charAt(0).toUpperCase()}${first.slice(1).toLowerCase()}` : 'Hola'
 
-    /* Fase 1 del Asistente: ya consulta a cada consultora, sus piezas, sus clientas y sus reportes, y
-       recuerda lo que ella le cuenta. Las sugerencias enseñan eso, sin prometer lo que aún no hace. */
+    /* Fase 2 del Asistente: además de consultar (estatus de cada consultora, sus piezas, sus clientas,
+       sus reportes) enseña piezas aquí mismo y, según el plan, hace cosas por ella con su sí (rehacer
+       piezas, poner fotos, crear retos). Lo que depende del plan no se promete en el saludo: lo explica
+       la IA si su plan no lo trae. */
     return hasServices
         ? {
             title: `${hola}.`,
-            text: 'Conozco tu unidad, tus piezas y tus clientas. Pregúntame quién no ha pedido, qué te falta compartir o quién cumple años, o pídeme un diseño con tus palabras.',
-            suggestions: [DESIGN_REQUEST_LABEL, '¿Cómo va mi unidad este mes?', '¿Quién no ha pedido este mes?', '¿Qué piezas me faltan por compartir?'],
+            text: 'Conozco tu unidad, tus piezas y tus clientas. Pregúntame qué activas no han pedido o qué te falta compartir, pídeme que te enseñe una pieza, o pídeme un diseño con tus palabras.',
+            suggestions: [DESIGN_REQUEST_LABEL, '¿Cómo va mi unidad este mes?', '¿Qué activas no han pedido este mes?', '¿Qué piezas me faltan por compartir?'],
         }
         : {
             title: `${hola}.`,
-            text: 'Conozco tu unidad, tus piezas y tus clientas. Pregúntame quién no ha pedido, qué te falta compartir o quién cumple años.',
-            suggestions: ['¿Cómo va mi unidad este mes?', '¿Quién no ha pedido este mes?', '¿Qué piezas me faltan por compartir?', '¿Qué reportes me faltan?'],
+            text: 'Conozco tu unidad, tus piezas y tus clientas. Pregúntame qué activas no han pedido o qué te falta compartir, o pídeme que te enseñe una pieza.',
+            suggestions: ['¿Cómo va mi unidad este mes?', '¿Qué activas no han pedido este mes?', '¿Qué piezas me faltan por compartir?', '¿Qué reportes me faltan?'],
         }
 }
 
