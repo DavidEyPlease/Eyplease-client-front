@@ -149,6 +149,7 @@ const trainingsResponse = () => ({
 const RANK_NAMES: Record<string, string> = { director: 'Directora', executive_director: 'Directora Ejecutiva', national_director: 'Directora Nacional', elite_director: 'Directora Élite', user_consultant: 'Consultora' }
 
 /* Se lee AL CARGAR: la app reescribe la URL a /dashboard y el parámetro se perdería. */
+const TOPE = new URLSearchParams(location.search).get('tope') === '1'
 const DOMICILIAR = new URLSearchParams(location.search).get('domiciliar') === '1' || sessionStorage.getItem('cuentas:domiciliar') === '1'
 if (DOMICILIAR) sessionStorage.setItem('cuentas:domiciliar', '1')
 
@@ -394,6 +395,11 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         /* Aquí nadie inicia sesión: la demo no conoce cuentas reales (el aviso de arriba dice a dónde ir) */
         else if (path === '/sign-in') response = respond(null, 401)
         /* Misma forma que la API real: el texto de la respuesta va suelto en `message` */
+        /* `&tope=1`: ya usó los mensajes de su plan este mes, como responde la API (429 + ASSISTANT_LIMIT) */
+        else if (path === '/chat/services' && TOPE) {
+            await new Promise(listo => setTimeout(listo, 600))
+            response = new Response(JSON.stringify({ success: false, message: 'Ya usaste los 120 mensajes de tu Asistente de este mes. Se renuevan el 1 de octubre. Si lo usas mucho, con el Plan Ejecutivo tienes más.', errors: { code: 'ASSISTANT_LIMIT' } }), { status: 429, headers: { 'Content-Type': 'application/json' } })
+        }
         else if (path === '/chat/services') {
             const sent = JSON.parse(String(init?.body ?? '{}'))
             const files = (sent.attachments ?? []) as Array<{ name: string, previewUri?: string | null }>

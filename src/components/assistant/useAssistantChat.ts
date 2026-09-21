@@ -31,6 +31,12 @@ export interface ChatSendExtras {
  * del hilo viven en estado local (optimistas incluidos) y el historial se hidrata
  * desde la API al reabrir una conversación.
  */
+/** El texto para ella si la API dijo que ya usó los mensajes de su plan este mes (código ASSISTANT_LIMIT). */
+const limitMessage = (error: unknown): string | null => {
+	const body = error as { message?: string, errors?: { code?: string } } | null
+	return body?.errors?.code === 'ASSISTANT_LIMIT' && body.message ? body.message : null
+}
+
 const useAssistantChat = () => {
 	const queryClient = useQueryClient()
 
@@ -43,7 +49,9 @@ const useAssistantChat = () => {
 	messagesRef.current = messages
 
 	const { request, requestState } = useRequestQuery({
-		onError: () => {
+		onError: (error) => {
+			/* El tope del mes no es un fallo: lo dice el propio Asistente en el hilo (ver `send`) */
+			if (limitMessage(error)) return
 			toast.error('No se pudo enviar el mensaje. Inténtalo de nuevo.')
 		},
 	})
@@ -111,7 +119,15 @@ const useAssistantChat = () => {
 			queryClient.invalidateQueries({ queryKey: queryKeys.entity(CONVERSATIONS_ENTITY) })
 
 			return true
-		} catch {
+		} catch (error) {
+			/* Ya usó sus mensajes del mes: su mensaje se queda y el Asistente le contesta cuándo se
+			   renuevan (el texto viene de la API, con el plan que le daría más) */
+			const limit = limitMessage(error)
+			if (limit) {
+				setMessages(prev => [...prev, buildMessage('assistant', limit)])
+				return true
+			}
+
 			/* El mensaje no llegó: se saca del hilo y el composer lo devuelve al input */
 			setMessages(prev => prev.slice(0, -1))
 			return false

@@ -11,13 +11,14 @@ import { askAssistant } from './assistantBridge'
 
 const IS_MAC = typeof navigator !== 'undefined' && /mac/i.test(navigator.platform)
 
-/** Lo que la IA sí sabe hacer: crear y seguir sus pedidos de diseño, y leer su unidad y sus retos. Las mismas del saludo del panel. */
+/** Lo que la IA sí sabe hacer: sus pedidos de diseño y consultar su unidad, sus piezas, sus clientas y sus reportes. Las mismas del saludo del panel. */
 const QUESTIONS: Array<{ text: string, needs: PermissionKeys }> = [
     /* La IA entrevista y crea el pedido: es un mensaje más, no un flujo aparte */
     { text: 'Quiero pedir un diseño', needs: PermissionKeys.SERVICES },
     { text: '¿Cómo va mi unidad este mes?', needs: PermissionKeys.POSTS_UNITY },
+    { text: '¿Quién no ha pedido este mes?', needs: PermissionKeys.POSTS_UNITY },
+    { text: '¿Qué piezas me faltan por compartir?', needs: PermissionKeys.POSTS_UNITY },
     { text: '¿Cómo van mis pedidos?', needs: PermissionKeys.SERVICES },
-    { text: '¿Qué retos tengo activos?', needs: PermissionKeys.POSTS_UNITY },
 ]
 
 interface Props {

@@ -37,16 +37,18 @@ const buildIntro = (name: string | undefined, hasServices: boolean): ChatIntro =
     const first = (name ?? '').trim().split(/\s+/)[0] ?? ''
     const hola = first ? `Hola, ${first.charAt(0).toUpperCase()}${first.slice(1).toLowerCase()}` : 'Hola'
 
+    /* Fase 1 del Asistente: ya consulta a cada consultora, sus piezas, sus clientas y sus reportes, y
+       recuerda lo que ella le cuenta. Las sugerencias enseñan eso, sin prometer lo que aún no hace. */
     return hasServices
         ? {
             title: `${hola}.`,
-            text: 'Pídeme un diseño con tus palabras y yo lo mando a hacer, o pregúntame cómo va tu unidad este mes, tus pedidos o tus retos.',
-            suggestions: [DESIGN_REQUEST_LABEL, '¿Cómo va mi unidad este mes?', '¿Cómo van mis pedidos?', '¿Qué retos tengo activos?'],
+            text: 'Conozco tu unidad, tus piezas y tus clientas. Pregúntame quién no ha pedido, qué te falta compartir o quién cumple años, o pídeme un diseño con tus palabras.',
+            suggestions: [DESIGN_REQUEST_LABEL, '¿Cómo va mi unidad este mes?', '¿Quién no ha pedido este mes?', '¿Qué piezas me faltan por compartir?'],
         }
         : {
             title: `${hola}.`,
-            text: 'Pregúntame cómo va tu unidad este mes o qué retos tienes.',
-            suggestions: ['¿Cómo va mi unidad este mes?', '¿Qué retos tengo activos?'],
+            text: 'Conozco tu unidad, tus piezas y tus clientas. Pregúntame quién no ha pedido, qué te falta compartir o quién cumple años.',
+            suggestions: ['¿Cómo va mi unidad este mes?', '¿Quién no ha pedido este mes?', '¿Qué piezas me faltan por compartir?', '¿Qué reportes me faltan?'],
         }
 }
 
@@ -127,7 +129,7 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
                         <b className="block text-[14.5px] font-extrabold">Asistente</b>
                         <small className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
                             <i className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,.2)]" />
-                            Conoce tus pedidos, tus números y tus retos
+                            Conoce tu unidad, tus piezas y tus clientas
                         </small>
                     </div>
                     <button type="button" title="Plegar" onClick={() => onOpenChange(false)} className="grid size-9 cursor-pointer place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground">
