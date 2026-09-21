@@ -119,6 +119,21 @@ export interface IBillingOverview {
     debt: IBillingDebt
     /** Años con movimientos, del más reciente al más antiguo. */
     payment_years: number[]
+    /** Si se le invita a domiciliar su tarjeta. Opcional: una API sin actualizar no lo manda. */
+    card_automation?: ICardAutomation
+}
+
+/**
+ * Domiciliar la tarjeta: su plan se le cobra solo cada mes en Stripe. Sólo viene disponible sin deudas
+ * vencidas, sin promoción y con el interruptor de Finanzas encendido; el primer cobro cae en su próxima
+ * fecha de pago, así que lo que ya pagó por transferencia no se le vuelve a cobrar.
+ */
+export interface ICardAutomation {
+    available: boolean
+    /** YYYY-MM-DD del primer cobro automático */
+    first_charge_date: string | null
+    amount: number | null
+    currency: string
 }
 
 export interface IBillingPayment {

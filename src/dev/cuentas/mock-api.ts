@@ -149,6 +149,9 @@ const trainingsResponse = () => ({
 const RANK_NAMES: Record<string, string> = { director: 'Directora', executive_director: 'Directora Ejecutiva', national_director: 'Directora Nacional', elite_director: 'Directora Élite', user_consultant: 'Consultora' }
 
 /* Se lee AL CARGAR: la app reescribe la URL a /dashboard y el parámetro se perdería. */
+const DOMICILIAR = new URLSearchParams(location.search).get('domiciliar') === '1' || sessionStorage.getItem('cuentas:domiciliar') === '1'
+if (DOMICILIAR) sessionStorage.setItem('cuentas:domiciliar', '1')
+
 const CON_DOS_CUENTAS = new URLSearchParams(location.search).get('cuentas') === '1'
     || sessionStorage.getItem('cuentas:dos') === '1'
 if (CON_DOS_CUENTAS) sessionStorage.setItem('cuentas:dos', '1')
@@ -212,6 +215,11 @@ const billingFor = (plan: DemoPlan, scenario: string) => {
         } : null,
         debt: { total: price * owed.length, currency: 'MXN', periods: owed.map(period => ({ period, remaining: price, status: overdue ? 'overdue' : 'pending' })) },
         payment_years: price ? [now.getFullYear()] : [],
+        /* Domiciliar la tarjeta: como en producción, APAGADO salvo `&domiciliar=1` (el interruptor de
+           Finanzas). Aplica al corriente, o en cuanto sube el comprobante del mes (ya cuenta como cubierto). */
+        card_automation: DOMICILIAR && price && (scenario === 'aldia' || sessionStorage.getItem('cuentas:comprobante') === '1')
+            ? { available: true, first_charge_date: dayOfThisMonth(5, 1), amount: price, currency: 'MXN' }
+            : { available: false, first_charge_date: null, amount: null, currency: 'MXN' },
     }
 }
 
@@ -295,6 +303,9 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/util-data') response = respond(utilData)
         else if (path === '/billing/overview') response = respond(billingFor(plan, scenario))
         else if (path === '/billing/payments') response = respond(page(paymentsFor(plan, scenario)))
+        /* Subir comprobante: el mes queda en revisión (cubierto), como en la API */
+        else if (path === '/billing/receipts' && method === 'POST') { sessionStorage.setItem('cuentas:comprobante', '1'); response = respond(null, 201) }
+        else if (path === '/billing/card-automation' && method === 'POST') response = respond({ checkout_url: 'https://checkout.stripe.com/c/pay/cs_live_DOMICILIAR_EJEMPLO', first_charge_date: dayOfThisMonth(5, 1), amount: Number(plan.price) || 0 }, 201)
         else if (path.startsWith('/billing/')) response = respond(page([]))
         else if (path === '/posts') {
             const section = q.get('section') ?? ''

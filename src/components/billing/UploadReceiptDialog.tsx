@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { FileTextIcon, ImageIcon, UploadCloudIcon, XIcon } from 'lucide-react'
 
 import Button from '@/components/common/Button'
 import Modal from '@/components/common/Modal'
 import FileSelector from '@/components/generics/FileSelector'
 import { Input } from '@/components/ui/input'
-import { IBillingPaymentMethod, PaymentMethod } from '@/interfaces/billing'
+import { IBillingOverview, IBillingPaymentMethod, ICardAutomation, PaymentMethod } from '@/interfaces/billing'
+import { ApiResponse } from '@/interfaces/common'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/utils'
+import AutomateCardOffer from './AutomateCardOffer'
 import PaymentAccounts from './PaymentAccounts'
 import useReceiptUpload from './useReceiptUpload'
-import { periodsLabel, RECEIPT_ACCEPTED_FILES, RECEIPT_METHODS } from './utils'
+import { billingOverviewKey, periodsLabel, RECEIPT_ACCEPTED_FILES, RECEIPT_METHODS } from './utils'
 
 interface Props {
     open: boolean
@@ -36,7 +39,11 @@ const UploadReceiptDialog = ({ open, periods, amount, currency, paymentMethod, o
     const [reference, setReference] = useState('')
     const [method, setMethod] = useState<PaymentMethod>(PaymentMethod.TRANSFER)
 
-    const { uploading, upload } = useReceiptUpload({ onUploaded: () => onOpenChange(false) })
+    const queryClient = useQueryClient()
+    /* Tras enviar el comprobante, si le aplica: la invitación a domiciliar su tarjeta */
+    const [offer, setOffer] = useState<ICardAutomation | null>(null)
+
+    const { uploading, upload } = useReceiptUpload()
 
     /* La vista previa es una URL de objeto: hay que revocarla al cambiar de archivo */
     useEffect(() => {
@@ -55,12 +62,38 @@ const UploadReceiptDialog = ({ open, periods, amount, currency, paymentMethod, o
         setFile(null)
         setReference('')
         setMethod(PaymentMethod.TRANSFER)
+        setOffer(null)
     }, [open])
 
     const onSubmit = async () => {
         if (!file) return
 
-        await upload(periods, file, reference, method)
+        if (!(await upload(periods, file, reference, method))) return
+
+        /* Cuando `upload` termina, el resumen ya se volvió a pedir: el mes recién reportado cuenta como
+           cubierto, y es con ESE resumen con el que la API dice si se le puede invitar y desde cuándo. Si
+           no le aplica (interruptor apagado, promoción, deudas…), el diálogo se cierra como siempre. */
+        const automation = queryClient.getQueryData<ApiResponse<IBillingOverview>>(billingOverviewKey)?.data?.card_automation
+
+        if (automation?.available) {
+            setOffer(automation)
+        } else {
+            onOpenChange(false)
+        }
+    }
+
+    if (offer) {
+        return (
+            <Modal
+                open={open}
+                onOpenChange={onOpenChange}
+                size="md"
+                title="Comprobante enviado"
+                description="Lo validamos en breve. Mientras tanto, tu pago queda en revisión."
+            >
+                <AutomateCardOffer automation={offer} onDismiss={() => onOpenChange(false)} />
+            </Modal>
+        )
     }
 
     return (
