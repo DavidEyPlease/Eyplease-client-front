@@ -86,6 +86,8 @@ export interface NewChallenge {
     title?: string
     ends_on?: string
     params?: Record<string, string> | null
+    /** Foto del premio ya subida a `private/challenges/{usuario}/`: va adjunta en la pieza del reto y en las de ganadora */
+    prize_photo?: string
 }
 
 /** Los cuatro números de arriba de Indicadores. `null` = el reporte de donde sale no se ha cargado. */
