@@ -99,15 +99,16 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
                         </div>
                     </div>
 
-                    {/* La pieza que lo anuncia: la fabrica el estudio al ponerlo y se publica en Mi unidad → Retos */}
+                    {/* El kit del reto (anuncio, cómo funciona y recordatorios): lo fabrica el estudio al ponerlo y se queda en
+                        Pedidos de diseño. Las piezas de las ganadoras, en cambio, salen en Mi unidad → Retos */}
                     {isUnit && current.piece && (
                         <div className="flex items-center gap-3 rounded-2xl border px-3.5 py-2.5">
                             {current.piece.url
-                                ? <img src={current.piece.url} alt="Pieza del reto" className="h-14 w-10 shrink-0 rounded-lg object-cover" />
+                                ? <img src={current.piece.url} alt="Kit del reto" className="h-14 w-10 shrink-0 rounded-lg object-cover" />
                                 : <span className="hoy-soft grid h-14 w-10 shrink-0 place-items-center rounded-lg text-primary"><ImageIcon className="size-4" /></span>}
                             <span className="min-w-0 flex-1 text-[12.5px]">
-                                <b className="block">Pieza para anunciarlo</b>
-                                <span className="text-muted-foreground">{current.piece.url ? 'Ya está en Mi unidad, en Retos, lista para compartir.' : 'Se está haciendo; te avisamos en cuanto esté lista.'}</span>
+                                <b className="block">Kit del reto</b>
+                                <span className="text-muted-foreground">{current.piece.url ? 'Anuncio, cómo funciona y recordatorios: el kit completo está en Pedidos de diseño.' : 'Se está haciendo; te avisamos en cuanto esté listo.'}</span>
                             </span>
                             {current.piece.url && (
                                 <button type="button" onClick={() => downloadPiece(current.piece!, `Reto - ${current.title}`)} className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-primary/25 px-3 py-1.5 text-[11.5px] font-semibold text-primary hover:bg-primary/5">

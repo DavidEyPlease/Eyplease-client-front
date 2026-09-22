@@ -84,7 +84,7 @@ const IndicatorsPage = () => {
             setNewOpen(false)
             /* Un reto a la unidad trae su pieza: entra solo un pedido de diseño que la fabrica */
             toast.success('Reto puesto a tu unidad', created?.piece
-                ? { description: 'Su pieza para anunciarlo ya está en proceso: la encuentras en Pedidos de diseño.' }
+                ? { description: 'Su kit (anuncio, cómo funciona y recordatorios) ya está en proceso: lo encuentras en Pedidos de diseño.' }
                 : undefined)
         } catch (error) {
             setCreateError((error as { message?: string })?.message || 'No se pudo crear el reto')

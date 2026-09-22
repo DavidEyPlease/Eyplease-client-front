@@ -57,7 +57,7 @@ const ChallengeCard = ({ challenge, onOpen }: Props) => {
             {/* Su pieza y las de sus ganadoras entran solas como pedidos de diseño (retos que se premian solos) */}
             {isUnit && (!!challenge.piece || !!challenge.celebrated_count) && (
                 <span className="mt-1 block text-[11.5px] text-muted-foreground">
-                    {challenge.piece && <>Su pieza: <b className="text-foreground">{pieceStatus(challenge.piece)}</b></>}
+                    {challenge.piece && <>Su kit: <b className="text-foreground">{pieceStatus(challenge.piece)}</b></>}
                     {challenge.piece && !!challenge.celebrated_count && ' · '}
                     {!!challenge.celebrated_count && `${challenge.celebrated_count} ${challenge.celebrated_count === 1 ? 'ganadora ya tiene' : 'ganadoras ya tienen'} su pieza`}
                 </span>
