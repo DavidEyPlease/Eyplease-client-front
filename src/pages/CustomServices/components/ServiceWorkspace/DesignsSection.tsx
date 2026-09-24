@@ -1,8 +1,8 @@
-import { ClockIcon, DownloadIcon, ImageIcon } from 'lucide-react'
+import { ClockIcon, DownloadIcon, ImageIcon, PlayIcon } from 'lucide-react'
 
 import Spinner from '@/components/common/Spinner'
 import { IUserRequestServiceFile } from '@/interfaces/requestService'
-import { isImage } from '@/utils'
+import { isImage, isVideo } from '@/utils'
 import { formatDate } from '@/utils/dates'
 import WorkspaceSection from './WorkspaceSection'
 
@@ -42,6 +42,16 @@ const DesignsSection = ({ files, loading, downloadingFileId, onPreview, onDownlo
                                 >
                                     {isImage(attachment.file.ext) ? (
                                         <img src={attachment.file.url} alt="" loading="lazy" className="size-full object-cover" />
+                                    ) : isVideo(attachment.file.ext) ? (
+                                        // #t=1: el primer cuadro suele ser un fundido; Safari además no pinta nada sin él
+                                        <span className="relative block size-full">
+                                            <video src={`${attachment.file.url}#t=1`} muted playsInline preload="metadata" className="size-full object-cover" />
+                                            <span className="absolute inset-0 grid place-content-center">
+                                                <span className="grid size-8 place-content-center rounded-full bg-black/50 text-white backdrop-blur-sm">
+                                                    <PlayIcon className="size-4 translate-x-px fill-current" aria-hidden />
+                                                </span>
+                                            </span>
+                                        </span>
                                     ) : (
                                         <span className="grid size-full place-content-center text-[11px] font-extrabold text-muted-foreground uppercase">
                                             {attachment.file.ext}

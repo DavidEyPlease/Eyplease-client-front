@@ -93,6 +93,11 @@ export const isImage = (fileExtension: string) => {
     return imageExtensions.includes(fileExtension.toLowerCase())
 }
 
+export const isVideo = (fileExtension: string) => {
+    const videoExtensions = ['mp4', 'mov', 'm4v', 'webm']
+    return videoExtensions.includes(fileExtension.toLowerCase())
+}
+
 /** Normaliza texto para búsquedas locales: minúsculas y sin tildes. */
 export const normalizeSearchText = (value: string) =>
     value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')

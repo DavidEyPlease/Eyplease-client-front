@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Dialog, DialogContent } from "../ui/dialog"
 import { Button } from "../ui/button"
 import { ExternalLink, Download, ZoomIn, ZoomOut, RotateCw } from "lucide-react"
-import { isImage } from "@/utils"
+import { isImage, isVideo } from "@/utils"
 import { EypleaseFile } from "@/interfaces/files"
 import useFiles from "@/hooks/useFiles"
 import Spinner from "../common/Spinner"
@@ -43,59 +43,62 @@ export function AttachmentViewer({ isOpen, onClose, attachment }: AttachmentView
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-2xl bg-transparent shadow-none max-h-[95vh] w-full h-full p-0 border-none">
                 <div className="relative w-full h-full flex flex-col">
-                    {/* Zoom controls for images */}
-                    {isImage(attachment.ext) && (
-                        <div className="absolute top-4 left-4 z-10 flex gap-2">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleZoomOut}
-                                className="bg-black/50 hover:bg-black/70 text-white rounded-full"
-                                disabled={zoom <= 0.25}
-                            >
-                                <ZoomOut className="w-4 h-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleZoomIn}
-                                className="bg-black/50 hover:bg-black/70 text-white rounded-full"
-                                disabled={zoom >= 3}
-                            >
-                                <ZoomIn className="w-4 h-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleRotate}
-                                className="bg-black/50 hover:bg-black/70 text-white rounded-full"
-                            >
-                                <RotateCw className="w-4 h-4" />
-                            </Button>
-                            <div className="flex flex-wrap justify-center gap-3">
+                    {/* Controles: zoom y giro sólo para imágenes; abrir y descargar para cualquier archivo
+                        (el aviso de «vista previa no disponible» manda a «Abrir en una pestaña nueva») */}
+                    <div className="absolute top-4 left-4 z-10 flex gap-2">
+                        {isImage(attachment.ext) && (
+                            <>
                                 <Button
                                     variant="ghost"
-                                    size="sm"
-                                    className="text-white hover:text-primary"
-                                    onClick={handleOpenInNewTab}
+                                    size="icon"
+                                    onClick={handleZoomOut}
+                                    className="bg-black/50 hover:bg-black/70 text-white rounded-full"
+                                    disabled={zoom <= 0.25}
                                 >
-                                    <ExternalLink className="size-4" />
-                                    Abrir en una pestaña nueva
+                                    <ZoomOut className="w-4 h-4" />
                                 </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleZoomIn}
+                                    className="bg-black/50 hover:bg-black/70 text-white rounded-full"
+                                    disabled={zoom >= 3}
+                                >
+                                    <ZoomIn className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleRotate}
+                                    className="bg-black/50 hover:bg-black/70 text-white rounded-full"
+                                >
+                                    <RotateCw className="w-4 h-4" />
+                                </Button>
+                            </>
+                        )}
+                        <div className="flex flex-wrap justify-center gap-3">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-white hover:text-primary"
+                                onClick={handleOpenInNewTab}
+                            >
+                                <ExternalLink className="size-4" />
+                                Abrir en una pestaña nueva
+                            </Button>
 
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    disabled={executing}
-                                    className="text-white hover:text-primary"
-                                    onClick={() => downloadFile(currentAttachment.uri)}
-                                >
-                                    {executing ? <Spinner /> : <Download className="size-4" />}
-                                    Descargar
-                                </Button>
-                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={executing}
+                                className="text-white hover:text-primary"
+                                onClick={() => downloadFile(currentAttachment.uri)}
+                            >
+                                {executing ? <Spinner /> : <Download className="size-4" />}
+                                Descargar
+                            </Button>
                         </div>
-                    )}
+                    </div>
 
                     {/* Main content area */}
                     <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
@@ -104,12 +107,21 @@ export function AttachmentViewer({ isOpen, onClose, attachment }: AttachmentView
                                 <img
                                     src={currentAttachment.url}
                                     alt={currentAttachment.type}
-                                    className="max-w-full max-h-full object-contain transition-transform duration-200"
+                                    className="max-w-full max-h-[calc(95vh-4rem)] object-contain transition-transform duration-200"
                                     style={{
                                         transform: `scale(${zoom}) rotate(${rotation}deg)`,
                                     }}
                                 />
                             </div>
+                        ) : isVideo(attachment.ext) ? (
+                            <video
+                                src={currentAttachment.url}
+                                controls
+                                autoPlay
+                                playsInline
+                                preload="metadata"
+                                className="max-w-full max-h-[calc(95vh-4rem)] rounded-lg object-contain"
+                            />
                         ) : (
                             <div className="flex flex-col items-center justify-center text-white">
                                 <div className="w-24 h-24 bg-gray-600 rounded-lg flex items-center justify-center mb-4">
