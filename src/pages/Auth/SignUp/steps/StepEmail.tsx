@@ -10,9 +10,11 @@ interface Props {
     errors: FieldErrors<ISignUp>
     name: string
     onEnter: () => void
+    /** Aviso bajo el campo, p. ej. cuando viene invitada y el premio depende de ESTE correo */
+    hint?: string
 }
 
-const StepEmail = ({ register, errors, name, onEnter }: Props) => {
+const StepEmail = ({ register, errors, name, onEnter, hint }: Props) => {
     const firstName = name.split(' ')[0] || ''
     const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -37,6 +39,9 @@ const StepEmail = ({ register, errors, name, onEnter }: Props) => {
                 error={errors.email?.message}
                 onKeyDown={handleKey}
             />
+            {hint && (
+                <p className="mt-3 rounded-xl bg-eyp-violet-pale px-3.5 py-2.5 text-sm font-medium text-eyp-violet-deep">🎁 {hint}</p>
+            )}
         </StepShell>
     )
 }

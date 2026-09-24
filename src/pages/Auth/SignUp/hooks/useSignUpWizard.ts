@@ -31,6 +31,19 @@ const STEPS_DIRECTOR: StepKey[] = ['name', 'email', 'phone', 'userType', 'unitDe
 const STEPS_CONSULTANT: StepKey[] = ['name', 'email', 'phone', 'userType', 'plan', 'mk', 'password']
 const STEPS_OTHER: StepKey[] = ['name', 'email', 'phone', 'userType', 'otherContext']
 
+/**
+ * Ligas de invitación de la app (fase 3/4): `?invita=CODIGO` es una consultora invitando a su Directora (la API le da
+ * 3 meses de regalo si la cuenta nueva se crea con el correo al que llegó la invitación) y `?unidad=CUENTA` es una
+ * Directora invitando a su unidad. El landing las conserva y las pasa hasta aquí.
+ */
+const inviteParams = () => {
+    const query = new URLSearchParams(window.location.search)
+    return {
+        inviteCode: query.get('invita')?.trim() || null,
+        unitAccount: query.get('unidad')?.trim() || null,
+    }
+}
+
 const STEP_FIELDS: Record<StepKey, Path<ISignUp>[]> = {
     name: ['fullName'],
     email: ['email'],
@@ -48,6 +61,7 @@ const useSignUpWizard = () => {
     const { getMe } = useAuth()
     const [step, setStep] = useState(0)
     const [submitting, setSubmitting] = useState(false)
+    const [invite] = useState(inviteParams)
 
     const form = useCustomForm<ISignUp>(SignUpSchema, {
         fullName: '',
@@ -55,7 +69,8 @@ const useSignUpWizard = () => {
         countryCode: DEFAULT_COUNTRY_CODE,
         phoneNumber: '',
         password: '',
-        userType: 'director',
+        // Quien llega invitada por su consultora es Directora; quien llega por la liga de su Directora, consultora
+        userType: invite.unitAccount && !invite.inviteCode ? 'consultant' : 'director',
         unitSize: undefined,
         directorYears: undefined,
         recommendedPlan: undefined,
@@ -171,6 +186,8 @@ const useSignUpWizard = () => {
             platformPassword: data.mkPassword || null,
             country: data.countryCode,
             planKey: data.recommendedPlan,
+            // Con él la API liga la cuenta nueva a quien la invitó (y le da su premio)
+            inviteCode: invite.inviteCode ?? undefined,
         }
         try {
             const response = await request<typeof payload, AuthResponse>('POST', API_ROUTES.SIGN_UP.REGISTER, payload)
@@ -300,6 +317,8 @@ const useSignUpWizard = () => {
 
     return {
         form,
+        /** Si llegó por una liga de invitación de la app (ver inviteParams) */
+        invite,
         step,
         totalSteps,
         currentKey,

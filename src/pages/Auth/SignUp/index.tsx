@@ -20,6 +20,7 @@ const SignUpPage = () => {
     const navigate = useNavigate()
     const {
         form,
+        invite,
         step,
         totalSteps,
         currentKey,
@@ -49,7 +50,13 @@ const SignUpPage = () => {
                     <StepName register={register} errors={errors} onEnter={goNext} />
                 )}
                 {currentKey === 'email' && (
-                    <StepEmail register={register} errors={errors} name={fullName} onEnter={goNext} />
+                    <StepEmail
+                        register={register}
+                        errors={errors}
+                        name={fullName}
+                        onEnter={goNext}
+                        hint={invite.inviteCode ? 'Usa el correo al que te llegó la invitación: así tu consultora recibe sus 3 meses de regalo.' : undefined}
+                    />
                 )}
                 {currentKey === 'phone' && (
                     <StepPhone control={control} errors={errors} />
