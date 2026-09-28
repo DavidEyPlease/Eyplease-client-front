@@ -1,5 +1,5 @@
 export type ChallengeScope = 'personal' | 'unit'
-export type ChallengeType = 'coverage' | 'section_share' | 'leaders_five' | 'unit_points' | 'unit_hearts'
+export type ChallengeType = 'coverage' | 'section_share' | 'leaders_five' | 'unit_points' | 'unit_hearts' | 'unit_reactivation'
 
 export interface ChallengePerson {
     id: string
@@ -23,6 +23,8 @@ export interface ChallengeRow extends ChallengePerson {
     goal: number
     done: boolean
     awarded: boolean
+    /** Reactivación: el día que volvió a pedir (AAAA-MM-DD) */
+    returned_on?: string
     /** Su pieza de ganadora (Elite y Nacional: se pide sola al llegar a la meta) */
     piece?: ChallengePiece
 }

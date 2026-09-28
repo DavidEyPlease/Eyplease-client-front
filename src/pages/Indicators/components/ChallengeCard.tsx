@@ -42,7 +42,7 @@ const ChallengeCard = ({ challenge, onOpen }: Props) => {
                     <b className="block text-[14px] leading-snug font-extrabold">{challenge.title}</b>
                     {isUnit && (
                         <small className="block text-[12px] text-muted-foreground">
-                            Premio: <b className="text-foreground">{challenge.prize}</b> · {upcoming ? `del ${dayLabel(challenge.starts_on!)} al ${dayLabel(challenge.ends_on)}` : challenge.is_open ? `hasta el ${dayLabel(challenge.ends_on)}` : `terminó el ${dayLabel(challenge.ends_on)}`}
+                            {challenge.prize ? <>Premio: <b className="text-foreground">{challenge.prize}</b> · </> : null}{upcoming ? `del ${dayLabel(challenge.starts_on!)} al ${dayLabel(challenge.ends_on)}` : challenge.is_open ? `hasta el ${dayLabel(challenge.ends_on)}` : `terminó el ${dayLabel(challenge.ends_on)}`}
                         </small>
                     )}
                 </span>

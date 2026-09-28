@@ -46,4 +46,4 @@ export const rowUnit = (challenge: IChallenge) => {
 
 /** De dónde sale el avance, para decirlo cuando el reporte no se ha cargado. */
 export const sourceName = (challenge: IChallenge) =>
-    challenge.type === 'unit_hearts' ? 'Corazones Virtuales de Círculo Rosa' : 'Ventas Mensuales Personales'
+    challenge.type === 'unit_hearts' ? 'Corazones Virtuales de Círculo Rosa' : challenge.type === 'unit_reactivation' ? 'estatus diario (Ventas)' : 'Ventas Mensuales Personales'

@@ -38,13 +38,17 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
     const current = detail ?? challenge
     const rows = detail?.rows ?? []
     const isUnit = current?.scope === 'unit'
+    /* Reactivación: cada una que vuelve a pedir es una ganadora; no hay meta de puntos que enseñar */
+    const isReactivation = current?.type === 'unit_reactivation'
 
     const close = () => { setConfirmRemove(false); onClose() }
 
     /* En la web no hay hoja de compartir: se lleva el mensaje copiado, listo para pegarlo en WhatsApp */
     const congratulate = async (row: ChallengeRow) => {
         if (!current) return
-        const text = `¡Felicidades, ${firstName(row.name)}! 🎉 Lograste el reto «${current.title}».${current.prize ? ` Tu premio: ${current.prize}.` : ''} ¡Gracias por tu esfuerzo!`
+        const text = current.type === 'unit_reactivation'
+            ? `¡Qué gusto tenerte de regreso, ${firstName(row.name)}! 🎉 Gracias por poner tu negocio en acción.${current.prize ? ` Tu premio: ${current.prize}.` : ''}`
+            : `¡Felicidades, ${firstName(row.name)}! 🎉 Lograste el reto «${current.title}».${current.prize ? ` Tu premio: ${current.prize}.` : ''} ¡Gracias por tu esfuerzo!`
         try {
             await navigator.clipboard.writeText(text)
             toast.success('Mensaje copiado: pégalo en WhatsApp')
@@ -82,7 +86,7 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
                         {current.description && <p className="mt-0.5 text-[12.5px] text-muted-foreground">{current.description}</p>}
                         {isUnit && (
                             <p className="mt-1 text-[12.5px] text-muted-foreground">
-                                Premio: <b className="text-foreground">{current.prize}</b> · {current.is_open ? `hasta el ${dayLabel(current.ends_on)}` : `terminó el ${dayLabel(current.ends_on)}`}
+                                {current.prize ? <>Premio: <b className="text-foreground">{current.prize}</b> · </> : null}{current.is_open ? `hasta el ${dayLabel(current.ends_on)}` : `terminó el ${dayLabel(current.ends_on)}`}
                             </p>
                         )}
                     </div>
@@ -91,7 +95,7 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
                         <div className="flex items-baseline justify-between gap-3">
                             <span className="text-[22px] leading-none font-extrabold text-primary">{progressChip(current)}</span>
                             <small className="text-[11.5px] text-muted-foreground">
-                                {current.progress.measure === 'percent' ? (current.progress.detail ?? '') : isUnit ? 'ya llegaron a la meta' : current.progress.measure === 'pieces' ? 'piezas enviadas' : 'líderes lo lograron'}
+                                {current.progress.measure === 'percent' ? (current.progress.detail ?? '') : isReactivation ? 'ya regresaron a pedir' : isUnit ? 'ya llegaron a la meta' : current.progress.measure === 'pieces' ? 'piezas enviadas' : 'líderes lo lograron'}
                             </small>
                         </div>
                         <div className="mt-2 h-2 overflow-hidden rounded-full bg-foreground/6">
@@ -144,7 +148,9 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
                                             <span className={cn('block text-[11.5px]', row.done ? 'font-semibold text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground')}>
                                                 {current.type === 'leaders_five'
                                                     ? `${row.current} de ${row.goal} ya pidieron`
-                                                    : `${formatNumber(row.current)} ${rowUnit(current)} · meta ${formatNumber(row.goal)}`}
+                                                    : isReactivation
+                                                        ? (row.returned_on ? `Regresó el ${dayLabel(row.returned_on)}` : 'Ya regresó')
+                                                        : `${formatNumber(row.current)} ${rowUnit(current)} · meta ${formatNumber(row.goal)}`}
                                                 {row.done ? ' ✓' : ''}
                                             </span>
                                         </span>
