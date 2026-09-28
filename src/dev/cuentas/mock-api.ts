@@ -279,6 +279,11 @@ const challengeStore = {
         piece: { service_id: 'req-demo', status: 'ready-for-review', status_name: 'Lista para revisión', url: piece('Reto', '1,800 puntos', 260, '9:16'), uri: 'demo/reto.svg', ext: 'svg' }, celebrated_count: 2,
         progress: { current: 2, goal: 52, measure: 'people', done: false, detail: null, data_missing: false },
     }, {
+        /* Reactivación: las inactivas (T1 a T7) que vuelven a pedir; cada una que regresa es ganadora */
+        id: 'ch-react', scope: 'unit', type: 'unit_reactivation', title: 'Pon tu negocio en acción', description: 'Especial para consultoras T1 a T7: regresa a pedir y agrega tu kit especial por $139.',
+        target: 1, prize: 'Kit especial por $139', period: monthKey(), ends_on: monthEnd(), is_open: true, awards_count: 0, celebrated_count: 0,
+        progress: { current: 2, goal: 69, measure: 'people', done: false, detail: '2 de 69 inactivas ya regresaron', data_missing: false },
+    }, {
         /* Puesto para el mes siguiente (así lo deja el Asistente con month=next): se ve como «Próximo» */
         id: 'ch-next', scope: 'unit', type: 'unit_hearts', title: 'Ganar 2 corazones este mes', description: null,
         target: 2, prize: 'Desayuno con la Directora', period: month(-1).slice(0, 7), starts_on: month(-1), is_upcoming: true,
@@ -395,7 +400,10 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
                 response = respond(null)
             } else {
                 const found = [...challengeStore.personal, ...challengeStore.unit].find(item => item.id === id)
-                response = found ? respond({ ...found, rows: found.scope === 'unit' ? challengeRows : [] }) : respond(null, 404)
+                const rows = found?.type === 'unit_reactivation'
+                    ? [0, 1].map(index => ({ ...person(index + 2), current: 1, goal: 1, done: true, awarded: false, returned_on: dayOfThisMonth(15 + index * 4, 0) }))
+                    : challengeRows
+                response = found ? respond({ ...found, rows: found.scope === 'unit' ? rows : [] }) : respond(null, 404)
             }
         }
         else if (path === '/users/notifications') response = respond(page([]))
