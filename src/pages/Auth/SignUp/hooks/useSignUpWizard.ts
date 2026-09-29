@@ -35,12 +35,16 @@ const STEPS_OTHER: StepKey[] = ['name', 'email', 'phone', 'userType', 'otherCont
  * Ligas de invitación de la app (fase 3/4): `?invita=CODIGO` es una consultora invitando a su Directora (la API le da
  * 3 meses de regalo si la cuenta nueva se crea con el correo al que llegó la invitación) y `?unidad=CUENTA` es una
  * Directora invitando a su unidad. El landing las conserva y las pasa hasta aquí.
+ * `?origen=instagram` es la etiqueta de la liga por la que llegó (bio, post, anuncio): el panel la usa para saber qué
+ * red trae clientas. Sólo letras, números, guion y guion bajo, como la valida la API.
  */
 const inviteParams = () => {
     const query = new URLSearchParams(window.location.search)
+    const source = query.get('origen')?.trim().toLowerCase() ?? ''
     return {
         inviteCode: query.get('invita')?.trim() || null,
         unitAccount: query.get('unidad')?.trim() || null,
+        source: /^[a-z0-9_-]{1,40}$/.test(source) ? source : null,
     }
 }
 
@@ -188,6 +192,10 @@ const useSignUpWizard = () => {
             planKey: data.recommendedPlan,
             // Con él la API liga la cuenta nueva a quien la invitó (y le da su premio)
             inviteCode: invite.inviteCode ?? undefined,
+            // Se pedía en el paso 3 y nunca se mandaba: todas las cuentas nacían sin WhatsApp. Va sin lada; la API
+            // guarda sólo dígitos y la lada sale del país.
+            phone: data.phoneNumber || undefined,
+            source: invite.source ?? undefined,
         }
         try {
             const response = await request<typeof payload, AuthResponse>('POST', API_ROUTES.SIGN_UP.REGISTER, payload)
