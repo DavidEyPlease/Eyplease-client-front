@@ -23,13 +23,13 @@ const StepName = ({ register, errors, onEnter }: Props) => {
         <StepShell
             eyebrow="Bienvenida"
             title="Vamos a comenzar tu registro"
-            description={<>Empezamos por lo básico. <b className="text-eyp-ink">¿Cómo te llamas?</b></>}
+            description={<>Empezamos por lo básico. <b className="text-foreground">¿Cómo te llamas?</b></>}
         >
             <WizardInput
                 placeholder="Tu nombre completo"
                 autoComplete="name"
                 autoFocus
-                icon={<User className="w-5 h-5" />}
+                icon={<User />}
                 register={register("fullName")}
                 error={errors.fullName?.message}
                 onKeyDown={handleKey}

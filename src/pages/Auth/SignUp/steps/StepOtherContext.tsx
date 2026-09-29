@@ -1,4 +1,5 @@
 import { type UseFormRegister, type FieldErrors, type UseFormWatch } from "react-hook-form"
+import { MessageCircle } from "lucide-react"
 
 import StepShell from "../components/StepShell"
 import WizardTextarea from "../components/WizardTextarea"
@@ -31,9 +32,12 @@ const StepOtherContext = ({ register, errors, watch }: Props) => {
                 error={errors.otherContext?.message}
             />
 
-            <p className="mt-4 text-xs text-center text-eyp-gray-text">
-                Revisamos tu solicitud en menos de <b className="text-eyp-ink">24 horas hábiles</b> y
-                te contactamos por WhatsApp.
+            <p className="mt-4 flex items-center justify-center gap-2 text-center text-[12.5px] text-muted-foreground">
+                <MessageCircle className="su-accent size-4 shrink-0" />
+                <span>
+                    Revisamos tu solicitud en menos de <b className="text-foreground">24 horas hábiles</b> y
+                    te contactamos por WhatsApp.
+                </span>
             </p>
         </StepShell>
     )

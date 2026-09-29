@@ -16,38 +16,35 @@ const PendingReviewPage = () => {
     return (
         <SignUpWizardLayout showClose={false}>
             <div className="text-center">
-                <div className="flex justify-center mb-5">
-                    <div className="relative flex items-center justify-center w-20 h-20 rounded-full shadow-lg bg-eyp-gradient shadow-eyp-violet/30">
-                        <Clock className="w-9 h-9 text-white" strokeWidth={2.5} />
-                        <span className="absolute inset-0 rounded-full bg-eyp-gradient opacity-30 blur-xl" aria-hidden="true" />
-                    </div>
-                </div>
+                <span className="shell-grad shell-orb mx-auto grid size-[72px] place-items-center rounded-full">
+                    <Clock className="relative size-9 text-white" strokeWidth={2.5} />
+                </span>
 
-                <p className="mb-2 text-xs font-semibold tracking-wider uppercase text-eyp-cyan">
+                <p className="su-accent mt-5 text-[11.5px] font-bold tracking-[.14em] uppercase">
                     Solicitud recibida
                 </p>
-                <h2 className="text-3xl font-extrabold leading-tight font-display text-eyp-ink">
+                <h2 className="mt-2 text-[28px] leading-[1.1] font-extrabold tracking-tight">
                     Gracias por compartir tu caso
                 </h2>
-                <p className="mt-3 text-sm text-eyp-gray-text">
+                <p className="mx-auto mt-2.5 max-w-[400px] text-[14.5px] leading-relaxed font-medium text-muted-foreground">
                     Eyplease+ está enfocado en Mary Kay, pero{' '}
-                    <b className="text-eyp-ink">queremos revisar tu solicitud</b> con calma para ver
+                    <b className="text-foreground">queremos revisar tu solicitud</b> con calma para ver
                     si podemos ayudarte.
                 </p>
             </div>
 
-            <div className="my-8 border-t border-eyp-gray-warm" />
+            <div className="my-7 h-px bg-border" />
 
             <div className="flex flex-col gap-3">
-                <div className="flex items-start gap-3 p-4 rounded-2xl bg-eyp-gradient-soft border border-eyp-cyan/30">
-                    <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm text-eyp-violet shrink-0">
-                        <MessageCircle className="w-5 h-5" />
+                <div className="su-soft flex items-start gap-3 rounded-2xl p-4">
+                    <span className="su-accent grid size-10 shrink-0 place-items-center rounded-xl bg-card shadow-sm">
+                        <MessageCircle className="size-5" />
                     </span>
                     <div className="flex-1 text-left">
-                        <p className="text-sm font-bold text-eyp-ink">
+                        <p className="text-[14px] font-bold">
                             Te contactamos en menos de 24 horas
                         </p>
-                        <p className="mt-0.5 text-xs text-eyp-gray-text">
+                        <p className="mt-0.5 text-[12.5px] text-muted-foreground">
                             Te escribimos por WhatsApp{phone ? ` al número que registraste` : ''} para
                             platicar y activarte la cuenta si encaja con lo que ofrecemos.
                         </p>
@@ -55,19 +52,19 @@ const PendingReviewPage = () => {
                 </div>
 
                 {email && (
-                    <p className="text-xs text-center text-eyp-gray-text">
-                        Confirmación enviada a <b className="text-eyp-ink">{email}</b>
+                    <p className="text-center text-[12.5px] text-muted-foreground">
+                        Confirmación enviada a <b className="text-foreground">{email}</b>
                     </p>
                 )}
             </div>
 
-            <div className="flex justify-center mt-8">
+            <div className="mt-7 flex justify-center">
                 <a
-                    href={import.meta.env.VITE_WEB_URL}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors text-eyp-violet hover:text-eyp-violet-deep"
+                    href={import.meta.env.VITE_WEB_URL || 'https://eyplease.com.mx'}
+                    className="inline-flex h-11 items-center gap-1.5 rounded-full border border-border px-5 text-sm font-bold transition-colors hover:bg-muted dark:border-white/15"
                 >
                     Volver a la página de inicio
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="size-4" />
                 </a>
             </div>
         </SignUpWizardLayout>

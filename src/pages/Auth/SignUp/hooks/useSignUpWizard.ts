@@ -321,6 +321,8 @@ const useSignUpWizard = () => {
         invite,
         step,
         totalSteps,
+        /** Los pasos de su camino (Directora, consultora u otro), en orden */
+        steps: orderedSteps,
         currentKey,
         userType,
         fullName,

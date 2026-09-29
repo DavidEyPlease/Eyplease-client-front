@@ -34,25 +34,23 @@ const WizardPhoneInput = ({ value, onChange, error, disabled }: Props) => {
         onChange({ ...value, number: onlyDigits })
     }
 
-    const borderColor = error
-        ? "border-red-400 focus-within:border-red-500"
-        : "border-eyp-gray-warm focus-within:border-eyp-violet hover:border-eyp-violet/40"
-
     return (
         <div>
+            {/* Lada y número en una sola píldora, con el mismo trato que `ui/input` */}
             <div className={cn(
-                "flex items-stretch gap-1 h-14 bg-white border-2 rounded-2xl transition-colors overflow-hidden",
-                borderColor
+                "flex h-12 items-stretch overflow-hidden rounded-brand border bg-surface-soft transition-[box-shadow,background-color,border-color] dark:bg-input/30",
+                "focus-within:border-primary-light focus-within:bg-card focus-within:ring-4 focus-within:ring-primary/15",
+                error ? "border-destructive ring-destructive/20" : "border-input"
             )}>
                 <Select value={selected.code} onValueChange={handleCountry} disabled={disabled}>
                     <SelectTrigger
                         aria-label="Código de país"
-                        className="w-30 h-14 min-h-14 border-0 rounded-none px-4 focus:ring-0 focus:ring-offset-0 bg-eyp-gray-warm/60 text-eyp-ink"
+                        className="h-full w-[112px] shrink-0 rounded-none border-0 border-r border-input bg-transparent px-3.5 shadow-none focus-visible:ring-0 data-[size=default]:h-full dark:bg-transparent dark:hover:bg-white/5"
                     >
                         <SelectValue>
-                            <span className="inline-flex items-center gap-2 text-sm">
+                            <span className="inline-flex items-center gap-2 text-[14px]">
                                 <span className="text-lg leading-none">{selected.flag}</span>
-                                <span className="font-semibold">{selected.dial}</span>
+                                <span className="font-bold">{selected.dial}</span>
                             </span>
                         </SelectValue>
                     </SelectTrigger>
@@ -62,7 +60,7 @@ const WizardPhoneInput = ({ value, onChange, error, disabled }: Props) => {
                                 <span className="inline-flex items-center gap-2">
                                     <span className="text-base leading-none">{country.flag}</span>
                                     <span>{country.name}</span>
-                                    <span className="text-eyp-gray-mid">{country.dial}</span>
+                                    <span className="text-muted-foreground">{country.dial}</span>
                                 </span>
                             </SelectItem>
                         ))}
@@ -77,7 +75,7 @@ const WizardPhoneInput = ({ value, onChange, error, disabled }: Props) => {
                     value={value.number}
                     onChange={handleNumber}
                     disabled={disabled}
-                    className="flex-1 px-4 text-base bg-white outline-none placeholder:text-eyp-gray-mid text-eyp-ink"
+                    className="min-w-0 flex-1 bg-transparent px-4 text-[15px] outline-none placeholder:text-muted-foreground"
                 />
             </div>
             {error && <ErrorText error={error} />}

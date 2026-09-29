@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router"
+import { Gift } from "lucide-react"
 
 import SignUpWizardLayout from "@/layouts/SignUpWizardLayout"
 import { APP_ROUTES } from "@/constants/app"
 
+import AccountPreview from "./components/AccountPreview"
 import WizardProgress from "./components/WizardProgress"
 import WizardFooter from "./components/WizardFooter"
 import StepName from "./steps/StepName"
@@ -22,6 +24,7 @@ const SignUpPage = () => {
         form,
         invite,
         step,
+        steps,
         totalSteps,
         currentKey,
         userType,
@@ -41,11 +44,30 @@ const SignUpPage = () => {
         formState: { errors },
     } = form
 
+    // Lo que va escribiendo, para «Tu cuenta» de la columna de marca
+    const values = watch()
+
+    // Llegó por una liga de invitación de la app (la misma que muestra la franja de eyplease.com.mx)
+    const inviteLabel = invite.inviteCode
+        ? 'Te invitó una consultora de tu unidad'
+        : (invite.unitAccount ? 'Te invitó tu Directora' : null)
+
     return (
-        <SignUpWizardLayout>
+        <SignUpWizardLayout
+            title={<>Tu cuenta, <span className="bg-gradient-to-r from-white to-[#9DF3F5] bg-clip-text text-transparent">en unos minutos.</span></>}
+            lead="Unas preguntas rápidas y tu cuenta queda lista para empezar."
+            aside={<AccountPreview values={values} steps={steps} current={step} planKey={planToShow} />}
+        >
+            {inviteLabel && (
+                <p className="su-soft mx-auto mb-5 flex w-fit items-center gap-2 rounded-full px-3.5 py-1.5 text-[12.5px] font-bold">
+                    <Gift className="su-accent size-4" />
+                    {inviteLabel}
+                </p>
+            )}
+
             <WizardProgress current={step} total={totalSteps} />
 
-            <div key={step} className="mt-8 animate-step-in">
+            <div key={step} className="su-step mt-7">
                 {currentKey === 'name' && (
                     <StepName register={register} errors={errors} onEnter={goNext} />
                 )}
@@ -107,12 +129,12 @@ const SignUpPage = () => {
                 }
             />
 
-            <p className="mt-6 text-xs text-center text-eyp-gray-text">
+            <p className="mt-6 text-center text-[13px] font-medium text-muted-foreground">
                 ¿Ya tienes cuenta?{' '}
                 <button
                     type="button"
                     onClick={() => navigate(APP_ROUTES.AUTH.SIGN_IN)}
-                    className="font-semibold underline text-eyp-violet hover:text-eyp-violet-deep"
+                    className="su-accent font-bold underline-offset-2 hover:underline"
                 >
                     Inicia sesión
                 </button>

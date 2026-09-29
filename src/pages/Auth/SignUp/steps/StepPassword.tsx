@@ -8,6 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import type { ISignUp } from "../schema"
 
+/** El aviso vive en la web pública: `/privacidad` no es ninguna ruta de esta web (abría una página en blanco). */
+const PRIVACY_URL = `${import.meta.env.VITE_WEB_URL || 'https://eyplease.com.mx'}/politicas-privacidad/`
+
 interface Props {
     register: UseFormRegister<ISignUp>
     errors: FieldErrors<ISignUp>
@@ -30,7 +33,7 @@ const StepPassword = ({ register, errors, watch, setValue, onEnter }: Props) => 
         <StepShell
             eyebrow="Último paso"
             title="Crea una contraseña"
-            description={<>Mínimo 8 caracteres. <b className="text-eyp-ink">Solo tú la conoces.</b></>}
+            description={<>Mínimo 8 caracteres. <b className="text-foreground">Solo tú la conoces.</b></>}
         >
             <div className="flex flex-col gap-4">
                 <WizardInput
@@ -38,34 +41,32 @@ const StepPassword = ({ register, errors, watch, setValue, onEnter }: Props) => 
                     placeholder="Tu contraseña segura"
                     autoComplete="new-password"
                     autoFocus
-                    icon={<Lock className="w-5 h-5" />}
+                    icon={<Lock />}
                     register={register("password")}
                     error={errors.password?.message}
                     onKeyDown={handleKey}
                 />
 
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-eyp-gray-warm/60">
-                    <Checkbox
-                        id="acceptTerms"
-                        checked={!!acceptTerms}
-                        onCheckedChange={(checked) =>
-                            setValue('acceptTerms', (checked === true) as true)
-                        }
-                        className="mt-0.5 border-eyp-violet data-[state=checked]:bg-eyp-violet data-[state=checked]:text-white"
-                    />
-                    <Label htmlFor="acceptTerms" className="text-xs leading-relaxed cursor-pointer text-eyp-gray-text">
-                        Acepto los{' '}
-                        <a href="/terminos" target="_blank" className="font-semibold underline text-eyp-violet">
-                            términos y condiciones
-                        </a>
-                        {' '}y el{' '}
-                        <a href="/privacidad" target="_blank" className="font-semibold underline text-eyp-violet">
-                            aviso de privacidad
-                        </a>
-                        .
-                    </Label>
+                <div>
+                    <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface-soft p-4 dark:border-white/10 dark:bg-white/[.04]">
+                        <Checkbox
+                            id="acceptTerms"
+                            checked={!!acceptTerms}
+                            onCheckedChange={(checked) =>
+                                setValue('acceptTerms', (checked === true) as true)
+                            }
+                            className="mt-0.5 size-5 rounded-md border-[#6C47FF] data-[state=checked]:border-transparent data-[state=checked]:bg-[#6C47FF] data-[state=checked]:text-white dark:border-[#A894FF]"
+                        />
+                        <Label htmlFor="acceptTerms" className="block cursor-pointer text-left text-[13px] leading-relaxed font-medium text-muted-foreground">
+                            Acepto los términos y condiciones y el{' '}
+                            <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer" className="su-accent font-bold underline underline-offset-2">
+                                aviso de privacidad
+                            </a>
+                            .
+                        </Label>
+                    </div>
+                    {errors.acceptTerms?.message && <ErrorText error={errors.acceptTerms.message} />}
                 </div>
-                {errors.acceptTerms?.message && <ErrorText error={errors.acceptTerms.message} />}
             </div>
         </StepShell>
     )

@@ -3,6 +3,7 @@ import { Users, Calendar } from "lucide-react"
 
 import StepShell from "../components/StepShell"
 import OptionCard from "../components/OptionCard"
+import ErrorText from "../components/ErrorText"
 import type { ISignUp } from "../schema"
 import { UNIT_SIZE_OPTIONS, DIRECTOR_YEARS_OPTIONS, type UnitSize, type DirectorYears } from "@/constants/plans"
 
@@ -10,6 +11,13 @@ interface Props {
     control: Control<ISignUp>
     errors: FieldErrors<ISignUp>
 }
+
+const Question = ({ Icon, children }: { Icon: typeof Users, children: React.ReactNode }) => (
+    <p className="mb-2.5 flex items-center gap-2 text-[13.5px] font-bold">
+        <Icon className="su-accent size-4" />
+        {children}
+    </p>
+)
 
 const StepUnitDetails = ({ control, errors }: Props) => {
     return (
@@ -20,10 +28,7 @@ const StepUnitDetails = ({ control, errors }: Props) => {
         >
             <div className="flex flex-col gap-6">
                 <div>
-                    <p className="flex items-center gap-2 mb-3 text-sm font-semibold text-eyp-ink">
-                        <Users className="w-4 h-4 text-eyp-violet" />
-                        ¿De qué tamaño es tu unidad?
-                    </p>
+                    <Question Icon={Users}>¿De qué tamaño es tu unidad?</Question>
                     <Controller
                         control={control}
                         name="unitSize"
@@ -42,18 +47,11 @@ const StepUnitDetails = ({ control, errors }: Props) => {
                             </div>
                         )}
                     />
-                    {errors.unitSize?.message && (
-                        <p className="mt-1 text-xs font-medium text-left text-red-500" role="alert">
-                            {errors.unitSize.message}
-                        </p>
-                    )}
+                    {errors.unitSize?.message && <ErrorText error={errors.unitSize.message} />}
                 </div>
 
                 <div>
-                    <p className="flex items-center gap-2 mb-3 text-sm font-semibold text-eyp-ink">
-                        <Calendar className="w-4 h-4 text-eyp-violet" />
-                        ¿Cuánto tiempo llevas como Directora?
-                    </p>
+                    <Question Icon={Calendar}>¿Cuánto tiempo llevas como Directora?</Question>
                     <Controller
                         control={control}
                         name="directorYears"
@@ -71,11 +69,7 @@ const StepUnitDetails = ({ control, errors }: Props) => {
                             </div>
                         )}
                     />
-                    {errors.directorYears?.message && (
-                        <p className="mt-1 text-xs font-medium text-left text-red-500" role="alert">
-                            {errors.directorYears.message}
-                        </p>
-                    )}
+                    {errors.directorYears?.message && <ErrorText error={errors.directorYears.message} />}
                 </div>
             </div>
         </StepShell>

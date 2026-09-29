@@ -2,6 +2,7 @@ import { forwardRef, useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
 import type { UseFormRegisterReturn } from "react-hook-form"
 
+import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import ErrorText from "./ErrorText"
 
@@ -18,6 +19,7 @@ interface Props {
     className?: string
 }
 
+/** El mismo campo que el acceso (`ui/input`), un poco más alto porque aquí va solo en su paso. */
 const WizardInput = forwardRef<HTMLInputElement, Props>(({
     type = "text",
     placeholder,
@@ -38,11 +40,11 @@ const WizardInput = forwardRef<HTMLInputElement, Props>(({
         <div>
             <div className="relative">
                 {icon && (
-                    <div className="absolute -translate-y-1/2 pointer-events-none left-4 top-1/2 text-eyp-gray-mid">
+                    <div className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground [&_svg]:size-[18px]">
                         {icon}
                     </div>
                 )}
-                <input
+                <Input
                     ref={ref}
                     type={inputType}
                     placeholder={placeholder}
@@ -53,13 +55,9 @@ const WizardInput = forwardRef<HTMLInputElement, Props>(({
                     onKeyDown={onKeyDown}
                     {...register}
                     className={cn(
-                        "w-full h-14 text-base text-eyp-ink bg-white border-2 rounded-2xl transition-colors outline-none",
-                        "placeholder:text-eyp-gray-mid",
-                        icon ? "pl-12 pr-4" : "px-4",
+                        "h-12 text-[15px] md:text-[15px]",
+                        icon && "pl-11",
                         isPassword && "pr-12",
-                        error
-                            ? "border-red-400 focus:border-red-500"
-                            : "border-eyp-gray-warm focus:border-eyp-violet hover:border-eyp-violet/40",
                         className
                     )}
                 />
@@ -68,9 +66,9 @@ const WizardInput = forwardRef<HTMLInputElement, Props>(({
                         type="button"
                         onClick={() => setShowPassword(p => !p)}
                         aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                        className="absolute transition-colors -translate-y-1/2 right-4 top-1/2 text-eyp-gray-mid hover:text-eyp-violet"
+                        className="su-accent absolute top-1/2 right-2.5 grid size-8 -translate-y-1/2 place-items-center rounded-full transition-colors hover:bg-muted"
                     >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
                     </button>
                 )}
             </div>

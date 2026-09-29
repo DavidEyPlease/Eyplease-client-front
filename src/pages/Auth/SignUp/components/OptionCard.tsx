@@ -10,6 +10,7 @@ interface Props {
     layout?: 'row' | 'compact'
 }
 
+/** Opción elegible (perfil, tamaño de unidad, años): vidrio suave; la elegida se enmarca en violeta. */
 const OptionCard = ({ label, description, selected, onClick, Icon, layout = 'row' }: Props) => {
     const compact = layout === 'compact'
     return (
@@ -19,43 +20,45 @@ const OptionCard = ({ label, description, selected, onClick, Icon, layout = 'row
             aria-checked={selected}
             onClick={onClick}
             className={cn(
-                "group relative flex items-start gap-3 p-4 text-left transition-all rounded-2xl border-2 w-full",
+                "group relative flex w-full items-center border text-left transition-all duration-200",
+                compact ? "gap-3 rounded-[14px] px-3.5 py-3" : "gap-3.5 rounded-[18px] p-3.5 sm:p-4",
                 selected
-                    ? "border-eyp-violet bg-eyp-violet-pale/60 shadow-md shadow-eyp-violet/10"
-                    : "border-eyp-gray-warm bg-white hover:border-eyp-violet/40 hover:bg-eyp-violet-pale/30"
+                    ? "border-transparent bg-card shadow-[0_14px_30px_-16px_rgba(108,71,255,.75)] ring-2 ring-[#6C47FF] dark:bg-white/[.07] dark:ring-[#8C78FF]"
+                    : "border-border bg-surface-soft hover:-translate-y-px hover:border-[#6C47FF]/40 hover:bg-card dark:border-white/10 dark:bg-white/[.04] dark:hover:bg-white/[.07]"
             )}
         >
             {Icon && (
                 <span
                     className={cn(
-                        "flex items-center justify-center w-10 h-10 rounded-xl shrink-0 transition-colors",
+                        "grid shrink-0 place-items-center rounded-[14px] transition-all duration-200",
+                        compact ? "size-9" : "size-11",
                         selected
-                            ? "bg-eyp-gradient text-white"
-                            : "bg-eyp-gray-warm text-eyp-violet group-hover:bg-eyp-violet-pale"
+                            ? "shell-grad text-white shadow-[0_8px_18px_-8px_rgba(108,71,255,.8)]"
+                            : "su-accent bg-[#6C47FF]/10 dark:bg-white/10"
                     )}
                 >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="size-5" />
                 </span>
             )}
-            <span className="flex-1 min-w-0">
-                <span className={cn("block font-semibold text-eyp-ink", compact ? "text-sm" : "")}>
+            <span className="min-w-0 flex-1">
+                <span className={cn("block font-bold", compact ? "text-[14px]" : "text-[15.5px]")}>
                     {label}
                 </span>
                 {description && (
-                    <span className={cn("block text-eyp-gray-text mt-0.5", compact ? "text-xs" : "text-sm")}>
+                    <span className={cn("mt-0.5 block leading-snug text-muted-foreground", compact ? "text-[12.5px]" : "text-[13.5px]")}>
                         {description}
                     </span>
                 )}
             </span>
             <span
                 className={cn(
-                    "flex items-center justify-center w-5 h-5 rounded-full border-2 shrink-0 transition-all mt-0.5",
+                    "grid size-[22px] shrink-0 place-items-center rounded-full border-2 transition-all duration-200",
                     selected
-                        ? "border-eyp-violet bg-eyp-violet text-white"
-                        : "border-eyp-gray-mid bg-white"
+                        ? "shell-grad border-transparent text-white"
+                        : "border-border bg-card dark:border-white/20 dark:bg-transparent"
                 )}
             >
-                {selected && <Check className="w-3 h-3" strokeWidth={3} />}
+                {selected && <Check className="size-3" strokeWidth={3.5} />}
             </span>
         </button>
     )

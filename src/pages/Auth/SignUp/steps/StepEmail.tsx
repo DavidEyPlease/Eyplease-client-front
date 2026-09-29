@@ -1,5 +1,5 @@
 import { type UseFormRegister, type FieldErrors } from "react-hook-form"
-import { Mail } from "lucide-react"
+import { Gift, Mail } from "lucide-react"
 
 import StepShell from "../components/StepShell"
 import WizardInput from "../components/WizardInput"
@@ -34,13 +34,16 @@ const StepEmail = ({ register, errors, name, onEnter, hint }: Props) => {
                 placeholder="tu@correo.com"
                 autoComplete="email"
                 autoFocus
-                icon={<Mail className="w-5 h-5" />}
+                icon={<Mail />}
                 register={register("email")}
                 error={errors.email?.message}
                 onKeyDown={handleKey}
             />
             {hint && (
-                <p className="mt-3 rounded-xl bg-eyp-violet-pale px-3.5 py-2.5 text-sm font-medium text-eyp-violet-deep">🎁 {hint}</p>
+                <p className="su-soft mt-3 flex items-start gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] leading-snug font-semibold">
+                    <Gift className="su-accent mt-px size-[18px] shrink-0" />
+                    {hint}
+                </p>
             )}
         </StepShell>
     )

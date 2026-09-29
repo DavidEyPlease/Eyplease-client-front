@@ -14,7 +14,7 @@ const StepPhone = ({ control, errors }: Props) => {
         <StepShell
             eyebrow="Tu canal directo"
             title="¿A qué WhatsApp te escribimos?"
-            description={<>Aquí te llega el código de verificación y soporte si lo necesitas. <b className="text-eyp-ink">Solo lo usamos nosotros.</b></>}
+            description={<>Aquí te llega el código de verificación y soporte si lo necesitas. <b className="text-foreground">Solo lo usamos nosotros.</b></>}
         >
             <Controller
                 control={control}

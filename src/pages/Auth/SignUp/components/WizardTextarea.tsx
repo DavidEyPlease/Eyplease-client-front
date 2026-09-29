@@ -36,18 +36,17 @@ const WizardTextarea = forwardRef<HTMLTextAreaElement, Props>(({
                 aria-invalid={error ? "true" : "false"}
                 {...register}
                 className={cn(
-                    "w-full px-4 py-3 text-base text-eyp-ink bg-white border-2 rounded-2xl transition-colors outline-none resize-none",
-                    "placeholder:text-eyp-gray-mid",
-                    error
-                        ? "border-red-400 focus:border-red-500"
-                        : "border-eyp-gray-warm focus:border-eyp-violet hover:border-eyp-violet/40",
+                    // Mismo control que `ui/input`: píldora suave que se aclara y se enfoca en violeta
+                    "w-full resize-none rounded-brand border border-input bg-surface-soft px-4 py-3 text-[15px] leading-relaxed outline-none transition-[box-shadow,background-color,border-color] dark:bg-input/30",
+                    "placeholder:text-muted-foreground focus-visible:border-primary-light focus-visible:bg-card focus-visible:ring-4 focus-visible:ring-primary/15",
+                    "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
                     className
                 )}
             />
-            <div className="flex items-center justify-between gap-2 mt-1">
+            <div className="mt-1 flex items-center justify-between gap-2">
                 {error ? <ErrorText error={error} /> : <span />}
                 {maxLength && (
-                    <span className="text-xs text-eyp-gray-mid">
+                    <span className="text-xs tabular-nums text-muted-foreground">
                         {currentLength ?? 0}/{maxLength}
                     </span>
                 )}

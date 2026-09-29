@@ -10,23 +10,23 @@ interface Props {
 
 const StepShell = ({ eyebrow, title, description, children, className }: Props) => {
     return (
-        <div className={cn("flex flex-col gap-5", className)}>
+        <div className={cn("flex flex-col gap-6", className)}>
             <div className="text-center">
                 {eyebrow && (
-                    <p className="mb-2 text-xs font-semibold tracking-wider uppercase text-eyp-cyan">
+                    <p className="su-accent mb-2.5 text-[11.5px] font-bold tracking-[.14em] uppercase">
                         {eyebrow}
                     </p>
                 )}
-                <h2 className="text-2xl font-extrabold leading-tight sm:text-3xl text-eyp-ink font-display">
+                <h2 className="text-[26px] leading-[1.1] font-extrabold tracking-tight text-balance sm:text-[28px]">
                     {title}
                 </h2>
                 {description && (
-                    <p className="mt-3 text-sm sm:text-base text-eyp-gray-text">
+                    <p className="mx-auto mt-2.5 max-w-[400px] text-[14.5px] leading-relaxed font-medium text-pretty text-muted-foreground">
                         {description}
                     </p>
                 )}
             </div>
-            <div className="mt-2">{children}</div>
+            <div>{children}</div>
         </div>
     )
 }

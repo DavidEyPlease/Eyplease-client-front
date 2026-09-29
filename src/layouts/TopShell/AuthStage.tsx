@@ -1,13 +1,13 @@
 import './shell.css'
 
-const Orb = ({ className }: { className: string }) => (
+export const Orb = ({ className }: { className: string }) => (
     <span className={`shell-grad shell-orb grid shrink-0 place-items-center rounded-full ${className}`}>
         <img src="/images/isotipo-blanco.png" alt="" className="relative w-1/2" />
     </span>
 )
 
 /** Tres vistazos de lo que hay dentro, dibujados en CSS: nada de capturas ni de piezas con logo. */
-const Preview = () => (
+export const Preview = () => (
     <div className="relative mt-12 hidden h-[372px] w-full max-w-[540px] lg:block" aria-hidden>
         {/* Hoy: una tarjeta del feed */}
         <div className="auth-float auth-glass absolute top-0 left-0 w-[268px] rounded-[22px] p-3.5" style={{ '--d': '0s' } as React.CSSProperties}>

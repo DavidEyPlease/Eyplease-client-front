@@ -1,4 +1,6 @@
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
+
+import Button from "@/components/common/Button"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -20,37 +22,32 @@ const WizardFooter = ({
     loading,
     isFinal,
 }: Props) => {
-    const finalLabel = isFinal ? "Crear cuenta" : "Siguiente"
+    const label = nextLabel ?? (isFinal ? "Crear cuenta" : "Siguiente")
     return (
-        <div className="flex items-center justify-between gap-3 mt-8">
-            {onBack ? (
+        <div className="mt-8 flex items-center gap-3">
+            {onBack && (
                 <button
                     type="button"
                     onClick={onBack}
                     disabled={loading}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-eyp-gray-text hover:text-eyp-ink transition-colors disabled:opacity-50"
+                    className="-ml-2 inline-flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
                 >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="size-4" />
                     {backLabel}
                 </button>
-            ) : (
-                <span />
             )}
 
-            <button
+            {/* El mismo botón que «Entrar»; en el celular ocupa lo que queda de la fila */}
+            <Button
                 type="button"
                 onClick={onNext}
-                disabled={nextDisabled || loading}
-                className={cn(
-                    "inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-full shadow-lg shadow-eyp-violet/30 transition-all duration-200",
-                    "bg-eyp-gradient hover:shadow-xl hover:shadow-eyp-violet/40 hover:-translate-y-0.5",
-                    "disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
-                )}
-            >
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {nextLabel ?? finalLabel}
-                {!loading && <ArrowRight className="w-4 h-4" />}
-            </button>
+                disabled={nextDisabled}
+                loading={loading}
+                rounded
+                size="lg"
+                className={cn("ml-auto h-12 justify-center", onBack ? "flex-1 sm:flex-none" : "w-full sm:w-auto")}
+                text={<>{label}{!loading && <ArrowRight className="size-4" />}</>}
+            />
         </div>
     )
 }

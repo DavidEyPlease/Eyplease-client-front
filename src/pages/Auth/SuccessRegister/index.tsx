@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useNavigate } from "react-router"
-import { Sparkles, ArrowRight } from "lucide-react"
+import { ArrowRight, Check } from "lucide-react"
 
 import SignUpWizardLayout from "@/layouts/SignUpWizardLayout"
 import StoreBadge from "@/components/generics/StoreBadge"
@@ -25,63 +25,60 @@ const SuccessRegisterPage = () => {
     return (
         <SignUpWizardLayout showClose={false}>
             <div className="text-center">
-                <div className="flex justify-center mb-5">
-                    <div className="relative flex items-center justify-center w-20 h-20 rounded-full shadow-lg bg-eyp-gradient shadow-eyp-violet/30">
-                        <Sparkles className="w-9 h-9 text-white" strokeWidth={2.5} />
-                        <span className="absolute inset-0 rounded-full bg-eyp-gradient opacity-30 blur-xl" aria-hidden="true" />
-                    </div>
-                </div>
+                <span className="shell-grad shell-orb mx-auto grid size-[72px] place-items-center rounded-full">
+                    <Check className="relative size-9 text-white" strokeWidth={3} />
+                </span>
 
-                <p className="mb-2 text-xs font-semibold tracking-wider uppercase text-eyp-cyan">
+                <p className="su-accent mt-5 text-[11.5px] font-bold tracking-[.14em] uppercase">
                     Tu cuenta está lista
                 </p>
-                <h2 className="text-3xl font-extrabold leading-tight font-display text-eyp-ink">
+                <h2 className="mt-2 text-[28px] leading-[1.1] font-extrabold tracking-tight">
                     Bienvenida a Eyplease+
                 </h2>
                 {email && (
-                    <p className="mt-3 text-sm text-eyp-gray-text">
+                    <p className="mt-2.5 text-[14.5px] font-medium text-muted-foreground">
                         Confirmamos tu cuenta a{' '}
-                        <b className="text-eyp-ink">{email}</b>
+                        <b className="text-foreground">{email}</b>
                     </p>
                 )}
             </div>
 
-            <div className="my-8 border-t border-eyp-gray-warm" />
+            <div className="my-7 h-px bg-border" />
 
             <div className="text-center">
-                <p className="mb-1 text-base font-bold text-eyp-ink">
+                <p className="text-[16px] font-extrabold">
                     {isMobile
                         ? 'Descarga la app para continuar'
                         : 'Descarga la app en tu celular'}
                 </p>
-                <p className="mb-6 text-sm text-eyp-gray-text">
+                <p className="mt-1 mb-5 text-[13.5px] text-muted-foreground">
                     Ahí entras con tu correo y la contraseña que acabas de crear.
                 </p>
 
                 <div className={cn(
-                    "flex flex-col items-stretch gap-3 mx-auto max-w-xs",
+                    "mx-auto flex max-w-xs flex-col items-stretch gap-3",
                     "sm:max-w-none sm:flex-row sm:justify-center"
                 )}>
-                    {showIOS && <StoreBadge variant="ios" href={STORE_URLS.ios} />}
-                    {showAndroid && <StoreBadge variant="android" href={STORE_URLS.android} />}
+                    {showIOS && <StoreBadge variant="ios" href={STORE_URLS.ios} className="dark:ring-1 dark:ring-white/15" />}
+                    {showAndroid && <StoreBadge variant="android" href={STORE_URLS.android} className="dark:ring-1 dark:ring-white/15" />}
                 </div>
 
                 {os === 'desktop' && (
-                    <p className="mt-6 text-xs text-eyp-gray-text">
+                    <p className="mt-5 text-[12.5px] text-muted-foreground">
                         Abre desde tu celular o búscanos en la tienda como{' '}
-                        <b className="text-eyp-ink">Eyplease+</b>
+                        <b className="text-foreground">Eyplease+</b>
                     </p>
                 )}
             </div>
 
-            <div className="flex justify-center mt-8">
+            <div className="mt-7 flex justify-center">
                 <button
                     type="button"
                     onClick={() => navigate(APP_ROUTES.HOME.INITIAL)}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors text-eyp-violet hover:text-eyp-violet-deep"
+                    className="inline-flex h-11 items-center gap-1.5 rounded-full border border-border px-5 text-sm font-bold transition-colors hover:bg-muted dark:border-white/15"
                 >
                     Ir a mi cuenta
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="size-4" />
                 </button>
             </div>
         </SignUpWizardLayout>

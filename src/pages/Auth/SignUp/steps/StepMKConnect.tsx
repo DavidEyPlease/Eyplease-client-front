@@ -34,15 +34,15 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                 }
             >
                 <div className="flex flex-col gap-4">
-                    <div className="flex items-start gap-3 p-4 rounded-2xl border-2 border-amber-200 bg-amber-50/60">
-                        <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 text-amber-700 shrink-0">
-                            <AlertTriangle className="w-4 h-4" />
+                    <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3.5">
+                        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                            <AlertTriangle className="size-[18px]" />
                         </span>
                         <div className="flex-1 text-left">
-                            <p className="text-sm font-bold text-amber-900">
+                            <p className="text-[14px] font-bold text-amber-900 dark:text-amber-200">
                                 Pon tu usuario real
                             </p>
-                            <p className="mt-0.5 text-xs leading-relaxed text-amber-800">
+                            <p className="mt-0.5 text-[12.5px] leading-relaxed text-amber-800 dark:text-amber-200/80">
                                 {simple
                                     ? 'Si pones un número falso, no podrás recibir las publicaciones y materiales de tu Directora.'
                                     : 'Si pones un número falso, no podremos conectar con tu unidad y tus consultoras no aparecerán en tu cuenta.'}
@@ -54,40 +54,40 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                         type="text"
                         placeholder="Tu número de usuario Mary Kay"
                         autoComplete="username"
-                        icon={<Hash className="w-5 h-5" />}
+                        icon={<Hash />}
                         register={register("mkUserId")}
                         error={errors.mkUserId?.message}
                     />
 
                     {!simple && (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2.5">
                             <WizardInput
                                 type="password"
                                 placeholder="Tu contraseña Mary Kay (Opcional)"
                                 autoComplete="current-password"
-                                icon={<Lock className="size-5" />}
+                                icon={<Lock />}
                                 register={register("mkPassword")}
                                 error={errors.mkPassword?.message}
                             />
-                            <div className="flex items-start gap-3 p-3 rounded-2xl border border-eyp-cyan/30 bg-eyp-gradient-soft">
-                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-white text-eyp-violet shrink-0 shadow-sm">
-                                    <Info className="w-4 h-4" />
+                            <div className="su-soft flex items-start gap-3 rounded-2xl p-3.5">
+                                <span className="su-accent grid size-9 shrink-0 place-items-center rounded-xl bg-card shadow-sm">
+                                    <Info className="size-[18px]" />
                                 </span>
-                                <div className="flex-1 text-left text-xs leading-relaxed text-eyp-ink-soft">
+                                <div className="flex-1 text-left text-[12.5px] leading-relaxed text-muted-foreground">
                                     <p>
-                                        <b className="text-eyp-ink">La contraseña es opcional.</b>{' '}
-                                        Si la ingresas, descargamos tus reportes <b>automáticamente</b> cada mes.
-                                        Si la dejas vacía, tendrás que <b>subirlos manualmente</b>.
+                                        <b className="text-foreground">La contraseña es opcional.</b>{' '}
+                                        Si la ingresas, descargamos tus reportes <b className="text-foreground">automáticamente</b> cada mes.
+                                        Si la dejas vacía, tendrás que <b className="text-foreground">subirlos manualmente</b>.
                                     </p>
                                     <p className="mt-1.5">
-                                        Esta <b>no es tu clave de Eyplease+</b> — es la que usas en marykayintouch.com.mx.
+                                        Esta <b className="text-foreground">no es tu clave de Eyplease+</b>: es la que usas en marykayintouch.com.mx.
                                     </p>
                                 </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setOpenManual(true)}
-                                className="self-center text-xs font-medium underline text-eyp-gray-text hover:text-eyp-violet"
+                                className="su-accent self-center rounded-full px-3 py-1.5 text-[12.5px] font-bold underline-offset-4 hover:underline"
                             >
                                 Cómo subir los reportes manualmente
                             </button>
@@ -95,9 +95,9 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                     )}
 
                     <div className="flex items-start gap-2 px-1">
-                        <ShieldCheck className="w-4 h-4 mt-0.5 text-eyp-cyan shrink-0" />
-                        <p className="text-xs leading-relaxed text-eyp-gray-text">
-                            <b className="text-eyp-ink">Tus datos se guardan cifrados.</b>{' '}
+                        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#2CD4D9]" />
+                        <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+                            <b className="text-foreground">Tus datos se guardan cifrados.</b>{' '}
                             {simple
                                 ? 'Solo se usan para enlazarte con tu unidad.'
                                 : 'Solo se usan para leer los reportes de tu unidad y traer a tus consultoras de forma automática cada mes. Nadie las ve.'}

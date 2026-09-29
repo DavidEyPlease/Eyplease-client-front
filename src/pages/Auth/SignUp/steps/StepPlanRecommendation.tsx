@@ -3,7 +3,6 @@ import { Check, Sparkles, Gift } from "lucide-react"
 import StepShell from "../components/StepShell"
 import StepPlanRecommendationSkeleton from "./StepPlanRecommendationSkeleton"
 import { PLANS_METADATA, TRIAL_DAYS } from "@/constants/plans"
-import { cn } from "@/lib/utils"
 import { IPlan, PlanKeys } from "@/interfaces/plans"
 import useFetchQuery from "@/hooks/useFetchQuery"
 import { API_ROUTES } from "@/constants/api"
@@ -39,63 +38,60 @@ const StepPlanRecommendation = ({ planKey, firstName }: Props) => {
             {loading || !planWithMetadata ? (
                 <StepPlanRecommendationSkeleton />
             ) : (
-                <div className={cn(
-                    "relative overflow-hidden rounded-2xl border-2 p-5 sm:p-6 bg-white",
-                    "border-eyp-violet shadow-xl shadow-eyp-violet/15"
-                )}>
+                <div className="su-plan relative overflow-hidden rounded-[22px] p-5 sm:p-6">
                     <div
-                        className="absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-40 blur-2xl"
-                        style={{ background: 'radial-gradient(circle, #5DD9D2 0%, transparent 70%)' }}
+                        className="pointer-events-none absolute -top-14 -right-14 size-40 rounded-full opacity-40 blur-2xl"
+                        style={{ background: 'radial-gradient(circle, #2CD4D9 0%, transparent 70%)' }}
                         aria-hidden="true"
                     />
 
                     <div className="relative">
-                        <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-xs font-semibold tracking-wider uppercase text-eyp-cyan">
+                                <p className="su-accent text-[11px] font-bold tracking-[.12em] uppercase">
                                     Plan {planWithMetadata.audience}
                                 </p>
-                                <h3 className="text-2xl font-extrabold font-display text-eyp-ink mt-0.5">
+                                <h3 className="mt-1 text-[26px] leading-none font-extrabold tracking-tight">
                                     {planWithMetadata.name}
                                 </h3>
                             </div>
                             {planWithMetadata.recommendedTagline && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-eyp-violet-pale text-eyp-violet">
-                                    <Sparkles className="w-3 h-3" />
+                                <span className="shell-grad inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-white uppercase">
+                                    <Sparkles className="size-3" />
                                     Recomendado
                                 </span>
                             )}
                         </div>
 
-                        <div className="flex items-baseline gap-1.5 mb-5">
-                            <span className="text-4xl font-extrabold font-display text-eyp-ink">
+                        <div className="mt-4 flex items-baseline gap-1.5">
+                            <span className="text-[40px] leading-none font-extrabold tracking-[-.04em]">
                                 {formatPrice(planWithMetadata.price ?? 0)}
                             </span>
-                            <span className="text-sm font-medium text-eyp-gray-text">
+                            <span className="text-sm font-semibold text-muted-foreground">
                                 MXN / mes
                             </span>
                         </div>
 
-                        <ul className="flex flex-col gap-2 mb-5">
+                        <ul className="mt-5 flex flex-col gap-2.5">
                             {planWithMetadata.features.map((h, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-eyp-ink-soft">
-                                    <span className="flex items-center justify-center w-5 h-5 mt-0.5 rounded-full bg-eyp-cyan-pale shrink-0">
-                                        <Check className="w-3 h-3 text-eyp-violet" strokeWidth={3} />
+                                <li key={i} className="flex items-start gap-2.5 text-[14px] leading-snug">
+                                    <span className="mt-px grid size-5 shrink-0 place-items-center rounded-full bg-[#6C47FF]/12 dark:bg-white/10">
+                                        <Check className="su-accent size-3" strokeWidth={3.5} />
                                     </span>
                                     {h}
                                 </li>
                             ))}
                         </ul>
 
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-eyp-gradient-soft border border-eyp-cyan/30">
-                            <span className="flex items-center justify-center rounded-lg w-9 h-9 bg-white shadow-sm text-eyp-violet shrink-0">
-                                <Gift className="w-5 h-5" />
+                        <div className="su-soft mt-5 flex items-center gap-3 rounded-2xl p-3">
+                            <span className="su-accent grid size-10 shrink-0 place-items-center rounded-xl bg-card shadow-sm">
+                                <Gift className="size-5" />
                             </span>
                             <div className="flex-1 text-left">
-                                <p className="text-sm font-bold text-eyp-ink">
+                                <p className="text-[14px] font-bold">
                                     Pruébalo {TRIAL_DAYS} días gratis
                                 </p>
-                                <p className="text-xs text-eyp-gray-text">
+                                <p className="text-[12.5px] text-muted-foreground">
                                     Sin cobro automático. Cancela cuando quieras.
                                 </p>
                             </div>
@@ -104,7 +100,7 @@ const StepPlanRecommendation = ({ planKey, firstName }: Props) => {
                 </div>
             )}
 
-            <p className="mt-3 text-xs text-center text-eyp-gray-text">
+            <p className="mt-3.5 text-center text-[12.5px] text-muted-foreground">
                 Puedes cambiar de plan más tarde desde tu cuenta.
             </p>
         </StepShell>
