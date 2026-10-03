@@ -97,7 +97,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                     <img src="/images/isotipo-blanco.png" alt="" className="relative z-[1] w-[21px]" />
                 </span>
                 <span className="hidden text-[15px] leading-none font-extrabold tracking-tight sm:block">
-                    eyplease<span className="text-[#E5077D]">+</span>
+                    eyplease<span className="text-[#6C47FF] dark:text-[#2CD4D9]">+</span>
                 </span>
             </Link>
 

@@ -23,7 +23,7 @@ const Brand = () => (
         <span className="shell-mark grid size-11 place-items-center rounded-[14px] border border-white/30 bg-white/15 backdrop-blur-sm">
             <img src="/images/isotipo-blanco.png" alt="" className="relative z-[1] w-6" />
         </span>
-        <span className="text-[19px] font-extrabold tracking-tight text-white">eyplease<span className="text-[#FF8AC6]">+</span></span>
+        <span className="text-[19px] font-extrabold tracking-tight text-white">eyplease<span className="text-[#2CD4D9]">+</span></span>
     </span>
 )
 
