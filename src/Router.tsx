@@ -42,7 +42,7 @@ const Router = () => {
             <Route path={APP_ROUTES.AUTH.FORGOT_PASSWORD} element={isLogged ? <Navigate to='/dashboard' /> : <ForgotPasswordPage />} />
             <Route path={APP_ROUTES.AUTH.FORGOT_PASSWORD_VERIFICATION_CODE} element={isLogged ? <Navigate to='/dashboard' /> : <VerificationCodePage />} />
             <Route path={APP_ROUTES.AUTH.CHANGE_PASSWORD} element={isLogged ? <Navigate to='/dashboard' /> : <ResetPasswordPage />} />
-            {/* Fuera de MainLayout: la presentación ocupa toda la pantalla (la página exige sesión por su cuenta) */}
+            {/* Fuera de MainLayout: es la puerta que manda a la presentación (exige sesión por su cuenta) */}
             <Route path={APP_ROUTES.TRAININGS.WEB} element={<TrainingWebPage />} />
             <Route element={<MainLayout />}>
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
