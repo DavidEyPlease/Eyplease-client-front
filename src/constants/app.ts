@@ -25,6 +25,7 @@ export const APP_ROUTES = {
     TRAININGS: {
         LIST: '/trainings',
         FILTER: '/trainings/:sectionKey/filter',
+        WEB: '/trainings/:id/presentacion',
     },
     POSTS: {
         LIST: '/posts',

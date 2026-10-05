@@ -18,6 +18,7 @@ import MyClientsPage from "./pages/MyClients"
 import ToolsPage from "./pages/Tools"
 import TrainingsPage from "./pages/Trainings"
 import TrainingsFilterPage from "./pages/Trainings/Filters"
+import TrainingWebPage from "./pages/Trainings/Web"
 import PostsPage from "./pages/Posts"
 import ReportsPage from "./pages/Reports"
 import CustomServicesPage from "./pages/CustomServices"
@@ -41,6 +42,8 @@ const Router = () => {
             <Route path={APP_ROUTES.AUTH.FORGOT_PASSWORD} element={isLogged ? <Navigate to='/dashboard' /> : <ForgotPasswordPage />} />
             <Route path={APP_ROUTES.AUTH.FORGOT_PASSWORD_VERIFICATION_CODE} element={isLogged ? <Navigate to='/dashboard' /> : <VerificationCodePage />} />
             <Route path={APP_ROUTES.AUTH.CHANGE_PASSWORD} element={isLogged ? <Navigate to='/dashboard' /> : <ResetPasswordPage />} />
+            {/* Fuera de MainLayout: la presentación ocupa toda la pantalla (la página exige sesión por su cuenta) */}
+            <Route path={APP_ROUTES.TRAININGS.WEB} element={<TrainingWebPage />} />
             <Route element={<MainLayout />}>
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
                 <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />

@@ -16,6 +16,8 @@ export interface ITraining extends IBaseDBProperties {
     title: string
     category: TrainingCategoryTypes
     files: EypleaseFile[]
+    /** Presentación interactiva del tema (página web). Sin ella, el tema sólo trae archivos. */
+    web_url?: string | null
 }
 
 export interface ITrainingListFilters { category: string, search?: string }

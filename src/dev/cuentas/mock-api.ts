@@ -157,8 +157,11 @@ const TRAININGS: Array<[string, ReturnType<typeof training>[]]> = [
     ['initiation', [training('tr-4', 'Cómo invitar sin sonar a venta', 'initiation', 330)]],
 ]
 
+/* Presentación interactiva de prueba: la página local del Entérate Ya (se sirve aparte, puerto 8778) */
+const TRAINING_WEB = { ...training('tr-web', 'Entérate Ya · Octubre 2026', 'sales', 120), web_url: 'http://localhost:8778/index.html' }
+
 const trainingsResponse = () => ({
-    recently: { count: 1, items: [TRAININGS[0][1][0]] },
+    recently: { count: 2, items: [TRAINING_WEB, TRAININGS[0][1][0]] },
     groupByCategory: Object.fromEntries(TRAININGS),
     quota: { limit: 10, used: 2, remaining: 8 },
 })
@@ -423,7 +426,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             response = respond({ newsletters })
         }
         else if (path.startsWith('/trainings')) response = owned.has('trainings')
-            ? respond(path === '/trainings' ? trainingsResponse() : page(TRAININGS.flatMap(([, items]) => items)))
+            ? respond(path === '/trainings' ? trainingsResponse() : path === '/trainings/tr-web' ? TRAINING_WEB : page(TRAININGS.flatMap(([, items]) => items)))
             : respond(null, 403)
         /* Adjuntar en el chat: la «subida» va a una dirección de la propia API de mentira, que la da por buena */
         else if (path === '/files/sign-url') { const body = JSON.parse(String(init?.body ?? '{}')); response = respond({ url: `${base}/__subida-demo`, key: body.fileName, disk: 'private' }) }

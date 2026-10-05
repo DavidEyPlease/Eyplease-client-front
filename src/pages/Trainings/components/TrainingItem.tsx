@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { CalendarIcon, DownloadIcon, Maximize2Icon } from 'lucide-react'
+import { CalendarIcon, DownloadIcon, Maximize2Icon, SparklesIcon } from 'lucide-react'
+import { Link } from 'react-router'
 import { toast } from 'sonner'
 
 import Modal from '@/components/common/Modal'
 import Spinner from '@/components/common/Spinner'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { APP_ROUTES } from '@/constants/app'
 import useFiles from '@/hooks/useFiles'
 import { FileTypes } from '@/interfaces/files'
 import { ITraining } from '@/interfaces/trainings'
@@ -98,8 +100,18 @@ const TrainingItem = ({ training, showRibbon, showCategory }: Props) => {
                     {files.length} {files.length === 1 ? 'archivo' : 'archivos'}
                 </p>
 
+                {training.web_url && (
+                    <Link
+                        to={APP_ROUTES.TRAININGS.WEB.replace(':id', training.id)}
+                        className="mt-auto flex items-center justify-center gap-2 rounded-xl bg-primary-gradient px-3 py-2.5 text-[12.5px] font-extrabold tracking-tight text-white shadow-primary-glow transition-transform hover:-translate-y-0.5"
+                    >
+                        <SparklesIcon className="size-3.5" />
+                        Abrir presentación interactiva
+                    </Link>
+                )}
+
                 {!!files.length && (
-                    <div className="mt-auto grid grid-cols-2 gap-1.5 border-t border-dashed pt-2.5">
+                    <div className={`${training.web_url ? '' : 'mt-auto '}grid-cols-2 gap-1.5 border-t border-dashed pt-2.5`}>
                         {files.map(file => {
                             const fileType = file.type as keyof typeof TRAINING_FILE_SHORT_NAME
                             const Icon = TRAINING_FILE_ICON[file.type]
