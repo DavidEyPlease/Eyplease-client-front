@@ -47,10 +47,11 @@ const hadSession = localStorage.getItem(SESSION_KEY)
 if (!hadSession) localStorage.setItem(SESSION_KEY, 'simulador')
 window.addEventListener('pagehide', () => { if (localStorage.getItem(SESSION_KEY) === 'simulador') localStorage.removeItem(SESSION_KEY) })
 
-// `?nuevo=0|1` elige el marco igual que en la web real; aquí hay que guardarlo a mano porque
-// la dirección se reescribe abajo, antes de que `isNewShell()` llegue a leerla
+// `?nuevo=0|1` elige el marco igual que en la web real (sólo para esta pestaña); aquí hay que
+// guardarlo a mano porque la dirección se reescribe abajo, antes de que `isNewShell()` llegue a leerla
 const shell = params.get('nuevo')
-if (shell === '0' || shell === '1') localStorage.setItem('eyplease:shell', shell === '1' ? 'new' : 'old')
+if (shell === '0') sessionStorage.setItem('eyplease:shell', 'old')
+if (shell === '1') sessionStorage.removeItem('eyplease:shell')
 
 // La web no conoce la ruta /cuentas.html: arranca en el Inicio, o donde diga `ir` (el plan ya quedó en sessionStorage)
 const startAt = params.get('ir') ?? ''

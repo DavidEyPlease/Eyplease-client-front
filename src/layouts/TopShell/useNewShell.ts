@@ -1,32 +1,33 @@
 const KEY = 'eyplease:shell'
 
+let limpio = false
+
 /**
- * El marco nuevo es el de TODAS desde el 20-sep-2026 (lo lanzó David).
+ * El marco nuevo es el de TODAS y ya no hay vuelta al anterior (7-oct-2026, lo pidió David:
+ * «el nuevo es el que está listo, tiene que cambiarse sí o sí»).
  *
- * Antes venía apagado y se encendía por persona con `?nuevo=1`, mientras se construía.
- * Ese interruptor sigue vivo y ahora sirve al revés: **`?nuevo=0` devuelve a una clienta
- * al diseño anterior**, y la elección se recuerda en su navegador. Es la escapatoria si a
- * alguien le estorba algo del rediseño; el menú de su cuenta también la ofrece.
+ * Desde el lanzamiento (20-sep-2026) una clienta podía quedarse en el diseño anterior —la fila
+ * «Volver al diseño anterior» de su menú o `?nuevo=0`— y la elección se recordaba en su
+ * navegador. El diseño anterior no tiene cómo regresar, así que quien lo eligió se quedaba ahí.
+ * Esa elección guardada ya no cuenta y se borra.
+ *
+ * Queda `?nuevo=0` SÓLO para revisar un fallo: vale para esa pestaña y se va al cerrarla
+ * (`?nuevo=1` lo quita antes). Si algo falla también con el marco viejo, no es del rediseño.
  */
 export const isNewShell = (): boolean => {
     try {
+        if (!limpio) {
+            localStorage.removeItem(KEY)
+            limpio = true
+        }
+
         const param = new URLSearchParams(window.location.search).get('nuevo')
-        if (param === '1' || param === '0') localStorage.setItem(KEY, param === '1' ? 'new' : 'old')
+        if (param === '0') sessionStorage.setItem(KEY, 'old')
+        if (param === '1') sessionStorage.removeItem(KEY)
 
-        const saved = localStorage.getItem(KEY)
-        if (saved) return saved === 'new'
+        return sessionStorage.getItem(KEY) !== 'old'
     } catch {
-        /* Navegación privada o almacenamiento bloqueado: vale el valor por defecto */
+        /* Navegación privada o almacenamiento bloqueado: el marco nuevo */
+        return true
     }
-
-    return true
-}
-
-export const setNewShell = (on: boolean) => {
-    try {
-        localStorage.setItem(KEY, on ? 'new' : 'old')
-    } catch {
-        /* Sin almacenamiento no se recuerda; el cambio vale para esta carga */
-    }
-    window.location.reload()
 }

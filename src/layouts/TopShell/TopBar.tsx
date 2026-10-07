@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router'
-import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UndoIcon, UsersRoundIcon, WalletIcon } from 'lucide-react'
+import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UsersRoundIcon, WalletIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
 import { BILLING_PATH } from '@/components/billing/SubscriptionCard'
@@ -21,7 +21,6 @@ import CommandBar from './CommandBar'
 import AccountSwitcher from '@/components/accounts/AccountSwitcher'
 import { requestLogout } from './logoutBridge'
 import ThemeModeSelector from './ThemeModeSelector'
-import { setNewShell } from './useNewShell'
 
 /**
  * Cómo se reparte el menú de siempre en la barra. NO inventa entradas: agrupa las que ya
@@ -204,9 +203,6 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                                 </span>
                             </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-xl px-2.5 py-2" onClick={() => setNewShell(false)}>
-                            <UndoIcon /> Volver al diseño anterior
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-xl px-2.5 py-2" onClick={requestLogout}>
                             <LogOutIcon /> Cerrar sesión

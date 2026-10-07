@@ -17,7 +17,7 @@ interface Props {
 }
 
 const SignUpWizardLayout = ({ children, showClose = true, title, lead, aside }: Props) => {
-    // El mismo interruptor que el acceso y el área autenticada (`?nuevo=0` devuelve el diseño anterior)
+    // El mismo interruptor que el acceso y el área autenticada (`?nuevo=0` enseña el anterior sólo en esa pestaña, para revisar fallos)
     if (isNewShell()) {
         return <SignUpStage showClose={showClose} title={title} lead={lead} aside={aside}>{children}</SignUpStage>
     }
