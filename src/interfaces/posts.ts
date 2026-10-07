@@ -71,6 +71,14 @@ export interface IPost {
     version_key?: string | null
     version_label?: string | null
     version_group?: string | null
+    /**
+     * Campaña que vive DENTRO de una sección pero no se debe leer junto con lo
+     * demás: «Recupera tu Círculo Rosa» sale el mismo día que las de constancia
+     * y mezcladas confunden. Con clave, las piezas van en su propia tarjeta,
+     * rotulada con `group_label`. Null en casi todas.
+     */
+    group_key?: string | null
+    group_label?: string | null
 }
 
 export interface IPostsFilters {

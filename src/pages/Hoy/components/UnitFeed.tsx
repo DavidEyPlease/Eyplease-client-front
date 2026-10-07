@@ -31,7 +31,7 @@ const Divider = ({ children }: { children: React.ReactNode }) => (
     </div>
 )
 
-const groupId = (group: UnitGroup) => `${group.key}-${group.stage}-${group.day}`
+const groupId = (group: UnitGroup) => group.id
 const piecesOf = (groups: UnitGroup[]) => groups.reduce((sum, group) => sum + group.pieces.length, 0)
 
 interface Props {

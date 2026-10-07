@@ -168,6 +168,8 @@ const nombreDeMes = (fecha: string): string => {
 
 export interface PostsSection {
 	key: 'live' | 'closed'
+	/** Campaña con tramo propio (`group_key`); vacío en los dos tramos de siempre */
+	groupKey?: string
 	title: string
 	posts: IPost[]
 }
@@ -184,8 +186,17 @@ export interface PostsSection {
  * en que llegó.
  */
 export const splitPostsByStage = (posts: IPost[]): PostsSection[] => {
-	const live = posts.filter(isPostLive)
-	const closed = posts.filter(post => !isPostLive(post))
+	/* Una campaña va en su propio tramo y con su nombre: «Recupera tu Círculo Rosa»
+	   mezclada con las de constancia se leía como si todas fueran de recuperar. */
+	const campanas: Record<string, IPost[]> = {}
+	const resto = posts.filter(post => {
+		if (!post.group_key) return true
+		;(campanas[post.group_key] = campanas[post.group_key] || []).push(post)
+		return false
+	})
+
+	const live = resto.filter(isPostLive)
+	const closed = resto.filter(post => !isPostLive(post))
 
 	const tramo = (key: PostsSection['key'], lista: IPost[], prefijo: string, sinMes: string): PostsSection => {
 		/* Sólo se nombra el mes si TODAS las piezas del tramo son del mismo. Un
@@ -198,6 +209,12 @@ export const splitPostsByStage = (posts: IPost[]): PostsSection[] => {
 
 	return [
 		...(live.length > 0 ? [tramo('live', live, 'Actualizado en vivo ·', 'Actualizado en vivo')] : []),
+		...Object.entries(campanas).map(([groupKey, lista]): PostsSection => ({
+			key: isPostLive(lista[0]) ? 'live' : 'closed',
+			groupKey,
+			title: lista[0].group_label || 'Actualizado en vivo',
+			posts: lista,
+		})),
 		...(closed.length > 0 ? [tramo('closed', closed, 'Al cierre de', 'Al cierre del mes')] : []),
 	]
 }

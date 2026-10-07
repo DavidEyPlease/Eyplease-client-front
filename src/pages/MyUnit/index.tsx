@@ -157,7 +157,7 @@ const MyUnitPage = () => {
 
             <Modal open={!!opened} size="lg" title={opened ? titleCaseName(opened.name) : ''} description={opened ? `${opened.pieces} ${opened.pieces === 1 ? 'pieza' : 'piezas'} este mes${opened.unsent ? ` · ${opened.unsent} sin compartir` : ' · todo compartido'}` : undefined} onOpenChange={open => { if (!open) setOpenId(null) }}>
                 <div className="hoy-rail -mx-1 grid max-h-[70vh] grid-cols-1 gap-4 overflow-y-auto px-1 pb-1">
-                    {openedGroups.map(group => <UnitGroupCard key={`${group.key}-${group.stage}-${group.day}`} group={group} patchPost={patchPost} />)}
+                    {openedGroups.map(group => <UnitGroupCard key={group.id} group={group} patchPost={patchPost} />)}
                 </div>
             </Modal>
         </div>

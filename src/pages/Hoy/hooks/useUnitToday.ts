@@ -6,6 +6,8 @@ import { getPostDate, groupPostVersions, isPostLive, PostVersionGroup } from '@/
 import useSectionPosts from './useSectionPosts'
 
 export interface UnitGroup {
+    /** Identifica la tarjeta: sección + tramo + día + campaña */
+    id: string
     key: string
     label: string
     /** Día del grupo (YYYY-MM-DD, hora local) */
@@ -39,22 +41,25 @@ const monthNameOf = (fecha: string): string => {
  */
 export const buildUnitGroups = (key: string, label: string, posts: IPost[], today: string): UnitGroup[] => {
     /* Lo vivo se fecha por el día en que pasó; el lote del cierre, por el día en que se generó.
-       Se separan aunque caigan el mismo día: hablan de meses distintos y juntas se leen repetidas. */
+       Se separan aunque caigan el mismo día: hablan de meses distintos y juntas se leen repetidas.
+       Una campaña (`group_key`) va también aparte y con su nombre: «Recupera tu Círculo Rosa» junto
+       a las de constancia del mismo día se leía como si todas fueran de recuperar. */
     const buckets: Record<string, IPost[]> = {}
     posts.forEach(post => {
         const live = isPostLive(post)
         const day = dayKey(live && post.live_event_at ? post.live_event_at : getPostDate(post))
-        const bucket = `${live ? 'live' : 'closed'}|${day}`
+        const bucket = `${live ? 'live' : 'closed'}|${day}|${post.group_key ?? ''}`
         ;(buckets[bucket] = buckets[bucket] || []).push(post)
     })
 
     return Object.entries(buckets).map(([bucket, items]) => {
-        const [stage, day] = bucket.split('|') as [UnitGroup['stage'], string]
+        const [stage, day, groupKey] = bucket.split('|') as [UnitGroup['stage'], string, string]
         const pieces = groupPostVersions(items)
         const months = new Set(items.map(post => post.newsletter_date ?? ''))
         return {
+            id: `${key}-${bucket}`,
             key,
-            label,
+            label: (groupKey && items[0].group_label) || label,
             day,
             isToday: day === today,
             stage,

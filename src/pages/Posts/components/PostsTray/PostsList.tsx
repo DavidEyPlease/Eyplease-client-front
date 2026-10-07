@@ -65,7 +65,7 @@ const PostsList = ({ posts, total, sectionLabel, selection, selectedId, hasNextP
 
 			<ul>
 				{sections.map(section => (
-					<Fragment key={section.key}>
+					<Fragment key={`${section.key}-${section.groupKey ?? ''}`}>
 						<li
 							className={cn(
 								'flex items-center gap-2 border-b px-4 py-2',
