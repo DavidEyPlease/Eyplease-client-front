@@ -60,6 +60,7 @@ const postsFor = (plan: DemoPlan, section: string): unknown[] => {
             files: [
                 file(`post-${section}-${index}`, piece(label, name, hue)),
                 file(`post-${section}-${index}-sq`, piece(label, name, hue, '1:1'), 'image_square'),
+                { ...file(`post-${section}-${index}-video`, '/src/dev/cuentas/demo-video.mp4', 'video'), name: 'demo-video.mp4', ext: 'mp4', uri: 'demo/demo-video.mp4' },
             ],
             newsletter_date: month(0),
             live_event_at: index < 3 ? iso(0) : iso(2),
@@ -109,6 +110,49 @@ const postsFor = (plan: DemoPlan, section: string): unknown[] => {
         newsletter_date: month(1),
         live_event_at: null,
     }))
+}
+
+/**
+ * Rehacer, de mentira: cada formato termina a su tiempo (la imagen en segundos; el video tarda más), como en la
+ * API. Se apunta qué se pidió y cuándo —por pieza («Rehacer») o por persona (foto nueva: TODAS sus piezas)— y al
+ * pedir la lista se calcula qué sigue rehaciéndose. `?video=120` alarga el video para verlo con calma.
+ */
+const REDO_SECONDS: Record<string, number> = { image: 4, image_square: 7, video: Number(new URLSearchParams(location.search).get('video')) || 40 }
+const redoRequests = new Map<string, { at: number, formats: string[] }>()
+
+type DemoPost = { id: string, has_photo?: boolean, vendorable?: { id: string, name: string } | null, files: Array<{ id: string, url: string, template_asset_type: string | null }> }
+
+const withRedo = (raw: unknown): unknown => {
+    const post = raw as DemoPost
+    const requests = [redoRequests.get(post.id), post.vendorable ? redoRequests.get(post.vendorable.id) : undefined]
+        .filter((request): request is { at: number, formats: string[] } => !!request)
+    if (!requests.length) return raw
+
+    const own = post.files.map(item => item.template_asset_type ?? 'image')
+    const pending = new Set<string>()
+    const done = new Set<string>()
+    let wholePiece = false
+
+    for (const request of requests) {
+        const elapsed = (Date.now() - request.at) / 1000
+        const formats = request.formats.filter(format => own.includes(format))
+        formats.forEach(format => (elapsed < REDO_SECONDS[format] ? pending : done).add(format))
+        /* Como la API: la marca de toda la pieza se apaga con el PRIMER formato que termina */
+        if (formats.length && formats.every(format => elapsed < REDO_SECONDS[format])) wholePiece = true
+    }
+
+    return {
+        ...post,
+        has_photo: post.vendorable && redoRequests.has(post.vendorable.id) ? true : post.has_photo,
+        is_regenerating: wholePiece,
+        regenerating_formats: ['image', 'image_square', 'video'].filter(format => pending.has(format)),
+        /* La imagen rehecha se ve distinta, para notar el momento en que cambia */
+        files: post.files.map(item => {
+            const format = item.template_asset_type ?? 'image'
+            if (format === 'video' || !done.has(format) || pending.has(format)) return item
+            return { ...item, url: piece('Rehecha con su foto', post.vendorable?.name ?? '', 150, format === 'image_square' ? '1:1' : '4:5') }
+        }),
+    }
 }
 
 const TOOL_LABELS: Record<string, string> = { stay_informed: 'Entérate Ya', learn: 'Publicación', explain: 'Historia', products: 'Productos', proposals: 'Propuestas', get_started: 'Inicia' }
@@ -348,12 +392,30 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/posts') {
             const section = q.get('section') ?? ''
             // Como la API real: una sección que el plan no trae no devuelve nada
-            response = ownedSections.has(section) ? respond(page(postsFor(plan, section))) : respond(null, 403)
+            response = ownedSections.has(section) ? respond(page(postsFor(plan, section).map(withRedo))) : respond(null, 403)
         }
         else if (path === '/posts/stats/coverage') response = respond(owned.has('unity') ? { people_count: 52, people_reached: 7, percent: 13 } : { people_count: 0, people_reached: 0, percent: 0 })
         else if (path === '/posts/stats/month') response = respond((q.get('sections') ?? q.get('section') ?? '').split(',').filter(Boolean).map(section_key => ({ section_key, posts_count: 3, posts_sent_count: section_key === 'pink_circle' ? 0 : 1, posts_live_today_count: section_key.includes('birthdays') ? 2 : 0 })))
         else if (path === '/posts/my-birthday') response = respond(null)
-        else if (/^\/posts\/[^/]+\/(sent|regenerate)$/.test(path)) response = respond(null)
+        /* «Rehacer»: la vertical y la cuadrada van juntas; el video, cuando se pide (como en la API) */
+        else if (/^\/posts\/[^/]+\/regenerate$/.test(path)) {
+            const id = path.split('/')[2]
+            const asked = JSON.parse(String(init?.body ?? '{}')).artifact
+            const index = id.match(/-(\d+)(?:-[ab])?$/)?.[1]
+            const byPhoto = index ? redoRequests.get(`person-${index}`) ?? redoRequests.get(`customer-${index}`) : undefined
+            /* Como la API: si ya se está rehaciendo (le acaban de subir la foto), no se encola otra vez */
+            const busy = !!byPhoto && Date.now() - byPhoto.at < REDO_SECONDS.image * 1000
+            if (!busy) redoRequests.set(id, { at: Date.now(), formats: asked === 'video' ? ['video'] : ['image', 'image_square'] })
+            response = respond({ post_id: id, is_regenerating: true, regenerating_formats: (busy ? byPhoto : redoRequests.get(id))?.formats ?? [] }, 202)
+        }
+        else if (/^\/posts\/[^/]+\/sent$/.test(path)) response = respond(null)
+        /* Subir una foto: la firma y la subida son de mentira; guardarla pone a rehacer TODAS las piezas del mes de esa persona */
+        else if (path === '/files/sign-url' && method === 'POST') response = respond({ url: `${base.replace(/\/$/, '')}/__subida`, key: 'demo/foto-nueva.jpg', disk: 'private' })
+        else if (path === '/__subida') response = respond(null)
+        else if (/^\/(sponsored|customers\/client)\/[^/]+$/.test(path) && (method === 'PUT' || method === 'PATCH')) {
+            redoRequests.set(path.split('/').pop() as string, { at: Date.now(), formats: ['image', 'image_square', 'video'] })
+            response = respond({})
+        }
         else if (path === '/tools/saved') response = respond(page(savedStore))
         else if (/^\/tools\/saved\/[^/]+$/.test(path) && method === 'DELETE') {
             savedStore = savedStore.filter(item => item.id !== path.split('/')[3])

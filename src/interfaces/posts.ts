@@ -45,6 +45,12 @@ export interface IPost {
     created_at: Date
     shared_at: Date | null
     is_regenerating: boolean
+    /**
+     * Los formatos que se están rehaciendo, uno por uno. `is_regenerating` se apaga con el primero
+     * que termina (la imagen, en segundos); el video sigue aquí los minutos que tarda. Vacío o
+     * ausente = la API no lo desglosa y manda la marca de toda la pieza.
+     */
+    regenerating_formats?: PostArtifactType[]
     type: PostTypes
     newsletter_section: NewsletterSection | null
     metadata: string | null

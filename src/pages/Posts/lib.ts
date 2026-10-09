@@ -101,14 +101,31 @@ export const isLiveToday = (post: IPost): boolean => {
 	)
 }
 
-export const isPostRegenerating = (post: IPost): boolean => !!post.is_regenerating
+/** Algo de la pieza se está rehaciendo: mientras sea así, la lista se vuelve a pedir. */
+export const isPostRegenerating = (post: IPost): boolean => !!post.is_regenerating || !!post.regenerating_formats?.length
+
+/**
+ * ¿Se está rehaciendo ESTE formato? La imagen queda en segundos y el video tarda minutos: con una
+ * sola marca para toda la pieza, o el video se rehacía sin avisar o la imagen ya lista quedaba
+ * tapada. Cuando la API no desglosa los formatos manda la marca de toda la pieza, como antes.
+ */
+export const isFormatRegenerating = (post: IPost, type: PostMediaType): boolean =>
+	post.regenerating_formats?.length ? post.regenerating_formats.includes(type) : !!post.is_regenerating
+
+/** Falta alguna imagen (segundos) y no sólo el video (minutos): decide cada cuánto se vuelve a preguntar. */
+export const isImageRegenerating = (post: IPost): boolean =>
+	isFormatRegenerating(post, POST_MEDIA_TYPES.IMAGE) || isFormatRegenerating(post, POST_MEDIA_TYPES.IMAGE_SQUARE)
+
+/** Lo que se le dice mientras espera: el video avisa que tarda, para que no crea que se atoró. */
+export const regeneratingLabel = (type: PostMediaType): string =>
+	type === POST_MEDIA_TYPES.VIDEO ? 'Rehaciendo el video… tarda unos minutos' : 'Generando nuevo diseño…'
 
 /** Las publicaciones de clientes de eyplease no las envía el usuario, no se marcan. */
 export const canMarkPostAsSent = (post: IPost): boolean => post.type !== PostTypes.EYPLEASE_CLIENTS
 
-/** Solo entra en la selección múltiple lo que aún se puede marcar como enviado y no está regenerándose. */
+/** Solo entra en la selección múltiple lo que aún se puede marcar como enviado y no tiene la imagen rehaciéndose. */
 export const canSelectPost = (post: IPost): boolean =>
-	canMarkPostAsSent(post) && !isPostSent(post) && !isPostRegenerating(post)
+	canMarkPostAsSent(post) && !isPostSent(post) && !isImageRegenerating(post)
 
 export interface PostVersionGroup {
 	/** Clave estable del grupo; el id de la pieza cuando no hay versiones. */

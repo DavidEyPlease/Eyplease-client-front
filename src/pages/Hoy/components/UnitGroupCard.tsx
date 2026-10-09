@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CameraIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, HeartIcon, RefreshCwIcon } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { IconBySection } from '@/components/generics/IconBySection'
@@ -11,9 +12,10 @@ import { cn } from '@/lib/utils'
 import RegeneratePhotoDialog from '@/pages/Posts/components/PostsTray/RegeneratePhotoDialog'
 import usePostActions from '@/pages/Posts/hooks/usePostActions'
 import {
-    canMarkPostAsSent, getAvailableMediaTypes, getPostMedia, getPostMediaFile, isPostRegenerating, isPostSent,
-    MEDIA_TYPE_LABELS, MEDIA_TYPE_ORDER, POST_MEDIA_TYPES, PostMediaType, PostVersionGroup,
+    canMarkPostAsSent, getAvailableMediaTypes, getPostMedia, getPostMediaFile, isFormatRegenerating, isImageRegenerating, isPostSent,
+    MEDIA_TYPE_LABELS, MEDIA_TYPE_ORDER, POST_MEDIA_TYPES, PostMediaType, PostVersionGroup, regeneratingLabel,
 } from '@/pages/Posts/lib'
+import { HOY_POSTS_KEY } from '../hooks/useSectionPosts'
 import { UnitGroup } from '../hooks/useUnitToday'
 import { titleCaseName } from '../lib'
 
@@ -50,6 +52,7 @@ interface Props {
 const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
     const { markAsSentOnDownload, markManyAsSent, regenerate } = usePostActions({ patchPost })
     const { downloadFile } = useFiles()
+    const queryClient = useQueryClient()
 
     const [position, setPosition] = useState(0)
     const [format, setFormat] = useState<PostMediaType>(POST_MEDIA_TYPES.IMAGE)
@@ -75,7 +78,9 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
     const activeFile = getPostMediaFile(media, activeFormat)
     const poster = media.image ?? media.imageSquare
 
-    const regenerating = isPostRegenerating(post)
+    /* La marca es del formato que se está viendo: mientras el video se rehace, la imagen ya lista se puede compartir */
+    const regenerating = isFormatRegenerating(post, activeFormat)
+    const imageReady = activeFormat === POST_MEDIA_TYPES.VIDEO && !!poster && !isImageRegenerating(post)
     const sent = isPostSent(post)
     const hasPerson = !!post.vendorable && post.type !== PostTypes.EYPLEASE_CLIENTS
     const needsPhoto = post.has_photo === false && hasPerson
@@ -96,7 +101,7 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
     }
 
     /* Todas de una vez, para mandarlas juntas al grupo de la unidad */
-    const allPosts = group.pieces.map(versionOf).filter(item => !isPostRegenerating(item))
+    const allPosts = group.pieces.map(versionOf).filter(item => !isFormatRegenerating(item, activeFormat))
 
     const onDownloadAll = async () => {
         if (busy) return
@@ -124,10 +129,12 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
     /* Sin foto propia rehacer devolvería la misma pieza: primero se pide la foto */
     const onRegenerate = () => needsPhoto ? askPhoto(post) : regenerate(post.id, activeFormat)
 
-    const onPhotoUploaded = () => {
+    const onPhotoUploaded = async () => {
         if (!photoFor) return
         patchPost(photoFor.id, { has_photo: true })
-        regenerate(photoFor.id, activeFormat)
+        await regenerate(photoFor.id, activeFormat)
+        /* La foto nueva rehace TODAS sus piezas del mes, no sólo ésta: se vuelve a pedir el Inicio para verlas rehacerse */
+        queryClient.invalidateQueries({ queryKey: HOY_POSTS_KEY })
     }
 
     const showVideo = activeFormat === POST_MEDIA_TYPES.VIDEO && !!media.video
@@ -198,9 +205,10 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
                 )}
 
                 {regenerating && (
-                    <div className="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-2.5 bg-black/60 text-center text-white backdrop-blur-sm">
+                    <div className="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-2.5 bg-black/60 px-6 text-center text-white backdrop-blur-sm">
                         <span className="size-7 animate-spin rounded-full border-[3px] border-white/30 border-t-white" />
-                        <span className="text-[12.5px] font-semibold">Generando nuevo diseño…</span>
+                        <span className="text-[12.5px] font-semibold">{regeneratingLabel(activeFormat)}</span>
+                        {imageReady && <span className="text-[11.5px] opacity-80">La imagen ya está lista: puedes compartirla mientras tanto</span>}
                     </div>
                 )}
 
@@ -245,9 +253,13 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
                                 type="button"
                                 disabled={!available.includes(type)}
                                 onClick={() => setFormat(type)}
-                                className={cn('h-7 cursor-pointer rounded-[9px] px-[11px] text-[11.5px] font-bold transition-colors disabled:cursor-default disabled:opacity-40', activeFormat === type ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground enabled:hover:text-foreground')}
+                                title={isFormatRegenerating(post, type) ? 'Se está rehaciendo' : undefined}
+                                className={cn('inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-[9px] px-[11px] text-[11.5px] font-bold transition-colors disabled:cursor-default disabled:opacity-40', activeFormat === type ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground enabled:hover:text-foreground')}
                             >
                                 {MEDIA_TYPE_LABELS[type]}
+                                {available.includes(type) && isFormatRegenerating(post, type) && (
+                                    <span aria-hidden className="size-3 animate-spin rounded-full border-2 border-current/25 border-t-current" />
+                                )}
                             </button>
                         ))}
                     </div>

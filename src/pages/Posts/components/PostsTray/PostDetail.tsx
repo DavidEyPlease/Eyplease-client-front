@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { IPost } from '@/interfaces/posts'
 import { Maximize2Icon } from 'lucide-react'
-import { getAvailableMediaTypes, getDefaultMediaType, getPostMedia, isPostRegenerating, PostMediaType } from '../../lib'
+import { getAvailableMediaTypes, getDefaultMediaType, getPostMedia, isFormatRegenerating, PostMediaType } from '../../lib'
 import MediaTypeSwitch from './MediaTypeSwitch'
 import PostDetailDrawer from './PostDetailDrawer'
 import PostDetailInfo from './PostDetailInfo'
@@ -28,7 +28,8 @@ const PostDetail = ({ post, versions, onVersionChange, ref }: Props) => {
 	/* Si el formato elegido deja de existir —la publicación se regeneró sin él— se cae al primero
 	   que sí tenga, en vez de quedarse enseñando un hueco. */
 	const activeType = mediaTypes.includes(mediaType) ? mediaType : mediaTypes[0] ?? mediaType
-	const regenerating = isPostRegenerating(post)
+	/* La marca es del formato que se ve: el video puede seguir rehaciéndose con la imagen ya lista */
+	const regenerating = isFormatRegenerating(post, activeType)
 
 	// El tope de altura solo entra en pantallas bajas, para que las acciones del pie sigan alcanzables
 	return (
@@ -45,7 +46,7 @@ const PostDetail = ({ post, versions, onVersionChange, ref }: Props) => {
 			)}
 
 			<div className="flex flex-wrap items-center justify-between gap-2 border-b px-3.5 py-2.5">
-				{showMediaSwitch && <MediaTypeSwitch value={activeType} types={mediaTypes} onChange={setMediaType} />}
+				{showMediaSwitch && <MediaTypeSwitch value={activeType} types={mediaTypes} pending={mediaTypes.filter(type => isFormatRegenerating(post, type))} onChange={setMediaType} />}
 				<Button
 					variant="outline"
 					size="icon-sm"

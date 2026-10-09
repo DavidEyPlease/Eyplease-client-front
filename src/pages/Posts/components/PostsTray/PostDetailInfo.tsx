@@ -9,7 +9,7 @@ import { formatDate } from '@/utils/dates'
 import { CalendarIcon, CheckIcon, DownloadIcon, ImagesIcon, RefreshCwIcon, Undo2Icon } from 'lucide-react'
 import usePostActions from '../../hooks/usePostActions'
 import RegeneratePhotoDialog from './RegeneratePhotoDialog'
-import { canMarkPostAsSent, getAvailableMediaTypes, getPostDate, getPostMediaFile, getPostMediaLabel, isPostRegenerating, isPostSent, MEDIA_TYPE_ICONS, PostMedia, PostMediaType } from '../../lib'
+import { canMarkPostAsSent, getAvailableMediaTypes, getPostDate, getPostMediaFile, getPostMediaLabel, isFormatRegenerating, isPostSent, MEDIA_TYPE_ICONS, PostMedia, PostMediaType } from '../../lib'
 
 const PILL_CLASSES = 'inline-flex items-center gap-1.5 rounded-full border bg-surface-soft px-2.5 py-1 text-[11px] font-bold text-muted-foreground [&_svg]:size-3'
 const ACTION_CLASSES = 'h-auto rounded-xl py-2.5 text-[12.5px] font-semibold text-muted-foreground hover:bg-surface-soft hover:text-primary'
@@ -44,7 +44,7 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 	}
 
 	const sent = isPostSent(post)
-	const regenerating = isPostRegenerating(post)
+	const regenerating = isFormatRegenerating(post, mediaType)
 	const activeFile = getPostMediaFile(media, mediaType)
 	const mediaTypes = getAvailableMediaTypes(media)
 	const mediaLabel = getPostMediaLabel(media)

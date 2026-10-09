@@ -97,9 +97,15 @@ const usePostActions = ({ patchPost }: Options = {}) => {
     /** Reencola la generación del artefacto (imagen o video) que está viendo la persona. */
     const regenerate = async (itemId: string, artifact: PostMediaType) => {
         setRegeneratingArtifact(itemId, artifact)
-        updateCachedPost(itemId, { is_regenerating: true })
+        /* Mientras contesta, toda la pieza; la respuesta dice qué formatos se rehacen de verdad */
+        updateCachedPost(itemId, { is_regenerating: true, regenerating_formats: [] })
         try {
-            await request('POST', API_ROUTES.POSTS.REGENERATE.replace('{id}', itemId), { artifact })
+            const response = await request<{ artifact: PostMediaType }, { regenerating_formats?: PostMediaType[] }>(
+                'POST', API_ROUTES.POSTS.REGENERATE.replace('{id}', itemId), { artifact },
+            )
+            if (response.data?.regenerating_formats?.length) {
+                updateCachedPost(itemId, { regenerating_formats: response.data.regenerating_formats })
+            }
         } catch (error) {
             console.error(error)
             updateCachedPost(itemId, { is_regenerating: false })

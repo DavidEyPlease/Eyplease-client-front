@@ -5,11 +5,13 @@ interface Props {
 	value: PostMediaType
 	/** Formatos que la publicación tiene; se ofrecen sólo esos. */
 	types: PostMediaType[]
+	/** Formatos que se están rehaciendo: llevan su aviso, para que se sepa que el video viene en camino. */
+	pending?: PostMediaType[]
 	onChange: (value: PostMediaType) => void
 }
 
 /** Conmutador vertical/cuadrada/video de la previsualización. */
-const MediaTypeSwitch = ({ value, types, onChange }: Props) => {
+const MediaTypeSwitch = ({ value, types, pending = [], onChange }: Props) => {
 	return (
 		<ToggleGroup
 			type="single"
@@ -27,6 +29,9 @@ const MediaTypeSwitch = ({ value, types, onChange }: Props) => {
 					>
 						<Icon className="size-3.5" />
 						{MEDIA_TYPE_LABELS[type]}
+						{pending.includes(type) && (
+							<span title="Se está rehaciendo" className="size-3 animate-spin rounded-full border-2 border-current/25 border-t-current" />
+						)}
 					</ToggleGroupItem>
 				)
 			})}

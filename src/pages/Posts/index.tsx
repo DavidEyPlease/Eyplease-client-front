@@ -7,7 +7,7 @@ import useInfiniteListQuery from '@/hooks/useInfiniteListQuery'
 import { BillingRestrictedFeature } from '@/interfaces/billing'
 import { IPost, IPostsFilters, MainPostSectionTypes, PostSectionTypes } from '@/interfaces/posts'
 import { usePostsStore } from '@/store/posts'
-import { isPostRegenerating } from './lib'
+import { isImageRegenerating, isPostRegenerating } from './lib'
 import FilterPosts from './components/FilterPosts'
 import PostsHeader from './components/PostsHeader'
 import PostsTray from './components/PostsTray'
@@ -72,7 +72,9 @@ const PostsPage = () => {
 			setPollInterval(false)
 			return
 		}
-		const hasFastArtifact = regenerating.some(post => regeneratingArtifacts[post.id] !== 'video')
+		/* La API dice qué formatos faltan; si no lo dice, vale lo que se pidió en esta sesión */
+		const hasFastArtifact = regenerating.some(post =>
+			post.regenerating_formats?.length ? isImageRegenerating(post) : regeneratingArtifacts[post.id] !== 'video')
 		setPollInterval(hasFastArtifact ? REGENERATE_POLL_MS : REGENERATE_VIDEO_POLL_MS)
 	}, [posts, regeneratingArtifacts])
 

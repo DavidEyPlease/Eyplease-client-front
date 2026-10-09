@@ -7,6 +7,7 @@ import { ApiResponse, PaginationResponse } from '@/interfaces/common'
 import { BillingRestrictedFeature } from '@/interfaces/billing'
 import { IPost, MainPostSectionTypes, PostSectionTypes } from '@/interfaces/posts'
 import usePostSections from '@/pages/Posts/hooks/usePostSections'
+import { isImageRegenerating, isPostRegenerating } from '@/pages/Posts/lib'
 import HttpService from '@/services/http'
 import useAuthStore from '@/store/auth'
 
@@ -15,6 +16,8 @@ export const HOY_POSTS_KEY = ['hoy', 'unidad'] as const
 
 const STALE_MS = 2 * 60 * 1000
 const REGENERATING_POLL_MS = 8000
+/** Cuando ya sólo falta el video, que tarda minutos, se pregunta más despacio */
+const REGENERATING_VIDEO_POLL_MS = 25000
 /** Se pide la sección entera: con la página por defecto Círculo Rosa salía a medias. */
 const PER_PAGE = 80
 
@@ -66,9 +69,12 @@ const useSectionPosts = (mainSection: MainPostSectionTypes) => {
             },
             staleTime: STALE_MS,
             enabled: !!user && !initialLoading,
-            /* Mientras haya una pieza generándose se vuelve a preguntar: la imagen tarda segundos */
-            refetchInterval: (query: { state: { data?: IPost[] } }) =>
-                (query.state.data ?? []).some(post => post.is_regenerating) ? REGENERATING_POLL_MS : false,
+            /* Mientras haya una pieza generándose se vuelve a preguntar: la imagen tarda segundos; el video, minutos */
+            refetchInterval: (query: { state: { data?: IPost[] } }) => {
+                const posts = query.state.data ?? []
+                if (!posts.some(isPostRegenerating)) return false
+                return posts.some(isImageRegenerating) ? REGENERATING_POLL_MS : REGENERATING_VIDEO_POLL_MS
+            },
         })),
         combine,
     })

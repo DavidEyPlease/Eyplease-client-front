@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { IPost } from '@/interfaces/posts'
 import { XIcon } from 'lucide-react'
-import { isPostRegenerating, PostMedia as PostMediaFiles, PostMediaType } from '../../lib'
+import { isFormatRegenerating, PostMedia as PostMediaFiles, PostMediaType } from '../../lib'
 import MediaTypeSwitch from './MediaTypeSwitch'
 import PostDetailInfo from './PostDetailInfo'
 import PostMedia from './PostMedia'
@@ -26,7 +26,7 @@ const PostDetailDrawer = ({ post, media, mediaType, mediaTypes, open, showMediaS
 				<DrawerHeader className="flex flex-row items-center justify-between gap-2 border-b p-3.5">
 					<DrawerTitle className="sr-only">{post.title}</DrawerTitle>
 					{showMediaSwitch ? (
-						<MediaTypeSwitch value={mediaType} types={mediaTypes} onChange={onMediaTypeChange} />
+						<MediaTypeSwitch value={mediaType} types={mediaTypes} pending={mediaTypes.filter(type => isFormatRegenerating(post, type))} onChange={onMediaTypeChange} />
 					) : (
 						<span className="truncate text-sm font-bold tracking-tight">{post.title}</span>
 					)}
@@ -38,7 +38,7 @@ const PostDetailDrawer = ({ post, media, mediaType, mediaTypes, open, showMediaS
 				</DrawerHeader>
 
 				<div className="flex-1 overflow-y-auto">
-					<PostMedia post={post} media={media} mediaType={mediaType} fit="contain" regenerating={isPostRegenerating(post)} />
+					<PostMedia post={post} media={media} mediaType={mediaType} fit="contain" regenerating={isFormatRegenerating(post, mediaType)} />
 					<PostDetailInfo post={post} media={media} mediaType={mediaType} />
 				</div>
 			</DrawerContent>

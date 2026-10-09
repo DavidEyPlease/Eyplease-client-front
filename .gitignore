@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 *.env
+
+# El video de muestra del simulador (local, no va al repo)
+src/dev/cuentas/*.mp4

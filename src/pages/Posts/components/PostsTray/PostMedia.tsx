@@ -1,6 +1,6 @@
 import { IPost } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
-import { getPostMediaFile, POST_MEDIA_TYPES, PostMedia as PostMediaFiles, PostMediaType } from '../../lib'
+import { getPostMediaFile, POST_MEDIA_TYPES, PostMedia as PostMediaFiles, PostMediaType, regeneratingLabel } from '../../lib'
 
 interface Props {
 	post: IPost
@@ -40,9 +40,9 @@ const PostMedia = ({ post, media, mediaType, fit, regenerating }: Props) => {
 			)}
 
 			{regenerating && (
-				<div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/60 text-center text-white backdrop-blur-sm">
+				<div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/60 px-6 text-center text-white backdrop-blur-sm">
 					<span className="size-7 animate-spin rounded-full border-[3px] border-white/30 border-t-white" />
-					<span className="text-[12.5px] font-semibold">Generando nuevo diseño…</span>
+					<span className="text-[12.5px] font-semibold">{regeneratingLabel(mediaType)}</span>
 				</div>
 			)}
 		</div>
