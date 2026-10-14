@@ -1,14 +1,15 @@
 // Tipos compartidos del sistema de generación de boletines en segundo plano.
-// Una "tarea de reporte" representa una generación (PDF o PPTX) que corre en el
-// cliente y sobrevive a la navegación: el store es global, así que el usuario
+// Una "tarea de reporte" representa una generación (PDF, PPTX o imágenes) que corre en
+// el cliente y sobrevive a la navegación: el store es global, así que el usuario
 // puede cambiar de vista mientras el archivo se construye.
 
-export type ReportTaskType = 'pdf' | 'pptx'
+/** `images` = una JPEG por página en un ZIP (para WhatsApp y redes); lo arma el backend igual que el PDF. */
+export type ReportTaskType = 'pdf' | 'pptx' | 'images'
 
 export type ReportTaskStatus = 'generating' | 'ready' | 'error'
 
-/** Recurso descargable resultante. El PDF llega como URL remota; el PPTX se
- *  genera en el cliente y se guarda como Blob (se materializa al descargar). */
+/** Recurso descargable resultante. El PDF y el ZIP de imágenes llegan como URL remota;
+ *  el PPTX se genera en el cliente y se guarda como Blob (se materializa al descargar). */
 export interface ReportTaskDownload {
     filename: string
     /** URL remota (PDF) o blob URL ya creada. */
@@ -25,7 +26,7 @@ export interface ReportTask {
     /** Texto del paso actual mostrado al usuario. */
     statusText: string
     status: ReportTaskStatus
-    /** 0–100 para progreso determinado (PPTX); null = indeterminado (PDF). */
+    /** 0–100 para progreso determinado (PPTX); null = indeterminado (PDF e imágenes). */
     progress: number | null
     download?: ReportTaskDownload
     error?: string

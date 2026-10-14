@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import useAuthStore from '@/store/auth'
 import { useReportPreferences } from '@/components/reportPreferences/useReportPreferences'
 import { countHidden, isSectionHidden } from '@/components/reportPreferences/utils'
-import { generatePdfReport, generatePptxReport } from '@/services/reports/reportGenerator'
+import { generateImagesReport, generatePdfReport, generatePptxReport } from '@/services/reports/reportGenerator'
 import { Newsletter, NewsletterSection, NewsletterSectionKeys, NewsletterTypes, Template } from '@/interfaces/common'
 import { ReportFileType, WizardStepId } from './wizardSteps'
 
@@ -173,6 +173,7 @@ export const useNewsletterWizard = (): NewsletterWizard => {
             title: newsletters.find(n => n.code === type)?.name ?? 'Boletín',
         }
         if (format === 'pdf') generatePdfReport(params)
+        else if (format === 'images') generateImagesReport(params)
         else generatePptxReport(params)
     }, [type, templateId, sections, format, newsletters])
 

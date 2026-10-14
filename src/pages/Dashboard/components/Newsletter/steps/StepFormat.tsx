@@ -1,4 +1,4 @@
-import { Check, FileText, Presentation } from 'lucide-react'
+import { Check, FileText, Images, Presentation } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NewsletterWizard } from '../useNewsletterWizard'
 import { ReportFileType } from '../wizardSteps'
@@ -6,7 +6,15 @@ import { ReportFileType } from '../wizardSteps'
 const FORMATS: { value: ReportFileType; label: string; icon: typeof FileText }[] = [
     { value: 'pdf', label: 'PDF', icon: FileText },
     { value: 'pptx', label: 'PowerPoint', icon: Presentation },
+    { value: 'images', label: 'Imágenes', icon: Images },
 ]
+
+/** Qué se lleva con cada formato, en una línea */
+const FORMAT_HINT: Record<ReportFileType, string> = {
+    pdf: 'Un solo archivo para imprimir, proyectar o mandar completo.',
+    pptx: 'Editable en PowerPoint: cambia textos o fotos antes de compartirlo.',
+    images: 'Una imagen por página, juntas en un ZIP: listas para WhatsApp o tus redes.',
+}
 
 /** Paso 4 — formato de descarga y confirmación final. */
 const StepFormat = ({ wizard }: { wizard: NewsletterWizard }) => (
@@ -33,6 +41,8 @@ const StepFormat = ({ wizard }: { wizard: NewsletterWizard }) => (
                 )
             })}
         </div>
+
+        <p className="-mt-2.5 mb-[18px] text-[12.5px] text-muted-foreground">{FORMAT_HINT[wizard.format]}</p>
 
         <div className="flex items-center gap-3 rounded-xl border border-[#cdeed7] bg-[#ecfdf3] p-4 text-[13.5px] text-[#166534]">
             <span className="grid size-6 shrink-0 place-content-center rounded-lg bg-[#d6f5e2] text-[#16a34a]">

@@ -33,6 +33,8 @@ type PptxResponse = ApiResponse<{
 }>
 
 type PdfResponse = ApiResponse<{ url: string; filename: string }>
+/** `format=images`: el ZIP con todas las páginas en `url`, y cada página suelta en `images` */
+type ImagesResponse = ApiResponse<{ url: string; filename: string; pages?: number; images?: { url: string; filename: string }[] }>
 
 const errorMessage = (error: unknown): string => {
     if (error && typeof error === 'object') {
@@ -42,8 +44,8 @@ const errorMessage = (error: unknown): string => {
     return 'Error al generar el boletín. Inténtalo de nuevo.'
 }
 
-const buildReportUrl = (route: string, { templateId, reportType, sections }: ReportParams) => {
-    const query = objectToQueryParams({ sections: sections.join(',') })
+const buildReportUrl = (route: string, { templateId, reportType, sections }: ReportParams, extra: Record<string, string> = {}) => {
+    const query = objectToQueryParams({ sections: sections.join(','), ...extra })
     return route.replace('{templateId}', templateId).replace('{reportType}', reportType) + `?${query}`
 }
 
@@ -63,6 +65,34 @@ export const generatePdfReport = async (params: ReportParams): Promise<void> => 
         }
     } catch (error) {
         console.error('Failed to generate PDF report:', error)
+        markError(id, errorMessage(error))
+    }
+}
+
+/**
+ * IMÁGENES: el backend rinde las mismas páginas del PDF pero las entrega sueltas (una JPEG por
+ * página) y juntas en un ZIP, que es lo que se descarga aquí. Para WhatsApp y redes.
+ */
+export const generateImagesReport = async (params: ReportParams): Promise<void> => {
+    const { addTask, markReady, markError } = useReportTasksStore.getState()
+    const id = addTask({ type: 'images', title: params.title, statusText: 'Solicitando las páginas...' })
+
+    try {
+        const url = buildReportUrl(API_ROUTES.REPORTS.GENERATE_REPORT_PDF, params, { format: 'images' })
+        const response = await HttpService.get<ImagesResponse>(url)
+
+        if (response.success && response.data?.url) {
+            const pages = response.data.pages ?? response.data.images?.length ?? 0
+            markReady(
+                id,
+                { url: response.data.url, filename: response.data.filename },
+                pages ? `${pages} ${pages === 1 ? 'página lista' : 'páginas listas'} en un ZIP` : undefined
+            )
+        } else {
+            markError(id, response.message || 'No se recibieron las imágenes.')
+        }
+    } catch (error) {
+        console.error('Failed to generate images report:', error)
         markError(id, errorMessage(error))
     }
 }

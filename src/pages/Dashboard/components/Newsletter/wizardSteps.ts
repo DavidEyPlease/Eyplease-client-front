@@ -16,7 +16,8 @@ export const wizardStepper = defineStepper([
 
 export type WizardStepId = 'type' | 'template' | 'sections' | 'format'
 
-export type ReportFileType = 'pdf' | 'pptx'
+/** `images` = una imagen por página en un ZIP, para mandarlas por WhatsApp o subirlas a redes */
+export type ReportFileType = 'pdf' | 'pptx' | 'images'
 
 /** Icono + descripción por tipo de boletín (el nombre visible sale de utilData). */
 export const NEWSLETTER_TYPE_META: Record<NewsletterTypes, { icon: LucideIcon; description: string }> = {

@@ -20,6 +20,7 @@ interface Props {
 const TYPE_LABEL: Record<ReportTask['type'], string> = {
     pdf: 'PDF',
     pptx: 'PowerPoint',
+    images: 'Imágenes',
 }
 
 // Tarjeta individual del centro de tareas. Cambia de estilo y de contenido según
@@ -34,17 +35,18 @@ const ReportTaskCard = ({ task, onDownload, onDismiss, onRetry }: Props) => {
     const isReady = task.status === 'ready'
     const isError = task.status === 'error'
 
-    // El PDF no expone progreso real: rotamos mensajes mientras se genera.
+    // Lo que arma el backend (PDF e imágenes) no expone progreso real: rotamos mensajes mientras se genera.
+    const serverSide = task.type !== 'pptx'
     const rotatingMessage = useRotatingMessage(
         PDF_ROTATING_MESSAGES,
-        isGenerating && task.type === 'pdf'
+        isGenerating && serverSide
     )
 
     const statusLine = isError
         ? task.error || 'Ocurrió un error inesperado.'
         : isReady
             ? downloaded ? '¡Descargado!' : task.statusText
-            : isGenerating && task.type === 'pdf'
+            : isGenerating && serverSide
                 ? rotatingMessage
                 : task.statusText
 
