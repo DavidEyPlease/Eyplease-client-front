@@ -4,7 +4,9 @@ export type UserType = 'director' | 'consultant' | 'other'
 export type UnitSize = 'small' | 'medium' | 'large'
 export type DirectorYears = 'lt1' | '1-3' | '3-5' | 'gt5'
 
-export const TRIAL_DAYS = 14
+/** Prueba gratis de los planes de pago: un mes (20-oct-2026, David). La API la toma de `plans.trial_days` (30). */
+export const TRIAL_DAYS = 30
+export const TRIAL_LABEL = '1 mes gratis'
 
 export const PLANS_METADATA: Record<PlanKeys, { audience: string; headline: string, recommendedTagline?: string }> = {
     [PlanKeys.FREE]: {

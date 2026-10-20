@@ -2,7 +2,7 @@ import { Check, Sparkles, Gift } from "lucide-react"
 
 import StepShell from "../components/StepShell"
 import StepPlanRecommendationSkeleton from "./StepPlanRecommendationSkeleton"
-import { PLANS_METADATA, TRIAL_DAYS } from "@/constants/plans"
+import { PLANS_METADATA } from "@/constants/plans"
 import { IPlan, PlanKeys } from "@/interfaces/plans"
 import useFetchQuery from "@/hooks/useFetchQuery"
 import { API_ROUTES } from "@/constants/api"
@@ -89,7 +89,7 @@ const StepPlanRecommendation = ({ planKey, firstName }: Props) => {
                             </span>
                             <div className="flex-1 text-left">
                                 <p className="text-[14px] font-bold">
-                                    Pruébalo {TRIAL_DAYS} días gratis
+                                    Pruébalo un mes gratis
                                 </p>
                                 <p className="text-[12.5px] text-muted-foreground">
                                     Sin cobro automático. Cancela cuando quieras.

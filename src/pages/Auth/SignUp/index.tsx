@@ -124,7 +124,7 @@ const SignUpPage = () => {
                 isFinal={step === totalSteps - 1}
                 nextLabel={
                     currentKey === 'plan'
-                        ? 'Activar 14 días gratis'
+                        ? 'Activar mi mes gratis'
                         : (currentKey === 'otherContext'
                             ? 'Enviar solicitud'
                             : undefined)
