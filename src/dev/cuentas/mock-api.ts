@@ -202,7 +202,7 @@ const TRAININGS: Array<[string, ReturnType<typeof training>[]]> = [
 ]
 
 /* Presentación interactiva de prueba: la página local del Entérate Ya (se sirve aparte, puerto 8778) */
-const TRAINING_WEB = { ...training('tr-web', 'Entérate Ya · Octubre 2026', 'sales', 120), web_url: 'http://localhost:8778/index.html' }
+const TRAINING_WEB = { ...training('tr-web', 'Entérate Ya · Octubre 2026', 'sales', 120), web_url: 'http://localhost:8779/cierre_web_oct2026/index.html' }
 
 const trainingsResponse = () => ({
     recently: { count: 2, items: [TRAINING_WEB, TRAININGS[0][1][0]] },
