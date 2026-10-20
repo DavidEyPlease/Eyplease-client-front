@@ -93,6 +93,10 @@ export const API_ROUTES = {
         CONVERSATION_MESSAGES: '/chat/conversations/{id}/messages',
         DELETE_CONVERSATION: '/chat/conversations/{id}',
     },
+    /** «Invite a una Directora»: su liga para recomendar y a quién ha recomendado */
+    REFERRALS: {
+        MINE: '/referrals/mine',
+    },
     BILLING: {
         OVERVIEW: '/billing/overview',
         PAYMENTS: '/billing/payments',

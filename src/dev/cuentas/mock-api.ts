@@ -389,6 +389,17 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/billing/receipts' && method === 'POST') { sessionStorage.setItem('cuentas:comprobante', '1'); response = respond(null, 201) }
         else if (path === '/billing/card-automation' && method === 'POST') response = respond({ checkout_url: 'https://checkout.stripe.com/c/pay/cs_live_DOMICILIAR_EJEMPLO', first_charge_date: dayOfThisMonth(5, 1), amount: Number(plan.price) || 0 }, 201)
         else if (path.startsWith('/billing/')) response = respond(page([]))
+        else if (path === '/referrals/mine') response = owned.has('unity')
+            ? respond({
+                code: 'DK7M2QX',
+                link: 'https://eyplease.com.mx/?invita=DK7M2QX',
+                next_plan: ({ 'Plan Gratis': 'Plan Básico', 'Plan Básico': 'Plan Ejecutivo', 'Plan Ejecutivo': 'Plan Elite', 'Plan Elite': 'Plan Nacional' } as Record<string, string>)[plan.name] ?? null,
+                referrals: [
+                    { name: 'Gabriela Soto Medina', status: 'rewarded', reward_until: dayOfThisMonth(28, 1) },
+                    { name: 'Karla Montes Aguirre', status: 'joined', reward_until: null },
+                ],
+            })
+            : respond(null, 422)
         else if (path === '/posts') {
             const section = q.get('section') ?? ''
             // Como la API real: una sección que el plan no trae no devuelve nada

@@ -48,8 +48,10 @@ const SignUpPage = () => {
     const values = watch()
 
     // Llegó por una liga de invitación de la app (la misma que muestra la franja de eyplease.com.mx)
+    // Las ligas de recomendación de una Directora son «D» + 6; las de consultora invitando a su Directora, 8 letras
+    const fromDirector = /^d[a-z0-9]{6}$/i.test(invite.inviteCode ?? '')
     const inviteLabel = invite.inviteCode
-        ? 'Te invitó una consultora de tu unidad'
+        ? (fromDirector ? 'Te recomendó una Directora que ya usa Eyplease+' : 'Te invitó una consultora de tu unidad')
         : (invite.unitAccount ? 'Te invitó tu Directora' : null)
 
     return (
@@ -77,7 +79,7 @@ const SignUpPage = () => {
                         errors={errors}
                         name={fullName}
                         onEnter={goNext}
-                        hint={invite.inviteCode ? 'Usa el correo al que te llegó la invitación: así tu consultora recibe sus 3 meses de regalo.' : undefined}
+                        hint={invite.inviteCode && !fromDirector ? 'Usa el correo al que te llegó la invitación: así tu consultora recibe sus 3 meses de regalo.' : undefined}
                     />
                 )}
                 {currentKey === 'phone' && (

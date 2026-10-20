@@ -5,6 +5,7 @@ import BillingHistory from '@/components/billing/BillingHistory'
 import PaymentMethodPanel from '@/components/billing/PaymentMethodPanel'
 import SubscriptionCard from '@/components/billing/SubscriptionCard'
 import useBilling from '@/components/billing/useBilling'
+import ReferralCard from '@/components/referrals/ReferralCard'
 import { useCardAutomationReturn } from '@/components/billing/useCardAutomation'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import '@/pages/Hoy/hoy.css'
@@ -24,6 +25,9 @@ const Billing = () => {
 
             {/* Mientras le aplique (sin deudas, sin promoción, interruptor encendido), la invitación se queda aquí */}
             {overview?.card_automation?.available && <AutomateCardOffer automation={overview.card_automation} />}
+
+            {/* «Invite a una Directora»: su liga y su premio, donde ve lo que paga */}
+            <ReferralCard />
 
             <SectionCard
                 icon={<CreditCardIcon aria-hidden />}
