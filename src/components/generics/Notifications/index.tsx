@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react"
+import { useNavigate } from "react-router"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,17 +14,42 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import useNotifications from "./useNotifications"
 import { formatDate } from "@/utils/dates"
 import { INotification } from "@/interfaces/notification"
+import { APP_ROUTES } from "@/constants/app"
+
+/**
+ * Los avisos traen la ruta de la APP (`navigateTo` + `navigateParam`); aquí se traduce a la de
+ * la web. Lo que la web no tiene se queda sin destino (el clic sólo cierra el menú).
+ */
+const destinoEnLaWeb = (data: INotification['data']): string | null => {
+    const param = data?.navigateParam ? String(data.navigateParam) : ''
+    switch (data?.navigateTo) {
+        /* La presentación regresa sola al listado si el tema no tiene una */
+        case '/training-detail': return param ? APP_ROUTES.TRAININGS.WEB.replace(':id', encodeURIComponent(param)) : APP_ROUTES.TRAININGS.LIST
+        case '/training': return APP_ROUTES.TRAININGS.LIST
+        case '/news': return APP_ROUTES.POSTS.LIST
+        case '/tools': return APP_ROUTES.TOOLS
+        case '/services':
+        case '/service-detail': return APP_ROUTES.SERVICES
+        case '/newsletter': return APP_ROUTES.HOME.NEWSLETTER
+        default: return null
+    }
+}
 
 export function NotificationsDropdown() {
     const [isOpen, setIsOpen] = useState(false)
     const { notifications, unreadCount, markAsRead } = useNotifications()
+    const navigate = useNavigate()
 
     const onOpenChange = useCallback((open: boolean) => {
         setIsOpen(open)
         if (open) markAsRead()
     }, [markAsRead])
 
-    const onOpenNotification = (notification: INotification) => console.log(notification)
+    const onOpenNotification = (notification: INotification) => {
+        setIsOpen(false)
+        const destino = destinoEnLaWeb(notification.data)
+        if (destino) navigate(destino)
+    }
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
