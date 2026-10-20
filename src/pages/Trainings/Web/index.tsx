@@ -5,6 +5,8 @@ import { API_ROUTES } from "@/constants/api"
 import { APP_ROUTES } from "@/constants/app"
 import useFetchQuery from "@/hooks/useFetchQuery"
 import { ITraining } from "@/interfaces/trainings"
+import LOGO_CLARO from "@/assets/images/eyplease-logo-color.png"
+import LOGO_OSCURO from "@/assets/images/eyplease-logo-fondo-oscuro.png"
 import useAuthStore from "@/store/auth"
 
 /**
@@ -82,13 +84,16 @@ const TrainingWebPage = () => {
     return (
         <div className="grid h-dvh place-content-center bg-background px-6">
             <div className="flex w-[min(360px,86vw)] flex-col items-center gap-5 text-center">
-                <div className="text-[64px] leading-none font-extrabold tracking-tight tabular-nums text-primary">
+                <img src={LOGO_CLARO} alt="Eyplease+" className="w-24 animate-[eypflota_2.4s_ease-in-out_infinite_alternate] drop-shadow-[0_14px_18px_rgba(78,49,192,.28)] dark:hidden" />
+                <img src={LOGO_OSCURO} alt="Eyplease+" className="hidden w-24 animate-[eypflota_2.4s_ease-in-out_infinite_alternate] drop-shadow-[0_14px_18px_rgba(44,212,217,.25)] dark:block" />
+                <div className="bg-[linear-gradient(90deg,#4E31C0,#6C47FF,#2CD4D9)] bg-clip-text text-[64px] leading-none font-extrabold tracking-tight tabular-nums text-transparent">
                     {Math.round(avance)}<span className="text-3xl">%</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-primary/10">
-                    <div className="h-full rounded-full bg-primary-gradient transition-[width] duration-300" style={{ width: `${avance}%` }} />
+                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#4E31C0,#6C47FF,#2CD4D9)] transition-[width] duration-300" style={{ width: `${avance}%` }} />
                 </div>
                 <p className="text-sm font-semibold text-muted-foreground">{paso}</p>
+                <p className="text-[10.5px] font-bold tracking-[.2em] text-muted-foreground/60 uppercase">Presentación interactiva · eyplease+</p>
 
                 {error && (
                     <div className="flex flex-wrap justify-center gap-2">

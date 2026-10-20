@@ -362,3 +362,5 @@
   font-size: 0.75rem;
   font-weight: 700;
 }
+/* Logo que flota en la puerta de las presentaciones interactivas */
+@keyframes eypflota { from { transform: translateY(-5px) rotate(-3deg) } to { transform: translateY(5px) rotate(3deg) } }
