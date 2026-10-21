@@ -81,6 +81,9 @@ export const API_ROUTES = {
     },
     REPORTS: {
         PREFERENCES: '/reports/preferences',
+        /* La data cruda de cada sección (la misma del PDF), sin diseño: la usa el boletín interactivo */
+        UNITY: '/reports/unity',
+        NATIONAL: '/reports/national',
         LIST_UPLOADS: '/reports/uploads',
         UPLOAD: '/reports/upload',
         GENERATE_REPORT_PDF: '/reports/generate-pdf/{templateId}/{reportType}',

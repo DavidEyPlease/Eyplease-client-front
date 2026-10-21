@@ -18,6 +18,7 @@ export const APP_ROUTES = {
     HOME: {
         INITIAL: '/dashboard',
         NEWSLETTER: '/newsletter',
+        NEWSLETTER_INTERACTIVE: '/newsletter/interactivo',
         PROFILE: '/profile',
         GALLERY: '/gallery',
         MY_CLIENTS: '/my-clients',

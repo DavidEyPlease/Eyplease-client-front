@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowRightIcon, CheckIcon, DownloadIcon, EyeIcon, EyeOffIcon, FileTextIcon, PresentationIcon, SlidersHorizontalIcon } from 'lucide-react'
+import { ArrowRightIcon, CheckIcon, DownloadIcon, EyeIcon, EyeOffIcon, FileTextIcon, PresentationIcon, SlidersHorizontalIcon, SparklesIcon } from 'lucide-react'
 
 import ContentPreferencesSheet from '@/components/reportPreferences/ContentPreferencesSheet'
 import { hiddenSummaryLabel } from '@/components/reportPreferences/utils'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { APP_ROUTES } from '@/constants/app'
+import { NewsletterTypes } from '@/interfaces/common'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
@@ -167,6 +168,14 @@ const NewsletterStudio = () => {
                                 </div>
                             )}
                             {!submitted && !wizard.sections.length && !!type && <p className="mt-2 text-[12px] text-amber-700 dark:text-amber-400">Elige al menos una sección para generar.</p>}
+
+                            {/* El mismo boletín, para presentarlo: no se genera nada, se abre en la web */}
+                            {type === NewsletterTypes.UNITY && (
+                                <Link to={`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?plantilla=${selected.id}`} className="mt-3 flex w-fit items-center gap-2 rounded-[13px] bg-[#6C47FF]/10 py-2 pr-2 pl-3.5 text-[13px] font-bold text-[#6C47FF] transition-colors hover:bg-[#6C47FF]/18 dark:text-[#C4B5FF]">
+                                    <SparklesIcon className="size-4" /> Ver el boletín interactivo
+                                    <span className={cn(TAG, 'bg-[#E5077D]/12 text-[#E5077D]')}>Nuevo</span>
+                                </Link>
+                            )}
                         </div>
                     </div>
                 ) : (

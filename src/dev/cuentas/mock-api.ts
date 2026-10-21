@@ -3,6 +3,7 @@
 // producción (19-sep-2026); la gente y las piezas son inventadas. No entra en el build.
 import plans from './planes.json'
 import utilData from './util-data.json'
+import { boletinUnidadDemo } from './boletin-demo'
 
 export type DemoPlan = typeof plans[number]
 export const PLANS: DemoPlan[] = plans
@@ -491,6 +492,8 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             response = respond(uploads)
         }
         else if (path.startsWith('/reports/generate-')) response = respond(null, 403)
+        /* El boletín interactivo: la data cruda de unidad, con la forma de la API real */
+        else if (path === '/reports/unity') response = owned.has('unit_newsletter') ? respond(boletinUnidadDemo(q.get('year_month'))) : respond(null, 403)
         else if (path === '/reports/preferences') {
             // Como la API real: sólo los boletines que su plan trae, con las secciones del catálogo
             const newsletters = (utilData.newsletters as Array<{ code: string, name: string, sections: Array<{ sectionKey: string, name: string }> }>)
