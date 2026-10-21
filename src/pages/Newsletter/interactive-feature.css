@@ -1,0 +1,83 @@
+/* El bloque «Nuevo · Boletín interactivo» de la página Boletín. Clases con prefijo `ifx-`. */
+.ifx {
+    background:
+        radial-gradient(60% 90% at 100% 0%, rgba(44, 212, 217, .35), transparent 60%),
+        radial-gradient(50% 70% at 0% 100%, rgba(229, 7, 125, .25), transparent 60%),
+        linear-gradient(135deg, #24104f 0%, #4E31C0 55%, #3b2aa8 100%);
+    box-shadow: 0 30px 70px -36px rgba(40, 20, 120, .9);
+}
+
+.ifx-stage {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: 18px;
+    overflow: hidden;
+    background: radial-gradient(120% 90% at 50% 0%, #2a1520 0%, #120a10 60%, #07040a 100%);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 24px 50px -24px rgba(0, 0, 0, .8);
+}
+.ifx-kicker {
+    position: absolute; left: 7%; top: 9%;
+    font: 700 clamp(13px, 2.2vw, 20px) / 1 "Didot", "Bodoni 72", Georgia, serif;
+    background: linear-gradient(180deg, #fff3d8, #e6bd6b 60%, #b98a3e);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.ifx-podium {
+    position: absolute; left: 8%; right: 8%; bottom: 13%; height: 62%;
+    display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 6%; align-items: end;
+}
+.ifx-pd { display: flex; flex-direction: column; align-items: center; gap: 8%; height: 100%; justify-content: flex-end; }
+.ifx-pd i { display: block; width: 100%; border-radius: 6px 6px 0 0; }
+.ifx-1 i { height: 46%; background: linear-gradient(135deg, #FFE7A3, #E3B04B 55%, #A9772A); }
+.ifx-2 i { height: 32%; background: linear-gradient(135deg, #F7F7FB, #C9CAD6 55%, #8E90A2); }
+.ifx-3 i { height: 22%; background: linear-gradient(135deg, #F2C09A, #C17A43 55%, #87501F); }
+.ifx-av {
+    position: relative; display: grid; place-items: center;
+    width: 48%; aspect-ratio: 1; border-radius: 50%;
+    background: linear-gradient(135deg, #3d2632, #6e4456); color: #f6dfb0;
+    font: 700 clamp(11px, 1.6vw, 15px) "Didot", Georgia, serif;
+}
+.ifx-1 .ifx-av { width: 56%; box-shadow: 0 0 0 2px #E3B04B, 0 0 18px rgba(227, 176, 75, .55); }
+.ifx-2 .ifx-av { box-shadow: 0 0 0 2px #C9CAD6; }
+.ifx-3 .ifx-av { box-shadow: 0 0 0 2px #C17A43; }
+.ifx-crown {
+    width: 30%; aspect-ratio: 64 / 44; background: #E3B04B;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path d='M4 14l14 12L32 4l14 22 14-12-6 26H10z'/></svg>") center / contain no-repeat;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path d='M4 14l14 12L32 4l14 22 14-12-6 26H10z'/></svg>") center / contain no-repeat;
+    filter: drop-shadow(0 2px 6px rgba(227, 176, 75, .6));
+}
+.ifx-spark {
+    position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fff3d8;
+    box-shadow: 0 0 8px 2px rgba(233, 199, 123, .7);
+    animation: ifx-twinkle 2.4s ease-in-out infinite;
+}
+.ifx-bar { position: absolute; left: 8%; right: 8%; bottom: 6%; height: 3px; border-radius: 9px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+.ifx-bar i { position: absolute; inset: 0; transform-origin: left; background: #E9C77B; animation: ifx-progress 6s linear infinite; }
+
+/* El podio se arma en bucle: 3.º, 2.º y el 1.º cae; después respira y vuelve a empezar */
+.ifx-3 { animation: ifx-climb 6s ease-out infinite; }
+.ifx-2 { animation: ifx-climb 6s ease-out infinite; animation-delay: .35s; }
+.ifx-1 { animation: ifx-drop 6s cubic-bezier(.3, .7, .3, 1) infinite; animation-delay: .8s; }
+.ifx-1 .ifx-crown { animation: ifx-crown 6s ease-out infinite; animation-delay: .8s; }
+
+@keyframes ifx-climb {
+    0% { opacity: 0; transform: translateY(30%); }
+    12%, 88% { opacity: 1; transform: none; }
+    100% { opacity: 0; transform: none; }
+}
+@keyframes ifx-drop {
+    0%, 4% { opacity: 0; transform: translateY(-60%); }
+    14% { opacity: 1; transform: translateY(4%); }
+    18%, 86% { opacity: 1; transform: none; }
+    100% { opacity: 0; }
+}
+@keyframes ifx-crown {
+    0%, 16% { opacity: 0; transform: translateY(-40%) scale(.5) rotate(-20deg); }
+    24%, 86% { opacity: 1; transform: none; }
+    100% { opacity: 0; }
+}
+@keyframes ifx-twinkle { 50% { opacity: .25; transform: scale(.6); } }
+@keyframes ifx-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .ifx-stage *, .ifx-stage *::before { animation: none !important; opacity: 1 !important; transform: none !important; }
+}

@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { ArrowLeftIcon, MonitorIcon, SmartphoneIcon } from 'lucide-react'
+import { ArrowLeftIcon, CheckIcon, ChevronDownIcon, EyeOffIcon, MonitorIcon, SlidersHorizontalIcon, SmartphoneIcon } from 'lucide-react'
 
 import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
 import useFetchQuery from '@/hooks/useFetchQuery'
 import { NewsletterTypes, Template } from '@/interfaces/common'
 import { cn } from '@/lib/utils'
+import ContentPreferencesSheet from '@/components/reportPreferences/ContentPreferencesSheet'
 import { useReportPreferences } from '@/components/reportPreferences/useReportPreferences'
+import { isSectionHidden } from '@/components/reportPreferences/utils'
 import useAuthStore from '@/store/auth'
 import '@/pages/Hoy/hoy.css'
 import { BoletinPlayer, createBoletinPlayer, SKINS } from './engine/player'
@@ -18,6 +20,8 @@ const CARD = 'shell-glass hoy-rise rounded-[22px] p-[18px]'
 const SEGMENT = 'inline-flex flex-wrap rounded-xl bg-foreground/5 p-[3px]'
 const SEGMENT_ITEM = 'flex h-8 cursor-pointer items-center gap-1.5 rounded-[9px] px-3 text-[12px] font-bold transition-colors'
 const SKIN_KEY = 'boletin-interactivo:piel'
+/* Las secciones apagadas son de la presentación de ESE mes: el mes siguiente arranca con todo */
+const OFF_KEY = (yearMonth: string) => `boletin-interactivo:apagadas:${yearMonth}`
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
 /** El mes del boletín por defecto es el anterior, igual que el PDF (`getReportDates`). */
@@ -39,6 +43,15 @@ const artOf = (template?: Template): string | undefined => {
     const cover = (template?.unity_background_horizontal as { covers?: Record<string, string> } | undefined)?.covers?.honor_roll
     const fromCovers = cover?.match(/^(.*)\/horizontal\/[^/]+$/)?.[1]
     return fromCovers ?? templateArtBase(template?.picture?.url)
+}
+
+const readOff = (yearMonth: string): string[] => {
+    try {
+        const list: unknown = JSON.parse(localStorage.getItem(OFF_KEY(yearMonth)) ?? '[]')
+        return Array.isArray(list) ? list.filter((key): key is string => typeof key === 'string') : []
+    } catch {
+        return []
+    }
 }
 
 const readSkin = (): SkinKey | null => {
@@ -94,6 +107,34 @@ const NewsletterInteractivePage = () => {
         })
     }, [response, user, yearMonth, preferences.saved, arte])
 
+    /* Prender y apagar secciones, sólo para esta presentación (lo permanente es «Personalizar contenido») */
+    const [offByMonth, setOffByMonth] = useState<Record<string, string[]>>({})
+    const apagadas = useMemo(() => new Set(offByMonth[yearMonth] ?? readOff(yearMonth)), [offByMonth, yearMonth])
+    const saveOff = (next: Set<string>) => {
+        setOffByMonth(current => ({ ...current, [yearMonth]: [...next] }))
+        try {
+            if (next.size) localStorage.setItem(OFF_KEY(yearMonth), JSON.stringify([...next]))
+            else localStorage.removeItem(OFF_KEY(yearMonth))
+        } catch { /* sin almacenamiento: vale para esta visita */ }
+    }
+    const toggleSeccion = (key: string) => {
+        const next = new Set(apagadas)
+        if (next.has(key)) next.delete(key)
+        else next.add(key)
+        saveOff(next)
+    }
+    const secciones = data?.secciones ?? []
+    const encendidas = secciones.filter(seccion => !apagadas.has(seccion.key)).length
+    const shown = useMemo(() => (data ? { ...data, secciones: data.secciones.filter(seccion => !apagadas.has(seccion.key)) } : null), [data, apagadas])
+
+    /* Las que ocultó en «Personalizar contenido»: se enseñan para que sepa por qué no salen */
+    const [sheetOpen, setSheetOpen] = useState(false)
+    /* En el teléfono la lista se pliega para que el boletín quede a la vista */
+    const [chipsOpen, setChipsOpen] = useState(() => window.innerWidth >= 720)
+    const ocultas = useMemo(() => preferences.catalog?.newsletters
+        .find(newsletter => newsletter.code === NewsletterTypes.UNITY)?.sections
+        .filter(section => isSectionHidden(preferences.saved, NewsletterTypes.UNITY, section)) ?? [], [preferences.catalog, preferences.saved])
+
     /* El reproductor se arma una vez por boletín; piel y formato se le cambian en vivo */
     const hostRef = useRef<HTMLDivElement>(null)
     const playerRef = useRef<BoletinPlayer | null>(null)
@@ -101,14 +142,14 @@ const NewsletterInteractivePage = () => {
     viewRef.current = { skin: activeSkin, format }
 
     useEffect(() => {
-        if (!hostRef.current || !data?.secciones.length) return
-        const player = createBoletinPlayer(hostRef.current, data, viewRef.current)
+        if (!hostRef.current || !shown?.secciones.length) return
+        const player = createBoletinPlayer(hostRef.current, shown, viewRef.current)
         playerRef.current = player
         return () => {
             player.destroy()
             playerRef.current = null
         }
-    }, [data])
+    }, [shown])
 
     useEffect(() => { playerRef.current?.setSkin(activeSkin) }, [activeSkin])
     useEffect(() => { playerRef.current?.setFormat(format) }, [format])
@@ -169,6 +210,55 @@ const NewsletterInteractivePage = () => {
                 </section>
             )}
 
+            {hasUnity && (secciones.length > 0 || ocultas.length > 0) && (
+                <section className={CARD} style={{ '--i': 2 } as React.CSSProperties}>
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                        <button type="button" aria-expanded={chipsOpen} onClick={() => setChipsOpen(open => !open)} className="flex min-w-0 cursor-pointer items-start gap-2 text-left">
+                            <span className="min-w-0">
+                                <span className="block text-[15px] font-extrabold tracking-tight">Secciones de la presentación</span>
+                                <span className="block text-[12px] text-muted-foreground">{encendidas} de {secciones.length} · prende o apaga para esta presentación; lo permanente va en «Personalizar contenido»</span>
+                            </span>
+                            <ChevronDownIcon className={cn('mt-1 size-4 shrink-0 text-muted-foreground transition-transform', chipsOpen && 'rotate-180')} />
+                        </button>
+                        <div className="flex gap-2">
+                            {chipsOpen && secciones.length > 1 && (
+                                <button type="button" onClick={() => saveOff(apagadas.size ? new Set() : new Set(secciones.map(seccion => seccion.key)))} className="h-8 cursor-pointer rounded-[11px] bg-foreground/5 px-3 text-[12px] font-bold transition-colors hover:bg-foreground/10">
+                                    {apagadas.size ? 'Prender todas' : 'Apagar todas'}
+                                </button>
+                            )}
+                            <button type="button" onClick={() => setSheetOpen(true)} className="flex h-8 cursor-pointer items-center gap-1.5 rounded-[11px] bg-[#6C47FF]/10 px-3 text-[12px] font-bold text-[#6C47FF] transition-colors hover:bg-[#6C47FF]/18 dark:text-[#C4B5FF]">
+                                <SlidersHorizontalIcon className="size-3.5" /> Personalizar contenido
+                            </button>
+                        </div>
+                    </div>
+
+                    {chipsOpen && <div className="mt-3.5 flex flex-wrap gap-2">
+                        {secciones.map(seccion => {
+                            const on = !apagadas.has(seccion.key)
+                            return (
+                                <button
+                                    key={seccion.key}
+                                    type="button"
+                                    aria-pressed={on}
+                                    onClick={() => toggleSeccion(seccion.key)}
+                                    className={cn('inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border px-3.5 text-[12.5px] font-semibold transition-colors', on ? 'border-[#6C47FF]/35 bg-[#6C47FF]/10 text-[#6C47FF] dark:text-[#C4B5FF]' : 'bg-card/60 text-muted-foreground hover:border-[#6C47FF]/35')}
+                                >
+                                    <span className={cn('grid size-[15px] place-items-center rounded-[5px] border-[1.5px] transition-colors', on ? 'border-[#6C47FF] bg-[#6C47FF] text-white' : 'border-border')}>
+                                        {on && <CheckIcon className="size-2.5" strokeWidth={3.5} />}
+                                    </span>
+                                    {seccion.titulo}
+                                </button>
+                            )
+                        })}
+                        {ocultas.map(section => (
+                            <button key={section.section_key} type="button" title="Oculta por tu configuración. Toca para cambiarla." onClick={() => setSheetOpen(true)} className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-dashed px-3.5 text-[12.5px] font-medium text-muted-foreground/80">
+                                <EyeOffIcon className="size-3.5" /> {section.name}
+                            </button>
+                        ))}
+                    </div>}
+                </section>
+            )}
+
             {!hasUnity ? (
                 <section className={CARD}>
                     <h2 className="text-[15px] font-extrabold tracking-tight">Tu plan no incluye el boletín de unidad</h2>
@@ -188,9 +278,17 @@ const NewsletterInteractivePage = () => {
                     <p className="mt-1 text-[13px] text-muted-foreground">En cuanto estén cargados los reportes del mes, tu boletín aparece aquí solo.</p>
                     <Link to={APP_ROUTES.REPORTS} className="mt-3 inline-flex h-9 items-center rounded-[11px] bg-[#6C47FF]/10 px-3 text-[12.5px] font-bold text-[#6C47FF] dark:text-[#C4B5FF]">Ver mis reportes</Link>
                 </section>
+            ) : !encendidas ? (
+                <section className={CARD}>
+                    <h2 className="text-[15px] font-extrabold tracking-tight">Apagaste todas las secciones</h2>
+                    <p className="mt-1 text-[13px] text-muted-foreground">Prende al menos una para presentar tu boletín.</p>
+                    <button type="button" onClick={() => saveOff(new Set())} className="hoy-cta mt-3 h-10 cursor-pointer rounded-[13px] px-5 text-[13px] font-bold text-white">Prender todas</button>
+                </section>
             ) : (
-                <div ref={hostRef} className="hoy-rise" style={{ '--i': 2 } as React.CSSProperties} />
+                <div ref={hostRef} className="hoy-rise" style={{ '--i': 3 } as React.CSSProperties} />
             )}
+
+            <ContentPreferencesSheet open={sheetOpen} preferences={preferences} newsletterCode={NewsletterTypes.UNITY} onOpenChange={setSheetOpen} />
         </div>
     )
 }

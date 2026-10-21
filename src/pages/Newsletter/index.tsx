@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowRightIcon, CheckIcon, DownloadIcon, EyeIcon, EyeOffIcon, FileTextIcon, PresentationIcon, SlidersHorizontalIcon, SparklesIcon } from 'lucide-react'
+import { ArrowRightIcon, CheckIcon, DownloadIcon, EyeIcon, EyeOffIcon, FileTextIcon, PresentationIcon, SlidersHorizontalIcon } from 'lucide-react'
 
 import ContentPreferencesSheet from '@/components/reportPreferences/ContentPreferencesSheet'
 import { hiddenSummaryLabel } from '@/components/reportPreferences/utils'
@@ -16,6 +16,7 @@ import { useNewsletterWizard } from '@/pages/Dashboard/components/Newsletter/use
 import { NEWSLETTER_TYPE_META, ReportFileType } from '@/pages/Dashboard/components/Newsletter/wizardSteps'
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import '@/pages/Hoy/hoy.css'
+import InteractiveFeature from '@/pages/Newsletter/InteractiveFeature'
 import { NEWSLETTER_TAG } from '@/pages/Reports/lib'
 import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
@@ -128,8 +129,14 @@ const NewsletterStudio = () => {
                 </section>
             )}
 
+            {/* El interactivo va aparte: es otra forma de entregar el boletín, no una opción de la plantilla */}
+            {type === NewsletterTypes.UNITY && <InteractiveFeature />}
+
             {/* La plantilla elegida, en grande: es lo que se va a generar */}
-            <section className={cn(CARD, 'hoy-edge p-5')} style={rise(2)}>
+            <section className={cn(CARD, 'hoy-edge p-5')} style={rise(3)}>
+                <p className="mb-4 flex items-center gap-2 text-[10.5px] font-extrabold tracking-[.14em] text-muted-foreground uppercase">
+                    <DownloadIcon className="size-3.5" /> Para descargar · PDF o PowerPoint
+                </p>
                 {selected ? (
                     <div className="grid items-center gap-x-7 gap-y-5 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
                         <button type="button" onClick={() => wizard.setPreviewTemplateId(selected.id)} className="group relative block cursor-zoom-in overflow-hidden rounded-[18px] shadow-[0_24px_60px_-24px_rgba(27,20,80,.55)]">
@@ -169,13 +176,6 @@ const NewsletterStudio = () => {
                             )}
                             {!submitted && !wizard.sections.length && !!type && <p className="mt-2 text-[12px] text-amber-700 dark:text-amber-400">Elige al menos una sección para generar.</p>}
 
-                            {/* El mismo boletín, para presentarlo: no se genera nada, se abre en la web */}
-                            {type === NewsletterTypes.UNITY && (
-                                <Link to={`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?plantilla=${selected.id}`} className="mt-3 flex w-fit items-center gap-2 rounded-[13px] bg-[#6C47FF]/10 py-2 pr-2 pl-3.5 text-[13px] font-bold text-[#6C47FF] transition-colors hover:bg-[#6C47FF]/18 dark:text-[#C4B5FF]">
-                                    <SparklesIcon className="size-4" /> Ver el boletín interactivo
-                                    <span className={cn(TAG, 'bg-[#E5077D]/12 text-[#E5077D]')}>Nuevo</span>
-                                </Link>
-                            )}
                         </div>
                     </div>
                 ) : (
@@ -186,7 +186,7 @@ const NewsletterStudio = () => {
                 )}
             </section>
 
-            <section className={CARD} style={rise(3)}>
+            <section className={CARD} style={rise(4)}>
                 <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3">
                     <h2 className="text-[15px] font-extrabold tracking-tight">Todas las plantillas</h2>
                     <small className="text-[11.5px] text-muted-foreground">De la más nueva a la primera · elige una y cambia arriba</small>
@@ -220,7 +220,7 @@ const NewsletterStudio = () => {
             </section>
 
             {!!type && (
-                <section className={CARD} style={rise(4)}>
+                <section className={CARD} style={rise(5)}>
                     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                         <div>
                             <h2 className="text-[15px] font-extrabold tracking-tight">Secciones de este boletín</h2>

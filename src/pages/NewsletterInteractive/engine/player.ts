@@ -858,6 +858,8 @@ export function createBoletinPlayer(host: HTMLElement, B: BoletinData, options: 
         if (activo?.tagName === 'INPUT') { if (e.key === 'Escape') closeSheet(); return }
         const fuera = e.target as HTMLElement | null
         if (fuera && fuera !== host && fuera.closest?.('input, textarea, select, [contenteditable="true"]')) return
+        /* La barra espaciadora sobre un botón de la página (p. ej. prender una sección) es de ese botón */
+        if (e.key === ' ' && fuera && fuera !== host && fuera.closest?.('button, a, [role="button"]')) return
         if (e.key === 'Escape') { closeSheet(); return }
         if (!enVista()) return
         if (e.key === 'ArrowRight') { e.preventDefault(); go(state.ch + 1) }
