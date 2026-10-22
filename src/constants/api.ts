@@ -81,8 +81,11 @@ export const API_ROUTES = {
     },
     REPORTS: {
         PREFERENCES: '/reports/preferences',
-        /* La data cruda de cada sección (la misma del PDF), sin diseño: la usa el boletín interactivo */
+        /* La data cruda de cada sección (la misma del PDF), sin diseño */
         UNITY: '/reports/unity',
+        /* El boletín dinámico (el cierre del mes contado cómo pasó) y lo que la Directora decide de él */
+        BOLETIN_DINAMICO: '/reports/boletin-dinamico',
+        BOLETIN_DINAMICO_AJUSTES: '/reports/boletin-dinamico/ajustes',
         NATIONAL: '/reports/national',
         LIST_UPLOADS: '/reports/uploads',
         UPLOAD: '/reports/upload',

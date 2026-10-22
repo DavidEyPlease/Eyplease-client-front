@@ -3,7 +3,7 @@
 // producción (19-sep-2026); la gente y las piezas son inventadas. No entra en el build.
 import plans from './planes.json'
 import utilData from './util-data.json'
-import { boletinUnidadDemo } from './boletin-demo'
+import { boletinDinamicoDemo } from './boletin-dinamico-demo'
 
 export type DemoPlan = typeof plans[number]
 export const PLANS: DemoPlan[] = plans
@@ -493,7 +493,11 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         }
         else if (path.startsWith('/reports/generate-')) response = respond(null, 403)
         /* El boletín interactivo: la data cruda de unidad, con la forma de la API real */
-        else if (path === '/reports/unity') response = owned.has('unit_newsletter') ? respond(boletinUnidadDemo(q.get('year_month'))) : respond(null, 403)
+        else if (path === '/reports/boletin-dinamico') response = owned.has('unit_newsletter') ? respond(boletinDinamicoDemo(q.get('year_month'))) : respond(null, 403)
+        else if (path === '/reports/boletin-dinamico/ajustes' && method === 'PUT') {
+            const cambios = JSON.parse(String(init?.body ?? '{}'))
+            response = respond({ tempraneras: { activa: cambios.tempraneras_activa ?? true, hasta: cambios.tempraneras_hasta ?? 10 }, mensaje: cambios.mensaje ?? null })
+        }
         else if (path === '/reports/preferences') {
             // Como la API real: sólo los boletines que su plan trae, con las secciones del catálogo
             const newsletters = (utilData.newsletters as Array<{ code: string, name: string, sections: Array<{ sectionKey: string, name: string }> }>)

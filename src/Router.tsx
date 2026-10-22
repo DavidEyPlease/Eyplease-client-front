@@ -45,10 +45,11 @@ const Router = () => {
             <Route path={APP_ROUTES.AUTH.CHANGE_PASSWORD} element={isLogged ? <Navigate to='/dashboard' /> : <ResetPasswordPage />} />
             {/* Fuera de MainLayout: es la puerta que manda a la presentación (exige sesión por su cuenta) */}
             <Route path={APP_ROUTES.TRAININGS.WEB} element={<TrainingWebPage />} />
+            {/* El boletín dinámico también va a pantalla completa: trae su propia barra y su Modo junta */}
+            <Route path={APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE} element={<NewsletterInteractivePage />} />
             <Route element={<MainLayout />}>
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
                 <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />
-                <Route path={APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE} element={<NewsletterInteractivePage />} />
                 <Route path={APP_ROUTES.INDICATORS} element={<IndicatorsPage />} />
                 <Route path={APP_ROUTES.MY_UNIT} element={<MyUnitPage />} />
                 <Route path={APP_ROUTES.HOME.GALLERY} element={<GalleryPage />} />

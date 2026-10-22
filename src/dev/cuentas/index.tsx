@@ -4,6 +4,7 @@
 //   …&rango=national_director                              (por defecto: Directora; el Standard entra como consultora)
 //   …&ir=/indicators                                       (página en la que abre; por defecto el Inicio)
 //   …&cobro=aldia|toca|atrasado                            (cómo va su pago; por defecto «toca»)
+//   …&boletin=sin-ordenes                                  (el boletín dinámico sin acceso del robot a sus órdenes)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useLocation } from 'react-router'
@@ -27,6 +28,11 @@ else if (params.has('plan')) sessionStorage.removeItem('cuentas:rango')
 
 const cobro = params.get('cobro')
 if (cobro) sessionStorage.setItem('cuentas:cobro', cobro)
+
+// El boletín dinámico de una Directora que no nos dio su acceso a Mary Kay: sin órdenes (…&boletin=sin-ordenes)
+const boletin = params.get('boletin')
+if (boletin) sessionStorage.setItem('cuentas:boletin', boletin)
+else if (params.has('plan')) sessionStorage.removeItem('cuentas:boletin')
 
 /*
  * OJO: cambiar de cuenta hace `location.replace('/dashboard')`, una recarga COMPLETA que SALE del

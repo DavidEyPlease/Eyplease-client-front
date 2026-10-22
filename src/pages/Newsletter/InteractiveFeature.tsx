@@ -1,19 +1,19 @@
 import { Link } from 'react-router'
-import { ArrowRightIcon, MonitorPlayIcon, SearchIcon, SlidersHorizontalIcon } from 'lucide-react'
+import { ArrowRightIcon, MonitorPlayIcon, SlidersHorizontalIcon, TrophyIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
 import { reportMonthLabel } from '@/utils/dates'
 import './interactive-feature.css'
 
 const PUNTOS = [
-    { icon: MonitorPlayIcon, text: 'Cada sección con su propia animación: podio, escalera, anillos de Círculo Rosa…' },
-    { icon: SearchIcon, text: 'Cada consultora se busca y ve todo lo que logró en el mes y lo que le sigue.' },
-    { icon: SlidersHorizontalIcon, text: 'Prende o apaga secciones antes de presentar. En pantalla completa o en el teléfono.' },
+    { icon: TrophyIcon, text: 'La carrera del Cuadro de Honor día por día: quién iba primero y quién la rebasó con su orden.' },
+    { icon: MonitorPlayIcon, text: 'Estrellas, descuentos y corazones, Círculo Rosa, iniciadoras, Camino al Éxito, productos y más.' },
+    { icon: SlidersHorizontalIcon, text: 'Modo junta para presentarlo en pantalla completa; Tempraneras y tu mensaje, si los quieres.' },
 ]
 
 /**
- * El boletín interactivo, presentado como lo que es: otra forma de entregar el boletín, no una
- * opción de la plantilla. Por eso va en su propio bloque y no junto al botón de generar.
+ * El boletín dinámico, presentado como lo que es: otra forma de entregar el boletín, no una opción de la
+ * plantilla. Por eso va en su propio bloque y no junto al botón de generar.
  */
 const InteractiveFeature = () => (
     <section className="ifx hoy-rise relative overflow-hidden rounded-[22px] p-5 text-white md:p-6" style={{ '--i': 2 } as React.CSSProperties}>
@@ -24,7 +24,7 @@ const InteractiveFeature = () => (
                     <span className="text-[10.5px] font-extrabold tracking-[.14em] text-white/70 uppercase">Boletín de unidad · {reportMonthLabel()}</span>
                 </div>
                 <h2 className="mt-2 text-[26px] leading-[1.1] font-extrabold tracking-tight md:text-[30px]">Boletín interactivo</h2>
-                <p className="mt-1.5 max-w-[56ch] text-[14px] text-white/80">Tu boletín de siempre convertido en una premiación: preséntalo en tu junta o en Zoom y deja que tu unidad se encuentre. Mismo contenido que tu PDF, sin descargar nada.</p>
+                <p className="mt-1.5 max-w-[56ch] text-[14px] text-white/80">El cierre del mes contado como pasó, orden por orden: preséntalo en tu junta o en Zoom y que tu unidad vea cómo se ganó cada lugar. Sin descargar nada.</p>
 
                 <ul className="mt-4 grid gap-2">
                     {PUNTOS.map(({ icon: Icon, text }) => (
