@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowRightIcon, CheckIcon, DownloadIcon, EyeIcon, EyeOffIcon, FileTextIcon, PresentationIcon, SlidersHorizontalIcon } from 'lucide-react'
+import { ArrowRightIcon, CheckIcon, DownloadIcon, ExternalLinkIcon, EyeIcon, EyeOffIcon, FileTextIcon, LockIcon, MonitorPlayIcon, PresentationIcon, SlidersHorizontalIcon } from 'lucide-react'
 
 import ContentPreferencesSheet from '@/components/reportPreferences/ContentPreferencesSheet'
 import { hiddenSummaryLabel } from '@/components/reportPreferences/utils'
@@ -17,7 +17,7 @@ import { NEWSLETTER_TYPE_META, ReportFileType } from '@/pages/Dashboard/componen
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import '@/pages/Hoy/hoy.css'
 import InteractiveFeature from '@/pages/Newsletter/InteractiveFeature'
-import { ofrecerBoletinDinamico, puedeVerBoletinDinamico } from '@/pages/NewsletterInteractive/acceso'
+import { LIGA_LO_QUIERO, ofrecerBoletinDinamico, pielDePlantilla, puedeVerBoletinDinamico } from '@/pages/NewsletterInteractive/acceso'
 import { NEWSLETTER_TAG } from '@/pages/Reports/lib'
 import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
@@ -45,6 +45,8 @@ const NewsletterStudio = () => {
     const canUploadReports = useAuthStore(state => state.permissions.includes(PermissionKeys.REPORTS_UPLOAD))
     const [submitted, setSubmitted] = useState(false)
     const [sheetOpen, setSheetOpen] = useState(false)
+    // tercer formato junto a PDF y PowerPoint: la versión interactiva de la plantilla (no se genera: se abre)
+    const [interactivo, setInteractivo] = useState(false)
 
     const { type, newsletters, templates, templateId, setType, setTemplateId } = wizard
 
@@ -71,6 +73,15 @@ const NewsletterStudio = () => {
     const hiddenSummary = hiddenSummaryLabel(wizard.hiddenSummary)
     const canGenerate = !!type && !!templateId && wizard.sections.length > 0
     const previewTemplate = templates.find(template => template.id === wizard.previewTemplateId)
+
+    /* El interactivo es del boletín de unidad. Con Elite o Nacional se abre; a los demás planes se les enseña con
+       candado (ejemplo y subir de plan). Sólo la 9 y la 10 tienen versión interactiva: con otra se ofrece cambiar. */
+    const conInteractivo = type === NewsletterTypes.UNITY && (puedeVerBoletinDinamico(user) || ofrecerBoletinDinamico(user))
+    const interactivoBloqueado = !puedeVerBoletinDinamico(user)
+    const piel = pielDePlantilla(selected?.name)
+    const conVersion = templates.find(template => pielDePlantilla(template.name) === 'p9')
+    const verInteractivo = conInteractivo && interactivo
+    useEffect(() => { if (!conInteractivo) setInteractivo(false) }, [conInteractivo])
 
     const onGenerate = () => {
         if (!canGenerate) return
@@ -137,7 +148,7 @@ const NewsletterStudio = () => {
             {/* La plantilla elegida, en grande: es lo que se va a generar */}
             <section className={cn(CARD, 'hoy-edge p-5')} style={rise(3)}>
                 <p className="mb-4 flex items-center gap-2 text-[10.5px] font-extrabold tracking-[.14em] text-muted-foreground uppercase">
-                    <DownloadIcon className="size-3.5" /> Para descargar · PDF o PowerPoint
+                    <DownloadIcon className="size-3.5" /> {conInteractivo ? 'Tu boletín · PDF, PowerPoint o interactivo' : 'Para descargar · PDF o PowerPoint'}
                 </p>
                 {selected ? (
                     <div className="grid items-center gap-x-7 gap-y-5 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
@@ -153,7 +164,7 @@ const NewsletterStudio = () => {
                             </div>
                             <h2 className="mt-2 text-[24px] leading-tight font-extrabold tracking-tight">{selected.name}</h2>
                             <p className="mt-1 text-[13px] text-muted-foreground">
-                                {wizard.selectedNewsletterName} · {wizard.sections.length} {wizard.sections.length === 1 ? 'sección' : 'secciones'} · {wizard.format === 'pdf' ? 'PDF' : 'PowerPoint'}
+                                {wizard.selectedNewsletterName} · {wizard.sections.length} {wizard.sections.length === 1 ? 'sección' : 'secciones'} · {verInteractivo ? 'Interactivo' : wizard.format === 'pdf' ? 'PDF' : 'PowerPoint'}
                             </p>
 
                             {submitted ? (
@@ -163,18 +174,56 @@ const NewsletterStudio = () => {
                                     <button type="button" onClick={() => setSubmitted(false)} className="cursor-pointer text-[12.5px] font-bold text-primary hover:underline">Generar otro</button>
                                 </div>
                             ) : (
-                                <div className="mt-4 flex flex-wrap items-center gap-2.5">
-                                    <button type="button" disabled={!canGenerate} onClick={onGenerate} className="hoy-cta flex h-11 cursor-pointer items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-bold text-white disabled:cursor-default disabled:opacity-50">
-                                        <DownloadIcon className="size-4" /> Generar boletín
-                                    </button>
-                                    <div className={SEGMENT}>
-                                        {FORMATS.map(({ value, label, icon: Icon }) => (
-                                            <button key={value} type="button" onClick={() => wizard.setFormat(value)} className={cn(SEGMENT_ITEM, wizard.format === value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
-                                                <Icon className="size-3.5" /> {label}
+                                <>
+                                    <div className="mt-4 flex flex-wrap items-center gap-2.5">
+                                        {!verInteractivo ? (
+                                            <button type="button" disabled={!canGenerate} onClick={onGenerate} className="hoy-cta flex h-11 cursor-pointer items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-bold text-white disabled:cursor-default disabled:opacity-50">
+                                                <DownloadIcon className="size-4" /> Generar boletín
                                             </button>
-                                        ))}
+                                        ) : !piel ? (
+                                            /* esta plantilla no tiene versión interactiva: la 9 sí */
+                                            conVersion && (
+                                                <button type="button" onClick={() => setTemplateId(conVersion.id)} className="hoy-cta flex h-11 cursor-pointer items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-bold text-white">
+                                                    <MonitorPlayIcon className="size-4" /> Usar la {conVersion.name}
+                                                </button>
+                                            )
+                                        ) : interactivoBloqueado ? (
+                                            <>
+                                                <Link to={`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?ejemplo=1`} target="_blank" rel="noopener" className="hoy-cta flex h-11 items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-bold text-white">
+                                                    <ExternalLinkIcon className="size-4" /> Ver un ejemplo
+                                                </Link>
+                                                <Link to={LIGA_LO_QUIERO} className="flex h-11 items-center gap-2 rounded-[13px] border px-4 text-[13px] font-bold transition-colors hover:bg-foreground/5">
+                                                    Subir a Elite <ArrowRightIcon className="size-4" />
+                                                </Link>
+                                            </>
+                                        ) : (
+                                            /* en su propia pestaña: la plataforma sigue abierta donde estaba */
+                                            <Link to={`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?piel=${piel}`} target="_blank" rel="noopener" className="hoy-cta flex h-11 items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-bold text-white">
+                                                <MonitorPlayIcon className="size-4" /> Abrir boletín interactivo <ExternalLinkIcon className="size-3.5 opacity-80" />
+                                            </Link>
+                                        )}
+                                        <div className={SEGMENT}>
+                                            {FORMATS.map(({ value, label, icon: Icon }) => (
+                                                <button key={value} type="button" onClick={() => { wizard.setFormat(value); setInteractivo(false) }} className={cn(SEGMENT_ITEM, !verInteractivo && wizard.format === value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+                                                    <Icon className="size-3.5" /> {label}
+                                                </button>
+                                            ))}
+                                            {conInteractivo && (
+                                                <button type="button" onClick={() => setInteractivo(true)} className={cn(SEGMENT_ITEM, verInteractivo ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+                                                    {interactivoBloqueado ? <LockIcon className="size-3.5" /> : <MonitorPlayIcon className="size-3.5" />} Interactivo
+                                                    <span className="rounded-full bg-[#E5077D] px-1.5 py-px text-[9px] leading-tight font-extrabold tracking-wide text-white uppercase">Nuevo</span>
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                    {verInteractivo && (
+                                        <p className="mt-2 text-[12px] text-muted-foreground">
+                                            {!piel ? `La ${selected.name} no tiene versión interactiva; la ${conVersion?.name ?? 'Plantilla 9'} sí.`
+                                                : interactivoBloqueado ? 'Viene en los planes Elite y Nacional: subes y lo abres hoy mismo.'
+                                                : 'El cierre del mes contado como pasó, para presentarlo en tu junta. Se abre en otra pestaña; no se descarga.'}
+                                        </p>
+                                    )}
+                                </>
                             )}
                             {!submitted && !wizard.sections.length && !!type && <p className="mt-2 text-[12px] text-amber-700 dark:text-amber-400">Elige al menos una sección para generar.</p>}
 

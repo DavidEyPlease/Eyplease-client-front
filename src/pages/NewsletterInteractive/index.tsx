@@ -91,7 +91,9 @@ const NewsletterInteractivePage = () => {
 
     /* La carga avanza por pasos reales (cuenta → datos → imágenes) y entre uno y otro se arrastra despacio,
        para que nunca parezca detenida. El boletín se arma al llegar a 100: así su portada se anima ya a la vista. */
-    const piel = pielDelMes(yearMonth)
+    /* la piel la elige la plantilla desde la que se abrió (`?piel=`), o la del mes */
+    const pielPedida = params.get('piel')
+    const piel = !ejemplo && (pielPedida === 'p9' || pielPedida === 'p10') ? pielPedida : pielDelMes(yearMonth)
     /* lo que se está armando: el mes, o el ejemplo */
     const clave = ejemplo ? 'ejemplo' : yearMonth
     const [imagenes, setImagenes] = useState<string | null>(null)
