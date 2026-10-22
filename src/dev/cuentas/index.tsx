@@ -48,6 +48,15 @@ installMockApi(plan, role, params.has('plan') && !params.has('rango') ? null : r
 // Para revisar desde la consola qué pidió la web y qué no estaba previsto
 Object.assign(window, { __cuentas: { plan, role, calls } })
 
+// Lo que la web abre en OTRA pestaña (el boletín interactivo, su ejemplo) se abre también dentro del simulador: una
+// pestaña nueva carga `index.html`, sin la API de mentira, y acabaría en el acceso
+document.addEventListener('click', event => {
+    const liga = (event.target as Element | null)?.closest('a[target="_blank"]') as HTMLAnchorElement | null
+    if (!liga || liga.origin !== window.location.origin || liga.pathname === '/cuentas.html') return
+    event.preventDefault()
+    window.open(`/cuentas.html?plan=${slug(plan.name)}&ir=${encodeURIComponent(liga.pathname + liga.search)}`, '_blank', 'noopener')
+}, true)
+
 // La sesión es de mentira y vive sólo en esta pestaña: MainLayout pide que exista la clave
 const hadSession = localStorage.getItem(SESSION_KEY)
 if (!hadSession) localStorage.setItem(SESSION_KEY, 'simulador')
