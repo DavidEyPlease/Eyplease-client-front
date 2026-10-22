@@ -9,7 +9,7 @@ import HttpService from '@/services/http'
 import LOGO_CLARO from '@/assets/images/eyplease-logo-color.png'
 import LOGO_OSCURO from '@/assets/images/eyplease-logo-fondo-oscuro.png'
 import useAuthStore from '@/store/auth'
-import { planConBoletinDinamico, puedeVerBoletinDinamico } from './acceso'
+import { ligaLoQuiero, MES_DEL_EJEMPLO, ofrecerBoletinDinamico, planConBoletinDinamico, puedeVerBoletinDinamico } from './acceso'
 import { BoletinDinamicoDatos, crearBoletinDinamico } from './dinamico/motor'
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -63,9 +63,11 @@ const NewsletterInteractivePage = () => {
     const navigate = useNavigate()
     const [params, setParams] = useSearchParams()
 
+    /* `?ejemplo=1`: la unidad de ejemplo, para que los planes que no lo traen vean cómo es (no se pide nada a la API) */
+    const ejemplo = params.get('ejemplo') === '1'
     const months = useMemo(() => lastMonths(6), [])
     const pedido = params.get('mes')
-    const yearMonth = pedido && /^\d{4}-(0[1-9]|1[0-2])$/.test(pedido) ? pedido : months[0]
+    const yearMonth = ejemplo ? MES_DEL_EJEMPLO : pedido && /^\d{4}-(0[1-9]|1[0-2])$/.test(pedido) ? pedido : months[0]
     const hasUnity = newsletters.some(newsletter => newsletter.code === NewsletterTypes.UNITY)
     const conPlan = planConBoletinDinamico(user)
     const abierto = puedeVerBoletinDinamico(user)
@@ -73,10 +75,15 @@ const NewsletterInteractivePage = () => {
     const queryParams = useMemo(() => ({ year_month: yearMonth }), [yearMonth])
     const { response, error, fetchRetry } = useFetchQuery<BoletinDinamicoDatos>(API_ROUTES.REPORTS.BOLETIN_DINAMICO, {
         queryParams,
-        enabled: !!user && hasUnity && abierto,
+        enabled: !ejemplo && !!user && hasUnity && abierto,
         staleTime: 300_000,
     })
-    const datos = response?.data ?? null
+    const [deEjemplo, setDeEjemplo] = useState<BoletinDinamicoDatos | null>(null)
+    useEffect(() => {
+        if (!ejemplo || deEjemplo) return
+        import('./ejemplo').then(m => setDeEjemplo(m.boletinDeEjemplo()))
+    }, [ejemplo, deEjemplo])
+    const datos = ejemplo ? deEjemplo : response?.data ?? null
 
     /* Lo que el motor necesita de la web, siempre al día aunque el motor se haya armado antes */
     const web = useRef({ params, setParams, navigate, yearMonth })
@@ -85,6 +92,8 @@ const NewsletterInteractivePage = () => {
     /* La carga avanza por pasos reales (cuenta → datos → imágenes) y entre uno y otro se arrastra despacio,
        para que nunca parezca detenida. El boletín se arma al llegar a 100: así su portada se anima ya a la vista. */
     const piel = pielDelMes(yearMonth)
+    /* lo que se está armando: el mes, o el ejemplo */
+    const clave = ejemplo ? 'ejemplo' : yearMonth
     const [imagenes, setImagenes] = useState<string | null>(null)
     const [avance, setAvance] = useState(4)
     const [mostrar, setMostrar] = useState(false)
@@ -93,10 +102,10 @@ const NewsletterInteractivePage = () => {
         let vigente = true
         const dir = (datos.directora ?? {}) as Persona
         const urls = [...PIEZAS[piel].map(f => `/boletin/${piel}/${f}.webp`), dir.foto || dir.fotoOriginal || ''].filter(Boolean)
-        precargar(urls).then(() => { if (vigente) setImagenes(yearMonth) })
+        precargar(urls).then(() => { if (vigente) setImagenes(clave) })
         return () => { vigente = false }
-    }, [datos, piel, yearMonth])
-    const listas = !!datos && imagenes === yearMonth
+    }, [datos, piel, clave])
+    const listas = !!datos && imagenes === clave
     const meta = listas ? 100 : datos ? 92 : user ? 72 : 18
     useEffect(() => {
         // con todo listo termina rápido: la barra no debe alargar la espera
@@ -110,7 +119,7 @@ const NewsletterInteractivePage = () => {
         return () => clearTimeout(t)
     }, [avance])
     /* al cambiar de mes la carga empieza otra vez */
-    useEffect(() => { setAvance(a => Math.min(a, 30)) }, [yearMonth])
+    useEffect(() => { setAvance(a => Math.min(a, 30)) }, [clave])
 
     const hostRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
@@ -122,7 +131,8 @@ const NewsletterInteractivePage = () => {
                 .then(res => { if (res?.data) datos.ajustes = res.data })
         const boletin = crearBoletinDinamico(hostRef.current, datos, {
             piel,
-            meses: months.map(valor => ({ valor, etiqueta: monthLabel(valor) })),
+            // el ejemplo no cambia de mes ni guarda: sus Ajustes sólo se prueban en pantalla
+            meses: ejemplo ? [] : months.map(valor => ({ valor, etiqueta: monthLabel(valor) })),
             mes: web.current.yearMonth,
             cambiarMes: valor => {
                 const next = new URLSearchParams(web.current.params)
@@ -135,16 +145,17 @@ const NewsletterInteractivePage = () => {
                 window.close()
                 setTimeout(() => web.current.navigate(APP_ROUTES.HOME.NEWSLETTER), 150)
             },
-            guardarAjustes: cambios => guardar(cambios),
-            guardarMensaje: mensaje => guardar({ mensaje }),
+            guardarAjustes: ejemplo ? undefined : cambios => guardar(cambios),
+            guardarMensaje: ejemplo ? undefined : mensaje => guardar({ mensaje }),
         })
         return () => boletin.destruir()
-    }, [datos, months, mostrar, piel])
+    }, [datos, ejemplo, months, mostrar, piel])
 
     if (!initialLoading && !user) return <Navigate to={APP_ROUTES.AUTH.SIGN_IN} replace />
 
-    const sinPlan = !initialLoading && !!user && (!hasUnity || !conPlan)
-    const enPrueba = !initialLoading && !!user && !sinPlan && !abierto
+    const sinPlan = !ejemplo && !initialLoading && !!user && (!hasUnity || !conPlan)
+    const enPrueba = !ejemplo && !initialLoading && !!user && !sinPlan && !abierto
+    const verEjemplo = sinPlan && hasUnity && ofrecerBoletinDinamico(user)
     const aviso = sinPlan ? 'El boletín interactivo viene en los planes Elite y Nacional.'
         : enPrueba ? 'Muy pronto: el boletín dinámico de tu unidad está en sus últimas pruebas.'
         : error && !datos ? 'No pudimos armar tu boletín. Revisa tu conexión e inténtalo otra vez.'
@@ -165,6 +176,9 @@ const NewsletterInteractivePage = () => {
                             <>
                                 <p className="text-base font-semibold">{aviso}</p>
                                 <div className="flex flex-wrap justify-center gap-2">
+                                    {verEjemplo && (
+                                        <button type="button" onClick={() => navigate(`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?ejemplo=1`)} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Ver un ejemplo</button>
+                                    )}
                                     {!!error && !datos && !sinPlan && !enPrueba && (
                                         <button type="button" onClick={() => fetchRetry()} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Reintentar</button>
                                     )}
@@ -187,6 +201,20 @@ const NewsletterInteractivePage = () => {
                 </div>
             )}
             <div ref={hostRef} />
+            {/* El ejemplo se dice ejemplo todo el tiempo, y desde ahí se pide (o se abre el suyo, si ya lo tiene) */}
+            {ejemplo && mostrar && (
+                <aside className="fixed inset-x-3 top-[70px] z-50 flex items-center justify-between gap-3 rounded-2xl bg-[#1b0f2b]/88 py-1.5 pr-1.5 pl-3.5 md:py-2 md:pr-2 md:pl-4 text-white shadow-[0_18px_40px_-18px_rgba(0,0,0,.9)] ring-1 ring-white/15 backdrop-blur-md md:inset-x-auto md:top-[80px] md:right-[max(10px,calc((100vw-1280px)/2))]">
+                    <p className="min-w-0 text-[11.5px] leading-snug text-white/85 md:text-[12.5px]">
+                        <b className="mr-1.5 text-[10.5px] font-extrabold tracking-[.16em] text-[#F2C46D] uppercase">Ejemplo</b>
+                        Así se vería con tu unidad
+                    </p>
+                    {abierto ? (
+                        <button type="button" onClick={() => navigate(APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE)} className="shrink-0 rounded-xl bg-white px-3.5 py-1.5 text-[12.5px] font-extrabold text-[#4E31C0] md:py-2">Abrir el mío</button>
+                    ) : !conPlan && (
+                        <a href={ligaLoQuiero(user)} target="_blank" rel="noopener" className="shrink-0 rounded-xl bg-white px-3.5 py-1.5 text-center text-[12.5px] font-extrabold text-[#4E31C0] md:py-2">Lo quiero<span className="hidden md:inline"> en mi unidad</span></a>
+                    )}
+                </aside>
+            )}
         </div>
     )
 }

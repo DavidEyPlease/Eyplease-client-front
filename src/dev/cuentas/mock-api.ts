@@ -500,7 +500,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         }
         else if (path.startsWith('/reports/generate-')) response = respond(null, 403)
         /* El boletín interactivo: la data cruda de unidad, con la forma de la API real */
-        else if (path === '/reports/boletin-dinamico') response = owned.has('unit_newsletter') && ['elite', 'national'].includes(PLAN_KEYS[plan.id]) ? respond(boletinDinamicoDemo(q.get('year_month'))) : respond(null, 403)
+        else if (path === '/reports/boletin-dinamico') response = owned.has('unit_newsletter') && ['elite', 'national'].includes(PLAN_KEYS[plan.id]) ? respond(boletinDinamicoDemo()) : respond(null, 403)
         else if (path === '/reports/boletin-dinamico/ajustes' && method === 'PUT') {
             const cambios = JSON.parse(String(init?.body ?? '{}'))
             response = respond({ tempraneras: { activa: cambios.tempraneras_activa ?? true, hasta: cambios.tempraneras_hasta ?? 10 }, mensaje: cambios.mensaje ?? null })
