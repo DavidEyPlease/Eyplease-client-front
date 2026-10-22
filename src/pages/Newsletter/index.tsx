@@ -17,6 +17,7 @@ import { NEWSLETTER_TYPE_META, ReportFileType } from '@/pages/Dashboard/componen
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import '@/pages/Hoy/hoy.css'
 import InteractiveFeature from '@/pages/Newsletter/InteractiveFeature'
+import { puedeVerBoletinDinamico } from '@/pages/NewsletterInteractive/acceso'
 import { NEWSLETTER_TAG } from '@/pages/Reports/lib'
 import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
@@ -130,7 +131,7 @@ const NewsletterStudio = () => {
             )}
 
             {/* El interactivo va aparte: es otra forma de entregar el boletín, no una opción de la plantilla */}
-            {type === NewsletterTypes.UNITY && <InteractiveFeature />}
+            {type === NewsletterTypes.UNITY && puedeVerBoletinDinamico(user?.account) && <InteractiveFeature />}
 
             {/* La plantilla elegida, en grande: es lo que se va a generar */}
             <section className={cn(CARD, 'hoy-edge p-5')} style={rise(3)}>

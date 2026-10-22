@@ -7,6 +7,7 @@ import useFetchQuery from '@/hooks/useFetchQuery'
 import { ApiResponse, NewsletterTypes } from '@/interfaces/common'
 import HttpService from '@/services/http'
 import useAuthStore from '@/store/auth'
+import { puedeVerBoletinDinamico } from './acceso'
 import { BoletinDinamicoDatos, crearBoletinDinamico } from './dinamico/motor'
 import './dinamico/pantalla.css'
 
@@ -46,11 +47,12 @@ const NewsletterInteractivePage = () => {
     const pedido = params.get('mes')
     const yearMonth = pedido && /^\d{4}-(0[1-9]|1[0-2])$/.test(pedido) ? pedido : months[0]
     const hasUnity = newsletters.some(newsletter => newsletter.code === NewsletterTypes.UNITY)
+    const abierto = puedeVerBoletinDinamico(user?.account)
 
     const queryParams = useMemo(() => ({ year_month: yearMonth }), [yearMonth])
     const { response, loading, error, fetchRetry } = useFetchQuery<BoletinDinamicoDatos>(API_ROUTES.REPORTS.BOLETIN_DINAMICO, {
         queryParams,
-        enabled: !!user && hasUnity,
+        enabled: !!user && hasUnity && abierto,
         staleTime: 300_000,
     })
     const datos = response?.data ?? null
@@ -85,7 +87,8 @@ const NewsletterInteractivePage = () => {
     if (!initialLoading && !user) return <Navigate to={APP_ROUTES.AUTH.SIGN_IN} replace />
 
     const sinPlan = !initialLoading && !!user && !hasUnity
-    const cargando = !sinPlan && !datos && !error && (initialLoading || loading || !response)
+    const enPrueba = !initialLoading && !!user && hasUnity && !abierto
+    const cargando = !sinPlan && !enPrueba && !datos && !error && (initialLoading || loading || !response)
 
     return (
         <div className="boletin-dinamico">
@@ -98,6 +101,12 @@ const NewsletterInteractivePage = () => {
             {sinPlan && (
                 <div className="bd-pantalla">
                     <p>Tu plan no incluye el boletín de unidad.</p>
+                    <button type="button" onClick={() => navigate(APP_ROUTES.HOME.NEWSLETTER)}>Volver</button>
+                </div>
+            )}
+            {enPrueba && (
+                <div className="bd-pantalla">
+                    <p>Muy pronto: el boletín dinámico de tu unidad está en sus últimas pruebas.</p>
                     <button type="button" onClick={() => navigate(APP_ROUTES.HOME.NEWSLETTER)}>Volver</button>
                 </div>
             )}
