@@ -1,3 +1,4 @@
+import { APP_ROUTES } from '@/constants/app'
 import type { IUser } from '@/interfaces/users'
 
 /** El boletín dinámico viene en los planes Elite y Nacional (David, 22-oct-2026). La API pide lo mismo. */
@@ -23,9 +24,5 @@ export const puedeVerBoletinDinamico = (user?: IUser | null): boolean => planCon
 /** A las de los demás planes se les enseña con candado y con la unidad de ejemplo, para que sepan que existe. */
 export const ofrecerBoletinDinamico = (user?: IUser | null): boolean => !!user && !planConBoletinDinamico(user) && lanzado(user)
 
-/** «Lo quiero en mi unidad»: un WhatsApp a Eyplease+ ya escrito, con quién es, para que Ventas le cambie el plan. */
-export const ligaLoQuiero = (user?: IUser | null): string => {
-    const quien = user ? `Hola, soy ${user.name} (cuenta ${user.account}).` : 'Hola.'
-    const texto = `${quien} Vi el boletín interactivo y lo quiero para mi unidad. ¿Cómo subo de plan?`
-    return `https://api.whatsapp.com/send/?phone=${import.meta.env.VITE_WS_NUMBER ?? ''}&text=${encodeURIComponent(texto)}&type=phone_number&app_absent=0`
-}
+/** «Lo quiero en mi unidad»: directo a subir al Plan Elite (paga con tarjeta y se le abre en ese momento). */
+export const LIGA_LO_QUIERO = `${APP_ROUTES.HOME.PLAN_UPGRADE}?plan=elite`

@@ -9,7 +9,7 @@ import HttpService from '@/services/http'
 import LOGO_CLARO from '@/assets/images/eyplease-logo-color.png'
 import LOGO_OSCURO from '@/assets/images/eyplease-logo-fondo-oscuro.png'
 import useAuthStore from '@/store/auth'
-import { ligaLoQuiero, MES_DEL_EJEMPLO, ofrecerBoletinDinamico, planConBoletinDinamico, puedeVerBoletinDinamico } from './acceso'
+import { LIGA_LO_QUIERO, MES_DEL_EJEMPLO, ofrecerBoletinDinamico, planConBoletinDinamico, puedeVerBoletinDinamico } from './acceso'
 import { BoletinDinamicoDatos, crearBoletinDinamico } from './dinamico/motor'
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -213,7 +213,7 @@ const NewsletterInteractivePage = () => {
                     {abierto ? (
                         <button type="button" onClick={() => navigate(APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE)} className="shrink-0 rounded-xl bg-white px-3.5 py-1.5 text-[12.5px] font-extrabold text-[#4E31C0] md:py-2">Abrir el mío</button>
                     ) : !conPlan && (
-                        <a href={ligaLoQuiero(user)} target="_blank" rel="noopener" className="shrink-0 rounded-xl bg-white px-3.5 py-1.5 text-center text-[12.5px] font-extrabold text-[#4E31C0] md:py-2">Lo quiero<span className="hidden md:inline"> en mi unidad</span></a>
+                        <button type="button" onClick={() => navigate(LIGA_LO_QUIERO)} className="shrink-0 rounded-xl bg-white px-3.5 py-1.5 text-center text-[12.5px] font-extrabold text-[#4E31C0] md:py-2">Lo quiero<span className="hidden md:inline"> en mi unidad</span></button>
                     )}
                 </aside>
             )}

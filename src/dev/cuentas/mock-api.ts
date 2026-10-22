@@ -237,6 +237,24 @@ const cuentaActiva = () => sessionStorage.getItem('cuentas:activa') ?? 'liga-mex
 /* `?sincobro=1` finge que la de Colombia es la 186234MX, que está en BILLING_EXCLUDED_ACCOUNTS */
 const SIN_COBRO = new URLSearchParams(location.search).get('sincobro') === '1'
 
+/* Subir de plan (PlanUpgradeService): lo que cuesta hoy según el plan. `?subir=no` = una que no puede sola (tarjeta
+   domiciliada) para ver el «Escríbenos». Pagar regresa directo a la página como si Stripe ya hubiera cobrado. */
+const SUBIR_NO = new URLSearchParams(location.search).get('subir') === 'no'
+const cotizacion = (actual: DemoPlan, quiere: string | null) => {
+    const destino = PLANS.find(p => PLAN_KEYS[p.id] === (quiere ?? 'elite'))
+    const llave = PLAN_KEYS[actual.id]
+    const pagado = Number(actual.price) || 0
+    const mensual = Number(destino?.price) || 0
+    const base = {
+        available: false, reason: null as string | null, message: null as string | null, period: '2026-10', period_label: 'octubre 2026', whatsapp: '524610000000',
+        currency: 'MXN', current: { key: llave, name: actual.name },
+        plan: destino ? { id: destino.id, key: PLAN_KEYS[destino.id], name: destino.name, color: destino.color, price: mensual, features: destino.features } : null,
+    }
+    if (!destino || pagado >= mensual) return { ...base, reason: 'ya_lo_tiene', message: 'Tu plan ya incluye esto.' }
+    if (SUBIR_NO) return { ...base, reason: 'automatica', message: 'Tu plan se cobra solo a tu tarjeta: escríbenos y te lo cambiamos hoy mismo.' }
+    return { ...base, available: true, due_now: mensual - pagado, monthly: mensual, paid_this_month: pagado }
+}
+
 const numeroDe = (id: string, role: 'director' | 'consultant') => id === 'liga-col'
     ? (SIN_COBRO ? '186234MX' : role === 'consultant' ? 'DEMOCONSMX' : 'DEMOTIENDAMX')
     : (role === 'consultant' ? 'DEMOCONS' : 'DEMOTIENDA')
@@ -370,6 +388,9 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
     const owned = new Set<string>(plan.accesses.map(access => access.permission_key))
     const ownedSections = new Set<string>(plan.accesses.flatMap(access => (access.custom_permissions as Array<{ key: string }>).map(item => item.key)))
 
+    // el plan puede cambiar a media sesión: al «pagar» la subida de plan
+    let actual = plan
+
     window.fetch = async (input, init) => {
         const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
         if (!raw.startsWith(base)) return realFetch(input, init)
@@ -383,7 +404,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
 
         const scenario = sessionStorage.getItem('cuentas:cobro') ?? 'toca'
 
-        if (path === '/me') response = respond(userFor(plan, role, rank))
+        if (path === '/me') response = respond(userFor(actual, role, rank))
         /* Cambiar de cuenta: se apunta cuál queda activa para que la recarga abra en ESA */
         else if (/^\/me\/accounts\/[^/]+\/switch$/.test(path)) {
             const destino = path.split('/')[3]
@@ -396,6 +417,15 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         /* Subir comprobante: el mes queda en revisión (cubierto), como en la API */
         else if (path === '/billing/receipts' && method === 'POST') { sessionStorage.setItem('cuentas:comprobante', '1'); response = respond(null, 201) }
         else if (path === '/billing/card-automation' && method === 'POST') response = respond({ checkout_url: 'https://checkout.stripe.com/c/pay/cs_live_DOMICILIAR_EJEMPLO', first_charge_date: dayOfThisMonth(5, 1), amount: Number(plan.price) || 0 }, 201)
+        else if (path === '/billing/plan-upgrade' && method === 'GET') response = respond(cotizacion(actual, q.get('plan')))
+        else if (path === '/billing/plan-upgrade' && method === 'POST') {
+            const quiere = JSON.parse(String(init?.body ?? '{}')).plan ?? 'elite'
+            response = respond({ checkout_url: `/subir-de-plan?plan=${quiere}&sesion=cs_simulada`, amount: 0, currency: 'MXN', expires_at: new Date(Date.now() + 35 * 60_000).toISOString() }, 201)
+        }
+        else if (path === '/billing/plan-upgrade/confirm') {
+            actual = PLANS.find(p => PLAN_KEYS[p.id] === 'elite') ?? actual
+            response = respond({ status: 'paid', plan: 'elite' })
+        }
         else if (path.startsWith('/billing/')) response = respond(page([]))
         else if (path === '/referrals/mine') response = owned.has('unity')
             ? respond({
@@ -500,7 +530,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         }
         else if (path.startsWith('/reports/generate-')) response = respond(null, 403)
         /* El boletín interactivo: la data cruda de unidad, con la forma de la API real */
-        else if (path === '/reports/boletin-dinamico') response = owned.has('unit_newsletter') && ['elite', 'national'].includes(PLAN_KEYS[plan.id]) ? respond(boletinDinamicoDemo()) : respond(null, 403)
+        else if (path === '/reports/boletin-dinamico') response = owned.has('unit_newsletter') && ['elite', 'national'].includes(PLAN_KEYS[actual.id]) ? respond(boletinDinamicoDemo()) : respond(null, 403)
         else if (path === '/reports/boletin-dinamico/ajustes' && method === 'PUT') {
             const cambios = JSON.parse(String(init?.body ?? '{}'))
             response = respond({ tempraneras: { activa: cambios.tempraneras_activa ?? true, hasta: cambios.tempraneras_hasta ?? 10 }, mensaje: cambios.mensaje ?? null })

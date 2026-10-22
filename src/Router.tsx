@@ -12,6 +12,7 @@ import ResetPasswordPage from "./pages/Auth/ResetPassword"
 import DashboardPage from "./pages/Dashboard"
 import NewsletterPage from "./pages/Newsletter"
 import NewsletterInteractivePage from "./pages/NewsletterInteractive"
+import PlanUpgradePage from "./pages/PlanUpgrade"
 import IndicatorsPage from "./pages/Indicators"
 import MyUnitPage from "./pages/MyUnit"
 import GalleryPage from "./pages/Gallery"
@@ -47,6 +48,8 @@ const Router = () => {
             <Route path={APP_ROUTES.TRAININGS.WEB} element={<TrainingWebPage />} />
             {/* El boletín dinámico también va a pantalla completa: trae su propia barra y su Modo junta */}
             <Route path={APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE} element={<NewsletterInteractivePage />} />
+            {/* Subir de plan: una sola tarjeta, sin el marco de la web (también es adonde regresa Stripe) */}
+            <Route path={APP_ROUTES.HOME.PLAN_UPGRADE} element={<PlanUpgradePage />} />
             <Route element={<MainLayout />}>
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
                 <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />

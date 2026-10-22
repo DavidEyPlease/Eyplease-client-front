@@ -1,9 +1,8 @@
 import { Link } from 'react-router'
-import { ExternalLinkIcon, LockIcon, MessageCircleIcon, MonitorPlayIcon, SlidersHorizontalIcon, TrophyIcon } from 'lucide-react'
+import { ArrowRightIcon, ExternalLinkIcon, LockIcon, MonitorPlayIcon, SlidersHorizontalIcon, TrophyIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
-import { ligaLoQuiero } from '@/pages/NewsletterInteractive/acceso'
-import useAuthStore from '@/store/auth'
+import { LIGA_LO_QUIERO } from '@/pages/NewsletterInteractive/acceso'
 import { reportMonthLabel } from '@/utils/dates'
 import './interactive-feature.css'
 
@@ -20,8 +19,6 @@ const PUNTOS = [
  * y cómo pedirlo.
  */
 const InteractiveFeature = ({ bloqueado = false }: { bloqueado?: boolean }) => {
-    const user = useAuthStore(state => state.user)
-
     return (
         <section className="ifx hoy-rise relative overflow-hidden rounded-[22px] p-5 text-white md:p-6" style={{ '--i': 2 } as React.CSSProperties}>
             <div className="relative grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
@@ -54,11 +51,11 @@ const InteractiveFeature = ({ bloqueado = false }: { bloqueado?: boolean }) => {
                                 <Link to={`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?ejemplo=1`} target="_blank" rel="noopener" className={BOTON}>
                                     Ver un ejemplo <ExternalLinkIcon className="size-4" />
                                 </Link>
-                                <a href={ligaLoQuiero(user)} target="_blank" rel="noopener" className="inline-flex h-11 items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-extrabold text-white ring-1 ring-white/45 transition-colors hover:bg-white/10">
-                                    Lo quiero en mi unidad <MessageCircleIcon className="size-4" />
-                                </a>
+                                <Link to={LIGA_LO_QUIERO} className="inline-flex h-11 items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-extrabold text-white ring-1 ring-white/45 transition-colors hover:bg-white/10">
+                                    Lo quiero en mi unidad <ArrowRightIcon className="size-4" />
+                                </Link>
                             </div>
-                            <p className="mt-2.5 text-[12px] text-white/65">Viene en los planes Elite y Nacional. El ejemplo es una unidad inventada: así se vería con la tuya.</p>
+                            <p className="mt-2.5 text-[12px] text-white/65">Viene en los planes Elite y Nacional: subes y lo abres hoy mismo. El ejemplo es una unidad inventada.</p>
                         </>
                     ) : (
                         <Link to={APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE} target="_blank" rel="noopener" className={`mt-5 ${BOTON}`}>

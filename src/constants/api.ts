@@ -109,6 +109,9 @@ export const API_ROUTES = {
         UPLOAD_RECEIPTS: '/billing/receipts',
         CARD_CHECKOUT: '/billing/card-checkout',
         CARD_AUTOMATION: '/billing/card-automation',
+        /** Subir de plan con tarjeta: cuánto cuesta hoy (GET ?plan=), la liga de pago (POST) y la confirmación al volver */
+        PLAN_UPGRADE: '/billing/plan-upgrade',
+        PLAN_UPGRADE_CONFIRM: '/billing/plan-upgrade/confirm',
     },
     VERIFICATION_TEMPORARY_CODE: '/verification-temporary-code',
     DASHBOARD: '/dashboard',

@@ -19,6 +19,8 @@ export const APP_ROUTES = {
         INITIAL: '/dashboard',
         NEWSLETTER: '/newsletter',
         NEWSLETTER_INTERACTIVE: '/newsletter/interactivo',
+        /** Subir de plan pagando con tarjeta (`?plan=elite`); Stripe regresa aquí con `&sesion=` o `&cancelado=1` */
+        PLAN_UPGRADE: '/subir-de-plan',
         PROFILE: '/profile',
         GALLERY: '/gallery',
         MY_CLIENTS: '/my-clients',
