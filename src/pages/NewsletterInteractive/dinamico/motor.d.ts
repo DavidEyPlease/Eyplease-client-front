@@ -12,7 +12,9 @@ export interface BoletinDinamicoDatos {
 }
 
 export interface BoletinDinamicoOpciones {
-    /** Carpeta de las piezas de la plantilla (letras y laurel). Por omisión /boletin/p10. */
+    /** La plantilla del mes: la 9 («CELEBRA») o la 10 («Papel en relieve»). Por omisión, la 9. */
+    piel?: 'p9' | 'p10'
+    /** Carpeta de las piezas de la plantilla. Por omisión /boletin/<piel>. */
     base?: string
     /** Meses que se pueden elegir en Ajustes y el que se está viendo (AAAA-MM). */
     meses?: Array<{ valor: string, etiqueta: string }>

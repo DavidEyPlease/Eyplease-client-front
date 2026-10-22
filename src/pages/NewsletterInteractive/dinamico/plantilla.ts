@@ -1,7 +1,12 @@
-/* La página del boletín dinámico (piel de la Plantilla 10), tal como se aprobó en la muestra local. El motor
-   (motor.ts) la llena con los datos de la API; aquí sólo está la estructura. `base` es la carpeta de las piezas
-   de la plantilla (letras y laurel), que viajan con la web en public/boletin/p10. */
-export const plantillaP10 = (base: string): string => `
+/* La página del boletín dinámico, tal como se aprobó en la muestra local. El motor (motor.js) la llena con los datos
+   de la API; aquí sólo está la estructura. La piel cambia las piezas de la plantilla que viajan con la web en
+   public/boletin/<piel>: la 10 usa sus letras y su laurel sueltos; la 9 trae sus portadas completas como fondo (el
+   título ya viene en el arte), así que esas piezas no se piden. */
+export type Piel = 'p9' | 'p10'
+
+export const plantilla = (base: string, piel: Piel): string => {
+    const p10 = piel === 'p10'
+    return `
 <div class="pagina">
     <div class="fondo" aria-hidden="true"></div>
 
@@ -35,9 +40,9 @@ export const plantillaP10 = (base: string): string => `
         <section class="entrada" aria-labelledby="titulo">
             <div class="letras">
                 <h1 id="titulo" class="sr">Reconocimiento de <span class="mes"></span></h1>
-                <img class="l1" src="${base}/portada_titulo.webp" alt="" width="1080" height="191">
+                ${p10 ? `<img class="l1" src="${base}/portada_titulo.webp" alt="" width="1080" height="191">` : ''}
                 <p class="mes-g" aria-hidden="true"><span class="mes"></span></p>
-                <img class="filete" src="${base}/portada_filete.webp" alt="" width="704" height="72">
+                ${p10 ? `<img class="filete" src="${base}/portada_filete.webp" alt="" width="704" height="72">` : ''}
                 <p class="lead"></p>
                 <button type="button" class="ir" data-ir>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
@@ -57,8 +62,8 @@ export const plantillaP10 = (base: string): string => `
                 <div class="burbujas" aria-hidden="true"></div>
                 <div class="tit-h">
                     <h2 class="sr">Cuadro de Honor</h2>
-                    <img src="${base}/honor_linea1.webp" alt="" width="1022" height="223">
-                    <img src="${base}/honor_linea2.webp" alt="" width="1031" height="210">
+                    ${p10 ? `<img src="${base}/honor_linea1.webp" alt="" width="1022" height="223">
+                    <img src="${base}/honor_linea2.webp" alt="" width="1031" height="210">` : ''}
                     <p class="kicker">La carrera de <span class="mes"></span></p>
                     <p class="lead-h"></p>
                     <button type="button" class="ir" data-ver>
@@ -66,7 +71,7 @@ export const plantillaP10 = (base: string): string => `
                         Ver la carrera
                     </button>
                 </div>
-                <img class="emb" src="${base}/honor_emblema.webp" alt="" width="945" height="856">
+                ${p10 ? `<img class="emb" src="${base}/honor_emblema.webp" alt="" width="945" height="856">` : ''}
             </header>
             <div class="escenario">
                 <aside class="lado">
@@ -216,3 +221,4 @@ export const plantillaP10 = (base: string): string => `
         <button type="button" class="j-salir" data-j-salir>Salir</button>
     </nav>
 </div>`
+}

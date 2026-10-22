@@ -30,6 +30,10 @@ const monthLabel = (yearMonth: string) => {
 
 type Ajustes = NonNullable<BoletinDinamicoDatos['ajustes']>
 
+/** La piel es la plantilla del mes: la 9 («CELEBRA») hasta septiembre; la 10 («Papel en relieve») sale en
+ *  noviembre, con el boletín de octubre. */
+const pielDelMes = (yearMonth: string): 'p9' | 'p10' => (yearMonth >= '2026-10' ? 'p10' : 'p9')
+
 /**
  * El boletín dinámico de la Directora: el cierre del mes contado cómo pasó, para presentarlo en su junta.
  * Va a pantalla completa, fuera del marco de la web (como la presentación de un entrenamiento): la página trae su
@@ -70,6 +74,7 @@ const NewsletterInteractivePage = () => {
             HttpService.put<ApiResponse<Ajustes>>(API_ROUTES.REPORTS.BOLETIN_DINAMICO_AJUSTES, { year_month: web.current.yearMonth, ...cambios })
                 .then(res => { if (res?.data) datos.ajustes = res.data })
         const boletin = crearBoletinDinamico(hostRef.current, datos, {
+            piel: pielDelMes(web.current.yearMonth),
             meses: months.map(valor => ({ valor, etiqueta: monthLabel(valor) })),
             mes: web.current.yearMonth,
             cambiarMes: valor => {

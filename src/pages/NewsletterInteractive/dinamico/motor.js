@@ -7,7 +7,7 @@
    Va en JavaScript a propósito (motor.d.ts es su contrato con el resto de la web): es el mismo código probado en la
    muestra y así se puede comparar línea por línea. */
 import css from './estilo.css?inline'
-import { plantillaP10 } from './plantilla'
+import { plantilla } from './plantilla'
 
 const FUENTES = 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Poppins:wght@400;500;600;700&display=swap'
 
@@ -20,9 +20,20 @@ export function crearBoletinDinamico(host, D, op = {}) {
         l.href = FUENTES
         document.head.appendChild(l)
     }
+    // la piel de la plantilla del mes: la 9 (CELEBRA) o la 10 (Papel en relieve)
+    const piel = op.piel === 'p10' ? 'p10' : 'p9'
+    const base = op.base || `/boletin/${piel}`
     const root = host.shadowRoot || host.attachShadow({ mode: 'open' })
-    root.innerHTML = `<style>${css}</style>${plantillaP10(op.base || '/boletin/p10')}`
+    root.innerHTML = `<style>${css}</style>${plantilla(base, piel)}`
     const pagina = root.querySelector('.pagina')
+    pagina.dataset.piel = piel
+    if (piel === 'p9') {
+        // sus portadas completas son el fondo de la portada y del Cuadro de Honor (el título ya viene en el arte)
+        for (const [v, f] of [['--arte-portada-h', 'portada-h'], ['--arte-portada-v', 'portada-v'], ['--arte-honor-h', 'honor-h'], ['--arte-honor-v', 'honor-v']]) {
+            pagina.style.setProperty(v, `url("${base}/${f}.webp")`)
+        }
+    }
+    const color = v => getComputedStyle(pagina).getPropertyValue(v).trim()
     const $ = (s, r = pagina) => r.querySelector(s)
     const $$ = (s, r = pagina) => [...r.querySelectorAll(s)]
 
@@ -207,8 +218,35 @@ export function crearBoletinDinamico(host, D, op = {}) {
     function burbujas() {
         const caja = $('.burbujas')
         const ent = $('.cab-honor').getBoundingClientRect()
-        const em = $('.cab-honor .emb').getBoundingClientRect()
+        const emb = $('.cab-honor .emb')
         const con = [...PER.values()].filter(p => p.foto)
+        if (!emb) {
+            // Plantilla 9: el título viene en el arte. En pantalla, la unidad lo corona en un arco que baja por los
+            // lados sin tocar las letras; en el teléfono (el título ocupa todo el ancho) va en dos filas sobre las luces.
+            let semilla9 = 7
+            const azar9 = () => ((semilla9 = (semilla9 * 9301 + 49297) % 233280) / 233280)
+            const lista = telefono() ? con.slice(0, 12) : con.slice(0, 28)
+            const pos = telefono()
+                ? (i, s) => {
+                    const fila = i < 6 ? 0 : 1
+                    const f = ((i % 6) + .5) / 6
+                    return [ent.width * (.06 + .88 * f) - s / 2, 92 + fila * 54 + (1 - Math.sin(f * Math.PI)) * 8]
+                }
+                : (i, s) => {
+                    const ang = Math.PI + Math.PI * (i + .5) / lista.length
+                    // un arco «cuadrado»: sube empinado por los lados y corre plano por arriba, rodeando el título
+                    const sy = -Math.pow(Math.abs(Math.sin(ang)), .55)
+                    return [ent.width * (.5 + .48 * Math.cos(ang)) - s / 2, ent.height * (.62 + .46 * sy) - s / 2]
+                }
+            caja.innerHTML = lista.map((p, i) => {
+                const s = Math.round((telefono() ? 34 : 44) + azar9() * (telefono() ? 10 : 12))
+                const [x, y] = pos(i, s)
+                const st = `left:${x.toFixed(0)}px;top:${Math.max(84, y).toFixed(0)}px;--s:${s}px;--d:${(.4 + i * .04).toFixed(2)}s;--t:${(5 + azar9() * 4).toFixed(1)}s;--dx:${(azar9() * 12 - 6).toFixed(0)}px;--dy:${(azar9() * 12 - 6).toFixed(0)}px;--o:${(.82 + azar9() * .16).toFixed(2)}`
+                return `<span class="burbuja" style="${st}">${cara(p)}</span>`
+            }).join('')
+            return
+        }
+        const em = emb.getBoundingClientRect()
         const lista = telefono() ? con.slice(0, 14) : con
         const cx = em.left - ent.left + em.width / 2
         const cy = em.top - ent.top + em.height / 2
@@ -483,7 +521,7 @@ export function crearBoletinDinamico(host, D, op = {}) {
         lienzo.height = Math.round(r.height * dpr)
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
-    const COLORES = ['#e9c77b', '#f7dfa6', '#f49bb6', '#dd1557', '#f6eadd']
+    const COLORES = ['--oro', '--oro-claro', '--rosa', '--fucsia', '--marfil'].map(color)
     function chispasEn(id) {
         const f = FILAS.get(id)
         if (!f) return
@@ -566,16 +604,16 @@ export function crearBoletinDinamico(host, D, op = {}) {
         const Y = r => ((r - 1) / (tope - 1)) * H
         const linea = pts.map(([d, r], i) => `${i ? 'L' : 'M'}${X(d).toFixed(1)} ${Y(r).toFixed(1)}`).join(' ')
         const diasOrden = new Set(ORD.filter(b => b.e.p === id && b.e.pts > 0).map(b => b.dia))
-        const puntos = pts.filter(([d]) => diasOrden.has(d)).map(([d, r]) => `<circle cx="${X(d).toFixed(1)}" cy="${Y(r).toFixed(1)}" r="${d === ULT ? 5 : 3.5}" fill="${d === ULT ? '#f7dfa6' : '#e9c77b'}"/>`).join('')
+        const puntos = pts.filter(([d]) => diasOrden.has(d)).map(([d, r]) => `<circle cx="${X(d).toFixed(1)}" cy="${Y(r).toFixed(1)}" r="${d === ULT ? 5 : 3.5}" fill="${d === ULT ? color('--oro-claro') : color('--oro')}"/>`).join('')
         const ult = pts[pts.length - 1]
         return `<svg viewBox="-8 -10 ${W + 16} ${H + 26}" role="img" aria-label="Su lugar día por día">`
-            + `<line x1="0" x2="${W}" y1="0" y2="0" stroke="rgba(233,199,123,.35)" stroke-dasharray="3 4"/>`
+            + `<line x1="0" x2="${W}" y1="0" y2="0" stroke="rgba(${color('--oro-rgb')},.35)" stroke-dasharray="3 4"/>`
             + `<line x1="0" x2="${W}" y1="${H}" y2="${H}" stroke="rgba(246,234,221,.12)"/>`
-            + `<text x="${W + 6}" y="4" font-size="10" fill="rgba(233,199,123,.8)" font-family="Poppins">1.º</text>`
+            + `<text x="${W + 6}" y="4" font-size="10" fill="rgba(${color('--oro-rgb')},.8)" font-family="Poppins">1.º</text>`
             + `<text x="${W + 6}" y="${H + 4}" font-size="10" fill="rgba(246,234,221,.4)" font-family="Poppins">${tope}.º</text>`
             + `<text x="0" y="${H + 16}" font-size="10" fill="rgba(246,234,221,.45)" font-family="Poppins">1</text>`
             + `<text x="${W}" y="${H + 16}" font-size="10" fill="rgba(246,234,221,.45)" font-family="Poppins" text-anchor="end">${ULT}</text>`
-            + (linea ? `<path d="${linea}" fill="none" stroke="#e9c77b" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>` : '')
+            + (linea ? `<path d="${linea}" fill="none" stroke="${color('--oro')}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>` : '')
             + puntos + (ult ? '' : '') + '</svg>'
     }
     function hechos(id, puesto) {
@@ -955,7 +993,7 @@ export function crearBoletinDinamico(host, D, op = {}) {
             const trajo = i.trajo.map(id => nuevas.find(n => n.p === id)).filter(Boolean)
             return `<article class="par revela"><div class="quien-i"><span class="etq">Iniciadora del mes</span><div class="ovalo-i">${cara(p)}</div><h3>${esc(p.nombre)}</h3>`
                 + `<small>Su equipo: <b>${i.totales}</b> · ${i.activas} ${i.activas === 1 ? 'activa' : 'activas'}</small></div>`
-                + `<div class="lazo" aria-hidden="true"><svg viewBox="0 0 120 40" preserveAspectRatio="none"><path d="M2 30 C 40 2, 80 2, 118 30" fill="none" stroke="url(#gl)" stroke-width="2" stroke-dasharray="5 6"/><defs><linearGradient id="gl"><stop offset="0" stop-color="#e9c77b"/><stop offset="1" stop-color="#f49bb6"/></linearGradient></defs></svg><span>inició a</span></div>`
+                + `<div class="lazo" aria-hidden="true"><svg viewBox="0 0 120 40" preserveAspectRatio="none"><path d="M2 30 C 40 2, 80 2, 118 30" fill="none" stroke="url(#gl)" stroke-width="2" stroke-dasharray="5 6"/><defs><linearGradient id="gl"><stop offset="0" stop-color="${color('--oro')}"/><stop offset="1" stop-color="${color('--rosa')}"/></linearGradient></defs></svg><span>inició a</span></div>`
                 + (trajo.length ? trajo.map(n => tarjetaNueva(n, 'nueva-i')).join('') : `<div class="nueva-i"><p class="logro">Sumó <b>${plural(i.inicios, 'Nuevo Inicio', 'Nuevos Inicios')}</b> en ${MES}.</p></div>`) + '</article>'
         }).join('')
         // las del mes anterior que cerraron su primer mes completo

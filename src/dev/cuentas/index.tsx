@@ -4,7 +4,7 @@
 //   …&rango=national_director                              (por defecto: Directora; el Standard entra como consultora)
 //   …&ir=/indicators                                       (página en la que abre; por defecto el Inicio)
 //   …&cobro=aldia|toca|atrasado                            (cómo va su pago; por defecto «toca»)
-//   …&boletin=sin-ordenes                                  (el boletín dinámico sin acceso del robot a sus órdenes)
+//   …&boletin=sin-ordenes | con-fotos                      (boletín dinámico sin órdenes / con siluetas de ejemplo)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useLocation } from 'react-router'
