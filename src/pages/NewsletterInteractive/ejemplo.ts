@@ -4,9 +4,10 @@
 // sí son las oficiales que sirve el CDN (public/boletin/productos/).
 import type { BoletinDinamicoDatos } from './dinamico/motor'
 
-/** Una silueta de persona en un tono distinto para cada quien (SVG en línea: no sale a ningún lado). */
+/** Una silueta de persona en un tono distinto para cada quien, todos en la gama rosa de las plantillas (SVG en línea:
+ *  no sale a ningún lado). */
 const silueta = (i: number) => {
-    const tono = (i * 47) % 360
+    const tono = (330 + i * 23) % 60 + 315
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 125"><rect width="100" height="125" fill="hsl(${tono},45%,88%)"/><circle cx="50" cy="44" r="22" fill="hsl(${tono},35%,52%)"/><path d="M8 125c4-30 22-44 42-44s38 14 42 44z" fill="hsl(${tono},35%,45%)"/></svg>`
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }

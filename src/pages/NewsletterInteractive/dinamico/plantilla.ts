@@ -1,14 +1,17 @@
 /* La página del boletín dinámico, tal como se aprobó en la muestra local. El motor (motor.js) la llena con los datos
    de la API; aquí sólo está la estructura. La piel cambia las piezas de la plantilla que viajan con la web en
    public/boletin/<piel>: los títulos de la portada y del Cuadro de Honor y la pieza que la unidad rodea (el laurel de
-   la 10, el arco del primer lugar de la 9), recortados del arte con las orillas difuminadas. */
+   la 10). La 9 trae su KIT WEB (Astra, 22-oct-2026: `kit-*.webp`): títulos y joya sueltos, el marco de la Directora con
+   la silueta de su foto, el fondo de la página y adornos que flotan en las orillas de las secciones. */
 export type Piel = 'p9' | 'p10'
 
 export const plantilla = (base: string, piel: Piel): string => {
     const p10 = piel === 'p10'
+    // un adorno suelto del kit de la 9, en la orilla de una sección (no tapa texto ni fotos)
+    const flota = (n: string, lugar: string) => (p10 ? '' : `<img class="flota ${lugar}" src="${base}/kit-f${n}.webp" alt="" aria-hidden="true">`)
     return `
 <div class="pagina">
-    <div class="fondo" aria-hidden="true"></div>
+    <div class="fondo" aria-hidden="true"${p10 ? '' : ` style="--fondo-h:url(${base}/kit-fondo-h.webp);--fondo-v:url(${base}/kit-fondo-v.webp)"`}></div>
 
     <header class="barra">
         <button type="button" class="volver" data-volver aria-label="Cerrar el boletín"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -40,7 +43,7 @@ export const plantilla = (base: string, piel: Piel): string => {
         <section class="entrada" aria-labelledby="titulo">
             <div class="letras">
                 <h1 id="titulo" class="sr">Reconocimiento de <span class="mes"></span></h1>
-                ${p10 ? `<img class="l1" src="${base}/portada_titulo.webp" alt="" width="1080" height="191">` : `<img class="l1" src="${base}/titulo.webp" alt="" width="1100" height="606">`}
+                ${p10 ? `<img class="l1" src="${base}/portada_titulo.webp" alt="" width="1080" height="191">` : `<img class="l1" src="${base}/kit-titulo.webp" alt="" width="1400" height="537">`}
                 <p class="mes-g" aria-hidden="true"><span class="mes"></span></p>
                 ${p10 ? `<img class="filete" src="${base}/portada_filete.webp" alt="" width="704" height="72">` : ''}
                 <p class="lead"></p>
@@ -50,7 +53,9 @@ export const plantilla = (base: string, piel: Piel): string => {
                 </button>
             </div>
             <figure class="dire">
-                <div class="ovalo-d"><div class="aro-d"></div><div class="resplandor-d"></div><div class="foto-d"></div></div>
+                ${p10 ? '<div class="ovalo-d"><div class="aro-d"></div><div class="resplandor-d"></div><div class="foto-d"></div></div>'
+                    : `<div class="ovalo-d" style="--silueta:url(${base}/kit-silueta.webp)"><div class="resplandor-d"></div><div class="foto-d"></div>`
+                    + `<img class="marco-d" src="${base}/kit-marco.webp" alt="" width="800" height="1000">${flota('03', 'f-dire-1')}${flota('05', 'f-dire-2')}</div>`}
                 <figcaption><small class="dire-tit">Tu Directora</small><b class="dire-nombre"></b><span class="dire-nivel"></span></figcaption>
             </figure>
         </section>
@@ -63,7 +68,7 @@ export const plantilla = (base: string, piel: Piel): string => {
                 <div class="tit-h">
                     <h2 class="sr">Cuadro de Honor</h2>
                     ${p10 ? `<img src="${base}/honor_linea1.webp" alt="" width="1022" height="223">
-                    <img src="${base}/honor_linea2.webp" alt="" width="1031" height="210">` : `<img src="${base}/honor-titulo.webp" alt="" width="1100" height="652">`}
+                    <img src="${base}/honor_linea2.webp" alt="" width="1031" height="210">` : `${flota('03', 'f-honor')}<img src="${base}/kit-honor.webp" alt="" width="1400" height="494">`}
                     <p class="kicker">La carrera de <span class="mes"></span></p>
                     <p class="lead-h"></p>
                     <button type="button" class="ir" data-ver>
@@ -71,7 +76,7 @@ export const plantilla = (base: string, piel: Piel): string => {
                         Ver la carrera
                     </button>
                 </div>
-                ${p10 ? `<img class="emb" src="${base}/honor_emblema.webp" alt="" width="945" height="856">` : `<img class="emb arco" src="${base}/arco.webp" alt="" width="1000" height="761">`}
+                ${p10 ? `<img class="emb" src="${base}/honor_emblema.webp" alt="" width="945" height="856">` : `<img class="emb joya" src="${base}/kit-joya.webp" alt="" width="1000" height="1000">`}
             </header>
             <div class="escenario">
                 <aside class="lado">
@@ -122,6 +127,7 @@ export const plantilla = (base: string, piel: Piel): string => {
 
         <!-- 3b. Estrellas del trimestre -->
         <section class="estrellas" id="estrellas" aria-labelledby="est-t">
+            ${flota('06', 'f-der')}
             <header class="cab revela"><p class="kicker">Estrellas del trimestre · <span class="trimestre"></span></p><h2 id="est-t">Las Consultoras Estrella</h2><p class="sub"></p></header>
             <div class="joyero revela"></div>
             <div class="joyas"></div>
@@ -144,6 +150,7 @@ export const plantilla = (base: string, piel: Piel): string => {
 
         <!-- 5. Círculo Rosa -->
         <section class="circulo" id="circulo-rosa" aria-labelledby="cr-t">
+            ${flota('07', 'f-izq')}
             <header class="cab revela"><p class="kicker">Círculo Rosa</p><h2 id="cr-t">La constancia de tu unidad</h2><p class="sub"></p></header>
             <div class="cr-cifras revela"></div>
             <div class="cr-hitos"></div>
@@ -169,6 +176,7 @@ export const plantilla = (base: string, piel: Piel): string => {
 
         <!-- 7. Iniciadoras y Nuevos Inicios -->
         <section class="llegadas" id="iniciadoras" aria-labelledby="lleg-t">
+            ${flota('04', 'f-der')}
             <header class="cab revela"><p class="kicker">Iniciadoras</p><h2 id="lleg-t">Quién trajo a quién</h2><p class="sub"></p></header>
             <div class="pares"></div>
             <h3 class="subtit revela" data-previas hidden>Su primer mes completo</h3>
@@ -191,6 +199,7 @@ export const plantilla = (base: string, piel: Piel): string => {
 
         <!-- 9. Cumpleaños del mes en curso -->
         <section class="fiesta" id="cumpleanos" aria-labelledby="cum-t">
+            ${flota('05', 'f-izq')}
             <header class="cab revela"><p class="kicker">Cumpleaños de <span class="mes-curso"></span></p><h2 id="cum-t">Las que celebran este mes</h2><p class="sub"></p></header>
             <div class="cinta revela" aria-hidden="true"></div>
             <div class="pasteles"></div>
@@ -204,6 +213,7 @@ export const plantilla = (base: string, piel: Piel): string => {
         </section>
 
         <section class="cierre">
+            ${flota('02', 'f-der')}${flota('08', 'f-izq f-bajo')}
             <figure class="firma">
                 <div class="ovalo-f"></div>
                 <figcaption><p class="mensaje-d" hidden></p><b class="dire-nombre"></b><span class="dire-nivel"></span></figcaption>

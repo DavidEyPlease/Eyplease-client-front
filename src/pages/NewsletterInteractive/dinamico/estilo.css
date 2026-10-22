@@ -900,25 +900,68 @@ img { -webkit-user-drag: none; user-select: none; }
 .sin-ordenes .lead-h { max-width: 40ch; }
 
 /* =====================================================================================================
-   Piel de la Plantilla 9 («CELEBRA»): escenario negro, satín rosa y perlas. Se acomoda como la 10, con sus propias
-   piezas: el título «Celebra en grande», el de «Cuadro de Honor» y el arco del primer lugar.
+   Piel de la Plantilla 9 («CELEBRA»), con el KIT WEB de Astra (22-oct-2026): su fondo de satín como una sola capa
+   fija, sus títulos y su joya sueltos, el marco de la Directora con la silueta exacta de su foto y adornos en las
+   orillas. Colores y letras de su COLORES_Y_FUENTES: Playfair Display 600 para nombres y mes, Inter para leer y cifras.
+   A las piezas no se les pone filtro, tinte ni mezcla: van con su color.
    ===================================================================================================== */
 .pagina[data-piel="p9"] {
-    --vino: #4a0f2a; --vino-hondo: #0f070b; --vino-medio: #2a0b1a; --fucsia: #e23a7c; --rosa: #f7a9c6; --marfil: #fdf0f4;
-    --oro: #f2b6c8; --oro-hondo: #c2577d; --oro-claro: #ffe3ec; --oro-medio: #e28aa8; --tinta: #221820;
-    --marfil-rgb: 253, 240, 244; --oro-rgb: 242, 182, 200; --rosa-rgb: 247, 169, 198; --hondo-rgb: 15, 7, 11;
-    --vino-rgb: 74, 15, 42; --fucsia-rgb: 226, 58, 124; --oro-hondo-rgb: 194, 87, 125; --vino-medio-rgb: 42, 11, 26;
+    --vino: #4a0f2a; --vino-hondo: #130c12; --vino-medio: #2a1020; --fucsia: #e23a7c; --rosa: #f3abc3; --marfil: #fff4ec;
+    --oro: #f3abc3; --oro-hondo: #b77082; --oro-claro: #f3c0cc; --oro-medio: #e894b1; --tinta: #2a1020;
+    --marfil-rgb: 255, 244, 236; --oro-rgb: 243, 171, 195; --rosa-rgb: 243, 171, 195; --hondo-rgb: 19, 12, 18;
+    --vino-rgb: 74, 15, 42; --fucsia-rgb: 226, 58, 124; --oro-hondo-rgb: 183, 112, 130; --vino-medio-rgb: 42, 16, 32;
     --foto-1: #fff5f8; --foto-2: #f6dde5; --foto-3: #e8c2cd; --mono-1: #b0275f; --barra-2: #c2185b;
+    --display: 'Playfair Display', Georgia, serif; --nombre: 'Playfair Display', Georgia, serif; --cifra: 'Inter', Arial, sans-serif;
 }
+.pagina[data-piel="p9"] .fondo { background: var(--vino-hondo) var(--fondo-h) center / cover no-repeat; }
+.pagina[data-piel="p9"] .fondo::after { display: none; }
 .pagina[data-piel="p9"] .fila.r1 .relleno { background: linear-gradient(90deg, var(--oro-hondo), var(--oro) 50%, var(--oro-claro)); }
+.pagina[data-piel="p9"] .ir { background: var(--oro); color: #2a1020; box-shadow: 0 0 0 1px #ffd2dc inset, 0 14px 30px -14px rgba(var(--oro-rgb), .7); }
+.pagina[data-piel="p9"] .entrada .lead, .pagina[data-piel="p9"] .lead-h { font-family: var(--cifra); font-weight: 400; }
 
-/* sus piezas son más altas que las letras de la 10: se les da su medida para que todo quepa en una pantalla */
-.pagina[data-piel="p9"] .entrada .letras { max-width: 560px; gap: 10px; }
-.pagina[data-piel="p9"] .entrada .letras .l1 { width: min(100%, 540px, 46vh * 1.815); margin-left: -3%; }
-.pagina[data-piel="p9"] .entrada .mes-g { margin-top: -6px; }
-.pagina[data-piel="p9"] .cab-honor .tit-h img { width: min(100%, 560px, 50vh * 1.687); margin-left: -3%; }
-.pagina[data-piel="p9"] .cab-honor .emb { width: min(100%, 520px, 60vh * 1.31); filter: drop-shadow(0 30px 60px rgba(var(--fucsia-rgb), .25)); }
-@media (max-width: 760px) {
-    .pagina[data-piel="p9"] .entrada .letras .l1, .pagina[data-piel="p9"] .cab-honor .tit-h img { width: 100%; margin-left: 0; }
-    .pagina[data-piel="p9"] .cab-honor .emb { width: min(78vw, 320px); }
+/* portada: el mes chico arriba, el título suelto y la Directora en su marco */
+.pagina[data-piel="p9"] .entrada .letras { max-width: 600px; gap: 14px; }
+.pagina[data-piel="p9"] .entrada .letras .l1 { width: min(100%, 600px, 44vh * 2.607); margin-left: -2%; }
+.pagina[data-piel="p9"] .entrada .mes-g {
+    order: -1; margin: 0; font: 600 clamp(28px, 2.5vw, 42px)/1.1 var(--display); text-transform: capitalize; letter-spacing: 0;
+    background: none; color: var(--oro); -webkit-text-fill-color: currentColor; filter: none;
 }
+.pagina[data-piel="p9"] .ovalo-d { width: min(32vw, 470px, 62vh); }
+.pagina[data-piel="p9"] .foto-d {
+    inset: 0; border-radius: 0; overflow: visible; box-shadow: none;
+    -webkit-mask: var(--silueta) center / 100% 100% no-repeat; mask: var(--silueta) center / 100% 100% no-repeat; mask-mode: alpha;
+}
+/* la foto va en el hueco del marco (x 17 %, y 15 %, 66 % × 66 % del lienzo); la silueta la recorta y el marco va encima */
+.pagina[data-piel="p9"] .foto-d > * { position: absolute; left: 17%; top: 15%; width: 66%; height: 66%; }
+.pagina[data-piel="p9"] .marco-d { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.pagina[data-piel="p9"] .resplandor-d { inset: 4%; opacity: .7; }
+.pagina[data-piel="p9"] .dire { gap: 2px; }
+.pagina[data-piel="p9"] .dire .dire-tit { color: var(--rosa); }
+
+/* el Cuadro de Honor: el título suelto y la joya al centro de un anillo parejo con la unidad (lo arma burbujas()) */
+.pagina[data-piel="p9"] .cab-honor { --anillo: min(42vw, calc(100svh - var(--barra) - 150px), 780px); }
+.pagina[data-piel="p9"] .cab-honor .tit-h img:not(.flota) { width: min(100%, 580px, 36vh * 2.834); margin-left: -2%; }
+.pagina[data-piel="p9"] .cab-honor .emb { width: calc(var(--anillo) * .45); margin: calc(var(--anillo) * .275) auto; animation: none; filter: drop-shadow(0 26px 50px rgba(0, 0, 0, .5)); }
+.pagina[data-piel="p9"] .burbuja.anillo { box-shadow: 0 0 0 2px var(--oro-claro), 0 10px 22px -10px rgba(0, 0, 0, .8); }
+.pagina[data-piel="p9"] .cab-honor.ver .burbuja.anillo { animation: aparece .8s var(--ease) var(--d) forwards; }
+
+/* adornos del kit: en las orillas, detrás de lo que se lee y sin recibir clics */
+.pagina[data-piel="p9"] .flota { position: absolute; z-index: 0; height: auto; pointer-events: none; animation: flotar 8s ease-in-out infinite alternate; }
+.pagina[data-piel="p9"] main > section:has(> .flota) { position: relative; }
+.pagina[data-piel="p9"] .f-dire-1 { width: 15%; top: 2%; right: -12%; }
+.pagina[data-piel="p9"] .f-dire-2 { width: 14%; bottom: 12%; left: -16%; animation-delay: -3s; }
+.pagina[data-piel="p9"] .tit-h .f-honor { width: 56px; top: -66px; left: -10px; }
+.pagina[data-piel="p9"] .f-der { width: clamp(70px, 8vw, 128px); top: 56px; right: max(10px, 3vw); }
+.pagina[data-piel="p9"] .f-izq { width: clamp(70px, 8vw, 128px); top: 56px; left: max(10px, 3vw); animation-delay: -4s; }
+.pagina[data-piel="p9"] .f-bajo { top: auto; bottom: 40px; }
+@media (max-width: 767px) {
+    .pagina[data-piel="p9"] .fondo { background-image: var(--fondo-v); }
+}
+@media (max-width: 760px) {
+    .pagina[data-piel="p9"] .entrada .letras .l1, .pagina[data-piel="p9"] .cab-honor .tit-h img:not(.flota) { width: 100%; margin-left: 0; }
+    .pagina[data-piel="p9"] .ovalo-d { width: min(64vw, 300px); }
+    .pagina[data-piel="p9"] .cab-honor { --anillo: min(88vw, 400px); }
+    .pagina[data-piel="p9"] .tit-h .f-honor { display: none; }
+    .pagina[data-piel="p9"] .f-der, .pagina[data-piel="p9"] .f-izq { width: 54px; top: 64px; }
+}
+@media (prefers-reduced-motion: reduce) { .pagina[data-piel="p9"] .flota { animation: none; } }

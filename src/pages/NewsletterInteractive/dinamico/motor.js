@@ -9,7 +9,7 @@
 import css from './estilo.css?inline'
 import { plantilla } from './plantilla'
 
-const FUENTES = 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Poppins:wght@400;500;600;700&display=swap'
+const FUENTES = 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap'
 
 export function crearBoletinDinamico(host, D, op = {}) {
     // las letras de la plantilla se cargan en la página (un @font-face dentro del Shadow DOM no siempre aplica)
@@ -216,6 +216,23 @@ export function crearBoletinDinamico(host, D, op = {}) {
         const con = [...PER.values()].filter(p => p.foto)
         if (!emb) { caja.innerHTML = ''; return }
         const em = emb.getBoundingClientRect()
+        // la 9 (kit de Astra): un anillo parejo alrededor de la joya, de radio 44 % de un cuadro donde la joya ocupa el
+        // 45 %; el diámetro baja con la cantidad para que no se toquen. No asigna lugares: es la unidad completa.
+        if (piel === 'p9') {
+            const lista = con.slice(0, 32)
+            const n = lista.length
+            const S = em.width / .45
+            const r = S * .44
+            const d = Math.round(S * (n <= 1 ? .14 : Math.min(.14, .7744 * Math.sin(Math.PI / n))))
+            const cx = em.left - ent.left + em.width / 2
+            const cy = em.top - ent.top + em.height / 2
+            caja.innerHTML = lista.map((p, i) => {
+                const ang = -Math.PI / 2 + i * 2 * Math.PI / n
+                const st = `left:${(cx + Math.cos(ang) * r - d / 2).toFixed(0)}px;top:${(cy + Math.sin(ang) * r - d / 2).toFixed(0)}px;--s:${d}px;--d:${(.4 + i * .04).toFixed(2)}s;--o:1`
+                return `<span class="burbuja anillo" style="${st}">${cara(p)}</span>`
+            }).join('')
+            return
+        }
         // con muchas fotos el anillo se amontona: hasta 32 caras (14 en el teléfono)
         const lista = con.slice(0, telefono() ? 14 : 32)
         const cx = em.left - ent.left + em.width / 2

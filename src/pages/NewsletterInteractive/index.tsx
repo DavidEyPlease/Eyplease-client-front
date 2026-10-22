@@ -34,7 +34,7 @@ type Persona = { foto?: string | null, fotoOriginal?: string | null }
 
 /** Lo primero que se ve: las piezas de la portada y del Cuadro de Honor y la foto de la Directora. */
 const PIEZAS: Record<'p9' | 'p10', string[]> = {
-    p9: ['titulo', 'honor-titulo', 'arco'],
+    p9: ['kit-titulo', 'kit-honor', 'kit-joya', 'kit-marco', 'kit-silueta'],
     p10: ['portada_titulo', 'portada_filete', 'honor_linea1', 'honor_linea2', 'honor_emblema'],
 }
 const precargar = (urls: string[], tope = 6000) => Promise.race([
@@ -101,7 +101,9 @@ const NewsletterInteractivePage = () => {
         if (!datos) return
         let vigente = true
         const dir = (datos.directora ?? {}) as Persona
-        const urls = [...PIEZAS[piel].map(f => `/boletin/${piel}/${f}.webp`), dir.foto || dir.fotoOriginal || ''].filter(Boolean)
+        // la 9 trae además su fondo de satín: el de pantalla o el de teléfono
+        const fondo = piel === 'p9' ? [window.matchMedia('(max-width: 767px)').matches ? 'kit-fondo-v' : 'kit-fondo-h'] : []
+        const urls = [...PIEZAS[piel], ...fondo].map(f => `/boletin/${piel}/${f}.webp`).concat(dir.foto || dir.fotoOriginal || '').filter(Boolean)
         precargar(urls).then(() => { if (vigente) setImagenes(clave) })
         return () => { vigente = false }
     }, [datos, piel, clave])
