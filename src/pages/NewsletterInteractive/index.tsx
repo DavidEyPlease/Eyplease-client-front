@@ -9,7 +9,7 @@ import HttpService from '@/services/http'
 import LOGO_CLARO from '@/assets/images/eyplease-logo-color.png'
 import LOGO_OSCURO from '@/assets/images/eyplease-logo-fondo-oscuro.png'
 import useAuthStore from '@/store/auth'
-import { puedeVerBoletinDinamico } from './acceso'
+import { planConBoletinDinamico, puedeVerBoletinDinamico } from './acceso'
 import { BoletinDinamicoDatos, crearBoletinDinamico } from './dinamico/motor'
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -67,7 +67,8 @@ const NewsletterInteractivePage = () => {
     const pedido = params.get('mes')
     const yearMonth = pedido && /^\d{4}-(0[1-9]|1[0-2])$/.test(pedido) ? pedido : months[0]
     const hasUnity = newsletters.some(newsletter => newsletter.code === NewsletterTypes.UNITY)
-    const abierto = puedeVerBoletinDinamico(user?.account)
+    const conPlan = planConBoletinDinamico(user)
+    const abierto = puedeVerBoletinDinamico(user)
 
     const queryParams = useMemo(() => ({ year_month: yearMonth }), [yearMonth])
     const { response, error, fetchRetry } = useFetchQuery<BoletinDinamicoDatos>(API_ROUTES.REPORTS.BOLETIN_DINAMICO, {
@@ -142,9 +143,9 @@ const NewsletterInteractivePage = () => {
 
     if (!initialLoading && !user) return <Navigate to={APP_ROUTES.AUTH.SIGN_IN} replace />
 
-    const sinPlan = !initialLoading && !!user && !hasUnity
-    const enPrueba = !initialLoading && !!user && hasUnity && !abierto
-    const aviso = sinPlan ? 'Tu plan no incluye el boletín de unidad.'
+    const sinPlan = !initialLoading && !!user && (!hasUnity || !conPlan)
+    const enPrueba = !initialLoading && !!user && !sinPlan && !abierto
+    const aviso = sinPlan ? 'El boletín interactivo viene en los planes Elite y Nacional.'
         : enPrueba ? 'Muy pronto: el boletín dinámico de tu unidad está en sus últimas pruebas.'
         : error && !datos ? 'No pudimos armar tu boletín. Revisa tu conexión e inténtalo otra vez.'
         : null

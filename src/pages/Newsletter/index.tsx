@@ -131,7 +131,7 @@ const NewsletterStudio = () => {
             )}
 
             {/* El interactivo va aparte: es otra forma de entregar el boletín, no una opción de la plantilla */}
-            {type === NewsletterTypes.UNITY && puedeVerBoletinDinamico(user?.account) && <InteractiveFeature />}
+            {type === NewsletterTypes.UNITY && puedeVerBoletinDinamico(user) && <InteractiveFeature />}
 
             {/* La plantilla elegida, en grande: es lo que se va a generar */}
             <section className={cn(CARD, 'hoy-edge p-5')} style={rise(3)}>

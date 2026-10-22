@@ -241,6 +241,13 @@ const numeroDe = (id: string, role: 'director' | 'consultant') => id === 'liga-c
     ? (SIN_COBRO ? '186234MX' : role === 'consultant' ? 'DEMOCONSMX' : 'DEMOTIENDAMX')
     : (role === 'consultant' ? 'DEMOCONS' : 'DEMOTIENDA')
 
+/* `plan_key` de cada plan en producción (planes.json no lo trae) */
+const PLAN_KEYS: Record<string, string> = {
+    'f3dd9821-9a5f-47d9-a672-b6eb2202c0cc': 'free', '27a1e667-05eb-48e5-a388-4815d11a42f5': 'standard',
+    'fb85b91b-63d3-4227-9cff-0cfe3c9dcf8e': 'basic', '98bb65ac-86b2-450b-80a3-09a269f08ae1': 'executive',
+    '4d1f7fb7-b26b-4fdd-817b-96fde7d4ef26': 'elite', 'dd84da0a-efa1-4566-ae9a-d95a1ded138f': 'national',
+}
+
 const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => ({
     id: 'demo-person', user_id: 'demo-user', email: 'demo@ejemplo.com',
     name: role === 'consultant' ? 'Carla Consultora Demo' : 'Mariana Directora Demo',
@@ -249,7 +256,7 @@ const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string 
     user_role: { name: 'Cliente', slug: 'client' },
     client_role: rank ? { name: RANK_NAMES[rank] ?? rank, slug: rank } : role === 'consultant' ? { name: 'Consultora', slug: 'user_consultant' } : { name: 'Directora', slug: 'director' },
     on_biometric_auth: false, on_notifications: true, logotype: null,
-    plan: { id: plan.id, name: plan.name, features: plan.features, price: plan.price, color: plan.color, trial_days: 0, accesses: plan.accesses },
+    plan: { id: plan.id, name: plan.name, plan_key: PLAN_KEYS[plan.id], features: plan.features, price: plan.price, color: plan.color, trial_days: 0, accesses: plan.accesses },
     canva_connected: false, template_id: null, unread_notifications_count: 2, trial_ends_at: null, on_trial: false,
     // Dos cuentas de la MISMA persona, para poder ver el selector de países. Con `?cuentas=1`.
     accounts: CON_DOS_CUENTAS
@@ -493,7 +500,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         }
         else if (path.startsWith('/reports/generate-')) response = respond(null, 403)
         /* El boletín interactivo: la data cruda de unidad, con la forma de la API real */
-        else if (path === '/reports/boletin-dinamico') response = owned.has('unit_newsletter') ? respond(boletinDinamicoDemo(q.get('year_month'))) : respond(null, 403)
+        else if (path === '/reports/boletin-dinamico') response = owned.has('unit_newsletter') && ['elite', 'national'].includes(PLAN_KEYS[plan.id]) ? respond(boletinDinamicoDemo(q.get('year_month'))) : respond(null, 403)
         else if (path === '/reports/boletin-dinamico/ajustes' && method === 'PUT') {
             const cambios = JSON.parse(String(init?.body ?? '{}'))
             response = respond({ tempraneras: { activa: cambios.tempraneras_activa ?? true, hasta: cambios.tempraneras_hasta ?? 10 }, mensaje: cambios.mensaje ?? null })
