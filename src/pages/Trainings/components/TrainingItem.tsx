@@ -100,9 +100,12 @@ const TrainingItem = ({ training, showRibbon, showCategory }: Props) => {
                     {files.length} {files.length === 1 ? 'archivo' : 'archivos'}
                 </p>
 
+                {/* En pestaña nueva: la plataforma se queda abierta detrás y al cerrar la presentación ahí sigue */}
                 {training.web_url && (
                     <Link
                         to={APP_ROUTES.TRAININGS.WEB.replace(':id', training.id)}
+                        target="_blank"
+                        rel="noopener"
                         className="mt-auto flex items-center justify-center gap-2 rounded-xl bg-primary-gradient px-3 py-2.5 text-[12.5px] font-extrabold tracking-tight text-white shadow-primary-glow transition-transform hover:-translate-y-0.5"
                     >
                         <SparklesIcon className="size-3.5" />

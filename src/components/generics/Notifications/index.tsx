@@ -48,7 +48,10 @@ export function NotificationsDropdown() {
     const onOpenNotification = (notification: INotification) => {
         setIsOpen(false)
         const destino = destinoEnLaWeb(notification.data)
-        if (destino) navigate(destino)
+        if (!destino) return
+        /* La presentación de un entrenamiento abre en pestaña nueva, como desde el listado */
+        if (destino.endsWith('/presentacion')) window.open(destino, '_blank', 'noopener')
+        else navigate(destino)
     }
 
     return (
