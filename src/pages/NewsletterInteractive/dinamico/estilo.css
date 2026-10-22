@@ -900,8 +900,8 @@ img { -webkit-user-drag: none; user-select: none; }
 .sin-ordenes .lead-h { max-width: 40ch; }
 
 /* =====================================================================================================
-   Piel de la Plantilla 9 («CELEBRA»): escenario negro, satín rosa y perlas. Sus portadas completas son el fondo
-   de la portada y del Cuadro de Honor (el título ya viene en el arte); lo demás toma su paleta.
+   Piel de la Plantilla 9 («CELEBRA»): escenario negro, satín rosa y perlas. Se acomoda como la 10, con sus propias
+   piezas: el título «Celebra en grande», el de «Cuadro de Honor» y el arco del primer lugar.
    ===================================================================================================== */
 .pagina[data-piel="p9"] {
     --vino: #4a0f2a; --vino-hondo: #0f070b; --vino-medio: #2a0b1a; --fucsia: #e23a7c; --rosa: #f7a9c6; --marfil: #fdf0f4;
@@ -912,51 +912,13 @@ img { -webkit-user-drag: none; user-select: none; }
 }
 .pagina[data-piel="p9"] .fila.r1 .relleno { background: linear-gradient(90deg, var(--oro-hondo), var(--oro) 50%, var(--oro-claro)); }
 
-/* portada: su arte de fondo; la Directora en el hueco oscuro de la derecha */
-.pagina[data-piel="p9"] .entrada {
-    align-items: end;
-    background:
-        linear-gradient(0deg, var(--vino-hondo) 0%, rgba(var(--hondo-rgb), .78) 16%, transparent 38%),
-        var(--arte-portada-h) center / cover no-repeat;
-}
-.pagina[data-piel="p9"] .entrada { grid-template-columns: minmax(0, 1fr) minmax(0, 480px); grid-template-rows: auto auto; align-content: center; row-gap: 22px; }
-/* el título del arte ocupa la izquierda: la foto, su nombre y el texto van juntos en el hueco oscuro de la derecha */
-.pagina[data-piel="p9"] .dire { grid-column: 2; grid-row: 1; align-self: end; justify-self: center; }
-.pagina[data-piel="p9"] .entrada .letras { grid-column: 2; grid-row: 2; align-self: start; justify-items: center; text-align: center; gap: 8px; max-width: 480px; }
-.pagina[data-piel="p9"] .entrada .mes-g { font-size: clamp(26px, 2.4vw, 36px); animation-delay: .2s; }
-.pagina[data-piel="p9"] .entrada .lead { font-size: clamp(15px, 1.15vw, 18px); max-width: 40ch; }
-.pagina[data-piel="p9"] .ovalo-d { width: min(22vw, 300px, 42vh); }
-.pagina[data-piel="p9"] .foto-d { box-shadow: 0 0 0 4px var(--oro), 0 0 0 14px rgba(var(--rosa-rgb), .14), 0 0 80px rgba(var(--fucsia-rgb), .35), 0 40px 80px -30px rgba(0, 0, 0, .85); }
-
-/* Cuadro de Honor: su arte de fondo; el texto abajo, sobre la escalinata; la unidad flota arriba, en las luces */
-.pagina[data-piel="p9"] .cab-honor {
-    grid-template-columns: 1fr; align-content: end; justify-items: center; padding-bottom: 6vh;
-    background:
-        linear-gradient(0deg, var(--vino-hondo) 0%, rgba(var(--hondo-rgb), .82) 18%, transparent 42%),
-        linear-gradient(180deg, rgba(var(--hondo-rgb), .55) 0%, transparent 24%),
-        var(--arte-honor-h) center / cover no-repeat;
-}
-.pagina[data-piel="p9"] .tit-h { justify-items: center; text-align: center; max-width: 720px; }
-
+/* sus piezas son más altas que las letras de la 10: se les da su medida para que todo quepa en una pantalla */
+.pagina[data-piel="p9"] .entrada .letras { max-width: 560px; gap: 10px; }
+.pagina[data-piel="p9"] .entrada .letras .l1 { width: min(100%, 540px, 46vh * 1.815); margin-left: -3%; }
+.pagina[data-piel="p9"] .entrada .mes-g { margin-top: -6px; }
+.pagina[data-piel="p9"] .cab-honor .tit-h img { width: min(100%, 560px, 50vh * 1.687); margin-left: -3%; }
+.pagina[data-piel="p9"] .cab-honor .emb { width: min(100%, 520px, 60vh * 1.31); filter: drop-shadow(0 30px 60px rgba(var(--fucsia-rgb), .25)); }
 @media (max-width: 760px) {
-    .pagina[data-piel="p9"] .entrada {
-        display: block; position: relative; min-height: 100svh; padding: 0;
-        background:
-            linear-gradient(0deg, var(--vino-hondo) 0%, rgba(var(--hondo-rgb), .85) 14%, transparent 30%),
-            var(--arte-portada-v) center top / cover no-repeat;
-    }
-    /* la foto va dentro del aro vacío del arte vertical */
-    .pagina[data-piel="p9"] .dire { position: absolute; left: 50%; top: 51%; transform: translate(-50%, -50%); gap: 6px; }
-    .pagina[data-piel="p9"] .dire-tit { display: none; }
-    .pagina[data-piel="p9"] .ovalo-d { width: min(50vw, 220px); }
-    .pagina[data-piel="p9"] .foto-d { --mf: 70px; }
-    .pagina[data-piel="p9"] .entrada .letras { position: absolute; left: 0; right: 0; bottom: 0; max-width: none; padding: 0 22px 24px; justify-items: start; text-align: left; }
-    .pagina[data-piel="p9"] .entrada .lead { font-size: 15px; }
-    .pagina[data-piel="p9"] .entrada .mes-g { display: none; }
-    .pagina[data-piel="p9"] .cab-honor {
-        min-height: 100svh; padding: 0 22px 5vh; align-content: end;
-        background:
-            linear-gradient(0deg, var(--vino-hondo) 0%, rgba(var(--hondo-rgb), .85) 16%, transparent 34%),
-            var(--arte-honor-v) center top / cover no-repeat;
-    }
+    .pagina[data-piel="p9"] .entrada .letras .l1, .pagina[data-piel="p9"] .cab-honor .tit-h img { width: 100%; margin-left: 0; }
+    .pagina[data-piel="p9"] .cab-honor .emb { width: min(78vw, 320px); }
 }

@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { ArrowRightIcon, MonitorPlayIcon, SlidersHorizontalIcon, TrophyIcon } from 'lucide-react'
+import { ExternalLinkIcon, MonitorPlayIcon, SlidersHorizontalIcon, TrophyIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
 import { reportMonthLabel } from '@/utils/dates'
@@ -35,8 +35,9 @@ const InteractiveFeature = () => (
                     ))}
                 </ul>
 
-                <Link to={APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE} className="mt-5 inline-flex h-11 items-center gap-2 rounded-[13px] bg-white px-5 text-[13.5px] font-extrabold text-[#4E31C0] shadow-[0_14px_34px_-14px_rgba(0,0,0,.6)] transition-transform hover:-translate-y-0.5">
-                    Abrir el boletín interactivo <ArrowRightIcon className="size-4" />
+                {/* En su propia pestaña: la plataforma sigue abierta donde estaba */}
+                <Link to={APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE} target="_blank" rel="noopener" className="mt-5 inline-flex h-11 items-center gap-2 rounded-[13px] bg-white px-5 text-[13.5px] font-extrabold text-[#4E31C0] shadow-[0_14px_34px_-14px_rgba(0,0,0,.6)] transition-transform hover:-translate-y-0.5">
+                    Abrir el boletín interactivo <ExternalLinkIcon className="size-4" />
                 </Link>
             </div>
 

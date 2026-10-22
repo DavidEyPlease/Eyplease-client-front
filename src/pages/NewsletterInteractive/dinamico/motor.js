@@ -27,12 +27,6 @@ export function crearBoletinDinamico(host, D, op = {}) {
     root.innerHTML = `<style>${css}</style>${plantilla(base, piel)}`
     const pagina = root.querySelector('.pagina')
     pagina.dataset.piel = piel
-    if (piel === 'p9') {
-        // sus portadas completas son el fondo de la portada y del Cuadro de Honor (el título ya viene en el arte)
-        for (const [v, f] of [['--arte-portada-h', 'portada-h'], ['--arte-portada-v', 'portada-v'], ['--arte-honor-h', 'honor-h'], ['--arte-honor-v', 'honor-v']]) {
-            pagina.style.setProperty(v, `url("${base}/${f}.webp")`)
-        }
-    }
     const color = v => getComputedStyle(pagina).getPropertyValue(v).trim()
     const $ = (s, r = pagina) => r.querySelector(s)
     const $$ = (s, r = pagina) => [...r.querySelectorAll(s)]
@@ -220,34 +214,10 @@ export function crearBoletinDinamico(host, D, op = {}) {
         const ent = $('.cab-honor').getBoundingClientRect()
         const emb = $('.cab-honor .emb')
         const con = [...PER.values()].filter(p => p.foto)
-        if (!emb) {
-            // Plantilla 9: el título viene en el arte. En pantalla, la unidad lo corona en un arco que baja por los
-            // lados sin tocar las letras; en el teléfono (el título ocupa todo el ancho) va en dos filas sobre las luces.
-            let semilla9 = 7
-            const azar9 = () => ((semilla9 = (semilla9 * 9301 + 49297) % 233280) / 233280)
-            const lista = telefono() ? con.slice(0, 12) : con.slice(0, 28)
-            const pos = telefono()
-                ? (i, s) => {
-                    const fila = i < 6 ? 0 : 1
-                    const f = ((i % 6) + .5) / 6
-                    return [ent.width * (.06 + .88 * f) - s / 2, 92 + fila * 54 + (1 - Math.sin(f * Math.PI)) * 8]
-                }
-                : (i, s) => {
-                    const ang = Math.PI + Math.PI * (i + .5) / lista.length
-                    // un arco «cuadrado»: sube empinado por los lados y corre plano por arriba, rodeando el título
-                    const sy = -Math.pow(Math.abs(Math.sin(ang)), .55)
-                    return [ent.width * (.5 + .48 * Math.cos(ang)) - s / 2, ent.height * (.62 + .46 * sy) - s / 2]
-                }
-            caja.innerHTML = lista.map((p, i) => {
-                const s = Math.round((telefono() ? 34 : 44) + azar9() * (telefono() ? 10 : 12))
-                const [x, y] = pos(i, s)
-                const st = `left:${x.toFixed(0)}px;top:${Math.max(84, y).toFixed(0)}px;--s:${s}px;--d:${(.4 + i * .04).toFixed(2)}s;--t:${(5 + azar9() * 4).toFixed(1)}s;--dx:${(azar9() * 12 - 6).toFixed(0)}px;--dy:${(azar9() * 12 - 6).toFixed(0)}px;--o:${(.82 + azar9() * .16).toFixed(2)}`
-                return `<span class="burbuja" style="${st}">${cara(p)}</span>`
-            }).join('')
-            return
-        }
+        if (!emb) { caja.innerHTML = ''; return }
         const em = emb.getBoundingClientRect()
-        const lista = telefono() ? con.slice(0, 14) : con
+        // con muchas fotos el anillo se amontona: hasta 32 caras (14 en el teléfono)
+        const lista = con.slice(0, telefono() ? 14 : 32)
         const cx = em.left - ent.left + em.width / 2
         const cy = em.top - ent.top + em.height / 2
         const rx = em.width * (telefono() ? .58 : .66)

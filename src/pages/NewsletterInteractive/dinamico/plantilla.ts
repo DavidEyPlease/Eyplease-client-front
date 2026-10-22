@@ -1,7 +1,7 @@
 /* La página del boletín dinámico, tal como se aprobó en la muestra local. El motor (motor.js) la llena con los datos
    de la API; aquí sólo está la estructura. La piel cambia las piezas de la plantilla que viajan con la web en
-   public/boletin/<piel>: la 10 usa sus letras y su laurel sueltos; la 9 trae sus portadas completas como fondo (el
-   título ya viene en el arte), así que esas piezas no se piden. */
+   public/boletin/<piel>: los títulos de la portada y del Cuadro de Honor y la pieza que la unidad rodea (el laurel de
+   la 10, el arco del primer lugar de la 9), recortados del arte con las orillas difuminadas. */
 export type Piel = 'p9' | 'p10'
 
 export const plantilla = (base: string, piel: Piel): string => {
@@ -11,7 +11,7 @@ export const plantilla = (base: string, piel: Piel): string => {
     <div class="fondo" aria-hidden="true"></div>
 
     <header class="barra">
-        <button type="button" class="volver" data-volver aria-label="Volver al boletín"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button type="button" class="volver" data-volver aria-label="Cerrar el boletín"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <span class="marca">eyplease<b>+</b></span>
         <span class="quien"><small>Boletín de septiembre</small><b class="unidad"></b></span>
         <nav class="secciones" aria-label="Secciones">
@@ -40,7 +40,7 @@ export const plantilla = (base: string, piel: Piel): string => {
         <section class="entrada" aria-labelledby="titulo">
             <div class="letras">
                 <h1 id="titulo" class="sr">Reconocimiento de <span class="mes"></span></h1>
-                ${p10 ? `<img class="l1" src="${base}/portada_titulo.webp" alt="" width="1080" height="191">` : ''}
+                ${p10 ? `<img class="l1" src="${base}/portada_titulo.webp" alt="" width="1080" height="191">` : `<img class="l1" src="${base}/titulo.webp" alt="" width="1100" height="606">`}
                 <p class="mes-g" aria-hidden="true"><span class="mes"></span></p>
                 ${p10 ? `<img class="filete" src="${base}/portada_filete.webp" alt="" width="704" height="72">` : ''}
                 <p class="lead"></p>
@@ -63,7 +63,7 @@ export const plantilla = (base: string, piel: Piel): string => {
                 <div class="tit-h">
                     <h2 class="sr">Cuadro de Honor</h2>
                     ${p10 ? `<img src="${base}/honor_linea1.webp" alt="" width="1022" height="223">
-                    <img src="${base}/honor_linea2.webp" alt="" width="1031" height="210">` : ''}
+                    <img src="${base}/honor_linea2.webp" alt="" width="1031" height="210">` : `<img src="${base}/honor-titulo.webp" alt="" width="1100" height="652">`}
                     <p class="kicker">La carrera de <span class="mes"></span></p>
                     <p class="lead-h"></p>
                     <button type="button" class="ir" data-ver>
@@ -71,7 +71,7 @@ export const plantilla = (base: string, piel: Piel): string => {
                         Ver la carrera
                     </button>
                 </div>
-                ${p10 ? `<img class="emb" src="${base}/honor_emblema.webp" alt="" width="945" height="856">` : ''}
+                ${p10 ? `<img class="emb" src="${base}/honor_emblema.webp" alt="" width="945" height="856">` : `<img class="emb arco" src="${base}/arco.webp" alt="" width="1000" height="761">`}
             </header>
             <div class="escenario">
                 <aside class="lado">
