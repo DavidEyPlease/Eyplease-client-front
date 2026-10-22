@@ -10,6 +10,7 @@ import BootShell from "@/components/sidebar/boot-shell"
 import MainContainer from "@/components/sidebar/main-container"
 import UploadToastProgress from "@/components/generics/UploadToastProgress"
 import ReportTaskCenter from "@/components/generics/ReportTasks/ReportTaskCenter"
+import BoletinInteractivoAnuncio from "@/components/announcements/BoletinInteractivoAnuncio"
 import useAuthStore from "@/store/auth"
 import TopShell from "./TopShell"
 import { isNewShell } from "./TopShell/useNewShell"
@@ -69,6 +70,8 @@ const MainLayout = () => {
 
                 <UploadToastProgress />
                 <ReportTaskCenter />
+                {/* La novedad del boletín interactivo: una vez por cuenta, al entrar */}
+                <BoletinInteractivoAnuncio />
             </BillingEnforcementProvider>
         </section>
     )

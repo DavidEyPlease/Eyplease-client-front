@@ -1,0 +1,103 @@
+/* El boletín interactivo «en chiquito» (BoletinShowcase). Clases con prefijo `bsx-`. Colores y letras de la Plantilla 9. */
+.bsx {
+    --rosa: #f3abc3; --rosa-claro: #f3c0cc; --marfil: #fff4ec; --hondo: #130c12;
+    position: relative; aspect-ratio: 16 / 10; overflow: hidden; isolation: isolate; border-radius: 18px;
+    background: var(--hondo) var(--fondo) center / cover no-repeat; color: var(--marfil);
+    font-family: 'Inter', system-ui, sans-serif; container-type: inline-size;
+    box-shadow: 0 0 0 1px rgba(243, 171, 195, .22), 0 30px 60px -28px rgba(0, 0, 0, .85);
+}
+.bsx::after { /* un brillo que cruza de vez en cuando, como vidrio */
+    content: ''; position: absolute; inset: -40% -10%; z-index: 5; pointer-events: none;
+    background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, .07) 50%, transparent 58%);
+    transform: translateX(-70%); animation: bsx-brillo 7s ease-in-out infinite;
+}
+/* la que sale se va primero y la que entra llega después: nunca se enciman */
+.bsx-escena { position: absolute; inset: 0 0 13% 0; opacity: 0; transition: opacity .3s ease, transform .8s cubic-bezier(.2, .8, .2, 1); transform: scale(1.03); pointer-events: none; }
+.bsx-escena.is-on { opacity: 1; transform: none; transition-delay: .3s; transition-duration: .5s, .8s; }
+
+/* 1. portada */
+.bsx-portada { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; padding: 6% 6% 0; gap: 4%; }
+.bsx-letras { display: grid; gap: 4cqw; justify-items: start; }
+.bsx-mes { font: 600 3.4cqw/1 'Playfair Display', Georgia, serif; color: var(--rosa); }
+.bsx-titulo { width: 100%; height: auto; }
+.bsx-boton { font: 600 2cqw/1 'Inter', sans-serif; color: #2a1020; background: var(--rosa); border-radius: 99px; padding: 1.4cqw 3cqw; box-shadow: 0 0 0 1px #ffd2dc inset; }
+.bsx-marco { position: relative; width: 82%; justify-self: center; aspect-ratio: 4 / 5; }
+.bsx-marco > img:not(.bsx-flota) { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bsx-foto { position: absolute; inset: 0; -webkit-mask: var(--silueta) center / 100% 100% no-repeat; mask: var(--silueta) center / 100% 100% no-repeat; }
+.bsx-foto i { position: absolute; left: 17%; top: 15%; width: 66%; height: 66%; background: radial-gradient(60% 50% at 50% 38%, #b45d80 0 34%, transparent 35%), radial-gradient(90% 60% at 50% 100%, #b45d80 0 45%, transparent 46%), linear-gradient(180deg, #f8dbe5, #e9b9c9); }
+.bsx-flota { position: absolute; height: auto; }
+.bsx-f1 { width: 18%; top: -2%; right: -10%; }
+.bsx-f2 { width: 16%; bottom: 8%; left: -14%; }
+.is-on .bsx-letras > * { animation: bsx-sube .8s cubic-bezier(.2, .8, .2, 1) both; }
+.is-on .bsx-letras > :nth-child(2) { animation-delay: .12s; }
+.is-on .bsx-letras > :nth-child(3) { animation-delay: .3s; }
+.is-on .bsx-marco { animation: bsx-marco 1s cubic-bezier(.2, .8, .2, 1) both .1s; }
+.is-on .bsx-flota { animation: bsx-flota 3s ease-in-out infinite alternate; }
+.is-on .bsx-f2 { animation-delay: -1.5s; }
+
+/* 2. la carrera */
+.bsx-carrera { padding: 5% 6% 0; display: grid; grid-template-rows: auto 1fr; gap: 3%; }
+.bsx-dia { display: flex; align-items: baseline; gap: 1.4cqw; }
+.bsx-dia b { font: 700 7cqw/1 'Playfair Display', Georgia, serif; color: var(--rosa); font-variant-numeric: tabular-nums; min-width: 2ch; }
+.bsx-dia span { font: 600 2.2cqw/1 'Inter', sans-serif; letter-spacing: .18em; text-transform: uppercase; color: rgba(255, 244, 236, .7); }
+.bsx-pista { position: relative; }
+.bsx-fila {
+    position: absolute; left: 0; right: 0; top: 0; height: 20%;
+    display: grid; grid-template-columns: 3cqw 6.4cqw 24% 1fr 9cqw; align-items: center; gap: 1.6cqw;
+    transition: transform .45s cubic-bezier(.2, .8, .2, 1);
+}
+.bsx-pos { font: 700 2.2cqw/1 'Inter', sans-serif; color: rgba(255, 244, 236, .55); text-align: right; }
+.bsx-av {
+    position: relative; display: grid; place-items: center; width: 5.4cqw; aspect-ratio: 1; border-radius: 50%;
+    font: 700 1.8cqw/1 'Inter', sans-serif; color: #fff; background: hsl(var(--tono) 45% 48%);
+    box-shadow: 0 0 0 .3cqw var(--rosa-claro);
+}
+.bsx-corona {
+    position: absolute; top: -2.6cqw; left: 50%; width: 3.4cqw; aspect-ratio: 64 / 44; translate: -50% 0; background: #f6c76b;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path d='M4 14l14 12L32 4l14 22 14-12-6 26H10z'/></svg>") center / contain no-repeat;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path d='M4 14l14 12L32 4l14 22 14-12-6 26H10z'/></svg>") center / contain no-repeat;
+    filter: drop-shadow(0 0 .8cqw rgba(246, 199, 107, .8)); animation: bsx-corona .5s cubic-bezier(.3, 1.6, .5, 1) both;
+}
+.bsx-nombre { font: 600 2cqw/1.1 'Playfair Display', Georgia, serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bsx-barra { height: 1.6cqw; border-radius: 99px; background: rgba(255, 244, 236, .08); overflow: hidden; }
+.bsx-barra i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #b77082, var(--rosa) 60%, var(--rosa-claro)); transition: width .3s ease-out; box-shadow: 0 0 1.2cqw rgba(243, 171, 195, .45); }
+.bsx-pts { font: 600 2cqw/1 'Inter', sans-serif; font-variant-numeric: tabular-nums; text-align: right; color: var(--rosa); }
+.bsx-rebase {
+    position: absolute; right: 6%; top: 6%; font: 600 2cqw/1 'Inter', sans-serif; color: #2a1020; background: var(--rosa);
+    padding: 1.2cqw 2cqw; border-radius: 99px; animation: bsx-pop .5s cubic-bezier(.3, 1.6, .5, 1) both;
+}
+
+/* 3. Cuadro de Honor */
+.bsx-honor { display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 3% 6% 0; gap: 2%; }
+.bsx-honor-t { width: 100%; height: auto; }
+.bsx-anillo { position: relative; width: 92%; aspect-ratio: 1; justify-self: center; }
+.bsx-joya { position: absolute; left: 50%; top: 50%; width: 45%; translate: -50% -50%; }
+.bsx-cara {
+    position: absolute; width: 11%; aspect-ratio: 1; border-radius: 50%; translate: -50% -50%; opacity: 0;
+    background: radial-gradient(40% 32% at 50% 40%, hsl(var(--tono) 40% 48%) 0 98%, transparent 100%), radial-gradient(70% 45% at 50% 100%, hsl(var(--tono) 40% 44%) 0 98%, transparent 100%), hsl(var(--tono) 55% 88%);
+    box-shadow: 0 0 0 .25cqw var(--rosa-claro);
+}
+.is-on .bsx-honor-t { animation: bsx-sube .8s cubic-bezier(.2, .8, .2, 1) both; }
+.is-on .bsx-joya { animation: bsx-joya 1.1s cubic-bezier(.2, .8, .2, 1) both; }
+.is-on .bsx-cara { animation: bsx-cara .5s cubic-bezier(.3, 1.5, .5, 1) var(--d) both; }
+
+/* los tres pasos abajo, con su avance */
+.bsx-pasos { position: absolute; left: 6%; right: 6%; bottom: 4%; z-index: 4; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2cqw; }
+.bsx-pasos span { position: relative; padding-top: 1.4cqw; font: 600 1.7cqw/1 'Inter', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 244, 236, .45); transition: color .3s; }
+.bsx-pasos span::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: .35cqw; border-radius: 9px; background: rgba(255, 244, 236, .14); }
+.bsx-pasos i { position: absolute; left: 0; right: 0; top: 0; height: .35cqw; border-radius: 9px; background: var(--rosa); transform-origin: left; }
+.bsx-pasos span.is-on { color: var(--marfil); }
+
+@keyframes bsx-sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes bsx-marco { from { opacity: 0; transform: scale(.86) rotate(-3deg); } to { opacity: 1; transform: none; } }
+@keyframes bsx-flota { from { transform: translateY(-4%); } to { transform: translateY(6%) rotate(6deg); } }
+@keyframes bsx-corona { from { opacity: 0; transform: translateY(-60%) scale(.4) rotate(-25deg); } to { opacity: 1; transform: none; } }
+@keyframes bsx-pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+@keyframes bsx-joya { from { opacity: 0; scale: .6; rotate: -12deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
+@keyframes bsx-cara { from { opacity: 0; scale: .2; } to { opacity: 1; scale: 1; } }
+@keyframes bsx-brillo { 0%, 60% { transform: translateX(-70%); } 85%, 100% { transform: translateX(70%); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .bsx *, .bsx::after { animation: none !important; transition: none !important; }
+    .bsx-cara { opacity: 1; }
+}

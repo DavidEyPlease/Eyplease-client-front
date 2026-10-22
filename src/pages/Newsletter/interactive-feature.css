@@ -1,83 +1,50 @@
-/* El bloque «Nuevo · Boletín interactivo» de la página Boletín. Clases con prefijo `ifx-`. */
+/* El bloque «Nuevo · Boletín interactivo» de la página Boletín (y el aviso de novedad). Clases con prefijo `ifx-`. */
 .ifx {
-    background:
-        radial-gradient(60% 90% at 100% 0%, rgba(44, 212, 217, .35), transparent 60%),
-        radial-gradient(50% 70% at 0% 100%, rgba(229, 7, 125, .25), transparent 60%),
-        linear-gradient(135deg, #24104f 0%, #4E31C0 55%, #3b2aa8 100%);
-    box-shadow: 0 30px 70px -36px rgba(40, 20, 120, .9);
+    isolation: isolate;
+    background: linear-gradient(135deg, #1d0c45 0%, #3a1f9a 45%, #4E31C0 70%, #2b1a7a 100%);
+    box-shadow: 0 30px 70px -36px rgba(40, 20, 120, .9), 0 0 0 1px rgba(255, 255, 255, .08) inset;
 }
+/* aurora: tres manchas de luz que se mueven despacio detrás de todo */
+.ifx-aurora { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.ifx-aurora i { position: absolute; width: 60%; aspect-ratio: 1; border-radius: 50%; filter: blur(60px); opacity: .55; }
+.ifx-aurora i:nth-child(1) { background: #2CD4D9; top: -40%; right: -10%; animation: ifx-aurora-1 14s ease-in-out infinite alternate; }
+.ifx-aurora i:nth-child(2) { background: #E5077D; bottom: -50%; left: -15%; opacity: .45; animation: ifx-aurora-2 17s ease-in-out infinite alternate; }
+.ifx-aurora i:nth-child(3) { background: #f3abc3; top: 30%; left: 35%; width: 35%; opacity: .22; animation: ifx-aurora-3 12s ease-in-out infinite alternate; }
 
-.ifx-stage {
-    position: relative;
-    aspect-ratio: 16 / 10;
-    border-radius: 18px;
-    overflow: hidden;
-    background: radial-gradient(120% 90% at 50% 0%, #2a1520 0%, #120a10 60%, #07040a 100%);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 24px 50px -24px rgba(0, 0, 0, .8);
+.ifx-nuevo {
+    position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 11px;
+    border-radius: 99px; background: #E5077D; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    box-shadow: 0 0 0 0 rgba(229, 7, 125, .6); animation: ifx-latido 2.4s ease-out infinite;
 }
-.ifx-kicker {
-    position: absolute; left: 7%; top: 9%;
-    font: 700 clamp(13px, 2.2vw, 20px) / 1 "Didot", "Bodoni 72", Georgia, serif;
-    background: linear-gradient(180deg, #fff3d8, #e6bd6b 60%, #b98a3e);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+.ifx-nuevo::after { /* un destello que cruza la etiqueta */
+    content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .55) 50%, transparent 70%);
+    transform: translateX(-120%); animation: ifx-destello 3.2s ease-in-out infinite;
 }
-.ifx-podium {
-    position: absolute; left: 8%; right: 8%; bottom: 13%; height: 62%;
-    display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 6%; align-items: end;
+.ifx-titulo {
+    font-size: clamp(30px, 3.4vw, 42px); line-height: 1.02; font-weight: 800; letter-spacing: -.02em;
+    background: linear-gradient(100deg, #fff 0%, #fff 40%, #ffd3e3 55%, #fff 70%); background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; animation: ifx-titulo 6s ease-in-out infinite;
 }
-.ifx-pd { display: flex; flex-direction: column; align-items: center; gap: 8%; height: 100%; justify-content: flex-end; }
-.ifx-pd i { display: block; width: 100%; border-radius: 6px 6px 0 0; }
-.ifx-1 i { height: 46%; background: linear-gradient(135deg, #FFE7A3, #E3B04B 55%, #A9772A); }
-.ifx-2 i { height: 32%; background: linear-gradient(135deg, #F7F7FB, #C9CAD6 55%, #8E90A2); }
-.ifx-3 i { height: 22%; background: linear-gradient(135deg, #F2C09A, #C17A43 55%, #87501F); }
-.ifx-av {
-    position: relative; display: grid; place-items: center;
-    width: 48%; aspect-ratio: 1; border-radius: 50%;
-    background: linear-gradient(135deg, #3d2632, #6e4456); color: #f6dfb0;
-    font: 700 clamp(11px, 1.6vw, 15px) "Didot", Georgia, serif;
+.ifx-chip {
+    padding: 5px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; color: rgba(255, 255, 255, .9);
+    background: rgba(255, 255, 255, .1); box-shadow: 0 0 0 1px rgba(255, 255, 255, .16) inset;
+    opacity: 0; animation: ifx-chip .5s cubic-bezier(.2, .8, .2, 1) forwards; animation-delay: calc(.35s + var(--n) * 70ms);
 }
-.ifx-1 .ifx-av { width: 56%; box-shadow: 0 0 0 2px #E3B04B, 0 0 18px rgba(227, 176, 75, .55); }
-.ifx-2 .ifx-av { box-shadow: 0 0 0 2px #C9CAD6; }
-.ifx-3 .ifx-av { box-shadow: 0 0 0 2px #C17A43; }
-.ifx-crown {
-    width: 30%; aspect-ratio: 64 / 44; background: #E3B04B;
-    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path d='M4 14l14 12L32 4l14 22 14-12-6 26H10z'/></svg>") center / contain no-repeat;
-    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path d='M4 14l14 12L32 4l14 22 14-12-6 26H10z'/></svg>") center / contain no-repeat;
-    filter: drop-shadow(0 2px 6px rgba(227, 176, 75, .6));
-}
-.ifx-spark {
-    position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fff3d8;
-    box-shadow: 0 0 8px 2px rgba(233, 199, 123, .7);
-    animation: ifx-twinkle 2.4s ease-in-out infinite;
-}
-.ifx-bar { position: absolute; left: 8%; right: 8%; bottom: 6%; height: 3px; border-radius: 9px; background: rgba(255, 255, 255, .12); overflow: hidden; }
-.ifx-bar i { position: absolute; inset: 0; transform-origin: left; background: #E9C77B; animation: ifx-progress 6s linear infinite; }
+.ifx-cta { position: relative; overflow: hidden; }
+.ifx-cta::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(78, 49, 192, .18) 50%, transparent 65%); transform: translateX(-120%); animation: ifx-destello 3.6s ease-in-out 1s infinite; }
+.ifx-pantalla { transform: perspective(1400px) rotateY(-6deg) rotateX(2deg); transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
+.ifx:hover .ifx-pantalla { transform: perspective(1400px) rotateY(0) rotateX(0); }
 
-/* El podio se arma en bucle: 3.º, 2.º y el 1.º cae; después respira y vuelve a empezar */
-.ifx-3 { animation: ifx-climb 6s ease-out infinite; }
-.ifx-2 { animation: ifx-climb 6s ease-out infinite; animation-delay: .35s; }
-.ifx-1 { animation: ifx-drop 6s cubic-bezier(.3, .7, .3, 1) infinite; animation-delay: .8s; }
-.ifx-1 .ifx-crown { animation: ifx-crown 6s ease-out infinite; animation-delay: .8s; }
+@keyframes ifx-aurora-1 { to { transform: translate(-25%, 20%) scale(1.15); } }
+@keyframes ifx-aurora-2 { to { transform: translate(30%, -15%) scale(1.2); } }
+@keyframes ifx-aurora-3 { to { transform: translate(-30%, -25%) scale(.85); } }
+@keyframes ifx-latido { 0% { box-shadow: 0 0 0 0 rgba(229, 7, 125, .55); } 70%, 100% { box-shadow: 0 0 0 10px rgba(229, 7, 125, 0); } }
+@keyframes ifx-destello { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+@keyframes ifx-titulo { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+@keyframes ifx-chip { from { opacity: 0; transform: translateY(8px) scale(.96); } to { opacity: 1; transform: none; } }
 
-@keyframes ifx-climb {
-    0% { opacity: 0; transform: translateY(30%); }
-    12%, 88% { opacity: 1; transform: none; }
-    100% { opacity: 0; transform: none; }
-}
-@keyframes ifx-drop {
-    0%, 4% { opacity: 0; transform: translateY(-60%); }
-    14% { opacity: 1; transform: translateY(4%); }
-    18%, 86% { opacity: 1; transform: none; }
-    100% { opacity: 0; }
-}
-@keyframes ifx-crown {
-    0%, 16% { opacity: 0; transform: translateY(-40%) scale(.5) rotate(-20deg); }
-    24%, 86% { opacity: 1; transform: none; }
-    100% { opacity: 0; }
-}
-@keyframes ifx-twinkle { 50% { opacity: .25; transform: scale(.6); } }
-@keyframes ifx-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-
+@media (max-width: 1023px) { .ifx-pantalla, .ifx:hover .ifx-pantalla { transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-    .ifx-stage *, .ifx-stage *::before { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .ifx *, .ifx *::after { animation: none !important; }
+    .ifx-chip { opacity: 1; }
 }
