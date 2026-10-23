@@ -125,9 +125,12 @@ const NewsletterInteractivePage = () => {
     /* al cambiar de mes la carga empieza otra vez */
     useEffect(() => { setAvance(a => Math.min(a, 30)) }, [clave])
 
+    /* sin reportes cargados de ese mes no hay unidad que contar: se dice, en lugar de una página vacía */
+    const vacio = !ejemplo && !!datos && !datos.personas?.length
+
     const hostRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
-        if (!hostRef.current || !datos || !mostrar) return
+        if (!hostRef.current || !datos || !mostrar || vacio) return
         window.scrollTo(0, 0)
         /* Lo guardado se apunta también en los datos de la caché: si vuelve a abrir el mes, lo encuentra igual */
         const guardar = (cambios: Record<string, unknown>) =>
@@ -153,7 +156,7 @@ const NewsletterInteractivePage = () => {
             guardarMensaje: ejemplo ? undefined : mensaje => guardar({ mensaje }),
         })
         return () => boletin.destruir()
-    }, [datos, ejemplo, months, mostrar, piel])
+    }, [datos, ejemplo, months, mostrar, piel, vacio])
 
     if (!initialLoading && !user) return <Navigate to={APP_ROUTES.AUTH.SIGN_IN} replace />
 
@@ -163,7 +166,10 @@ const NewsletterInteractivePage = () => {
     const aviso = sinPlan ? 'El boletín interactivo viene en los planes Elite y Nacional.'
         : enPrueba ? 'Muy pronto: el boletín dinámico de tu unidad está en sus últimas pruebas.'
         : error && !datos ? 'No pudimos armar tu boletín. Revisa tu conexión e inténtalo otra vez.'
+        : vacio ? `Tu boletín de ${monthLabel(yearMonth).split(' ')[0].toLowerCase()} todavía no tiene datos: se arma con los reportes de tu unidad. En cuanto estén cargados, aquí lo verás.`
         : null
+    // con el mes vacío se le ofrece el anterior, que puede tener sus reportes
+    const mesAnterior = vacio ? months[months.indexOf(yearMonth) + 1] : undefined
     const paso = avance >= 100 ? '¡Listo!'
         : !user ? 'Revisando tu cuenta…'
         : !datos ? `Juntando tu mes de ${monthLabel(yearMonth).split(' ')[0].toLowerCase()}…`
@@ -182,6 +188,9 @@ const NewsletterInteractivePage = () => {
                                 <div className="flex flex-wrap justify-center gap-2">
                                     {verEjemplo && (
                                         <button type="button" onClick={() => navigate(`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?ejemplo=1`)} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Ver un ejemplo</button>
+                                    )}
+                                    {mesAnterior && (
+                                        <button type="button" onClick={() => { const next = new URLSearchParams(params); next.set('mes', mesAnterior); setParams(next, { replace: true }) }} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Ver {monthLabel(mesAnterior).split(' ')[0].toLowerCase()}</button>
                                     )}
                                     {!!error && !datos && !sinPlan && !enPrueba && (
                                         <button type="button" onClick={() => fetchRetry()} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Reintentar</button>

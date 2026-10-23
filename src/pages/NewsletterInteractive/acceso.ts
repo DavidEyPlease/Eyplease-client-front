@@ -5,10 +5,11 @@ import type { IUser } from '@/interfaces/users'
 const PLANES = ['elite', 'national']
 
 /**
- * Mientras se prueba con Directoras reales, además sólo lo ven estas cuentas (el bloque «Nuevo» del Studio y la
- * página). Para abrirlo a todas las de esos planes: `null`. En el simulador de cuentas (sólo dev) no aplica.
+ * Para probar algo nuevo con Directoras reales antes de abrirlo: sólo estas cuentas lo ven (el bloque «Nuevo», la
+ * página, el formato «Interactivo» y el aviso). `null` = todas las de su plan. Abierto a todas el 22-oct-2026 (David:
+ * «ya es momento de abrirla a todas»); la cuenta de prueba fue la 028616.
  */
-const CUENTAS_DE_PRUEBA: string[] | null = ['028616']
+const CUENTAS_DE_PRUEBA = null as string[] | null
 
 /** La unidad de ejemplo es el cierre de septiembre de 2026 (piel de la Plantilla 9). */
 export const MES_DEL_EJEMPLO = '2026-09'
