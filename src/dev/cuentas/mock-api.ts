@@ -4,6 +4,8 @@
 import plans from './planes.json'
 import utilData from './util-data.json'
 import { boletinDinamicoDemo } from './boletin-dinamico-demo'
+// las cifras de un área real con la gente inventada y sin fotos (Boletin-Interactivo/nacional-p9)
+import boletinNacionalDemo from './boletin-nacional-demo.json'
 
 export type DemoPlan = typeof plans[number]
 export const PLANS: DemoPlan[] = plans
@@ -535,6 +537,11 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             const cambios = JSON.parse(String(init?.body ?? '{}'))
             response = respond({ tempraneras: { activa: cambios.tempraneras_activa ?? true, hasta: cambios.tempraneras_hasta ?? 10 }, mensaje: cambios.mensaje ?? null })
         }
+        /* El boletín nacional interactivo: sólo el plan Nacional; …&boletin=vacio, un mes sin reportes del Área */
+        else if (path === '/reports/boletin-nacional') response = owned.has('national_newsletter') && PLAN_KEYS[actual.id] === 'national'
+            ? respond(sessionStorage.getItem('cuentas:boletin') === 'vacio' ? { ...boletinNacionalDemo, personas: [] } : structuredClone(boletinNacionalDemo))
+            : respond(null, 403)
+        else if (path === '/reports/boletin-nacional/ajustes' && method === 'PUT') response = respond({ mensaje: JSON.parse(String(init?.body ?? '{}')).mensaje || null })
         else if (path === '/reports/preferences') {
             // Como la API real: sólo los boletines que su plan trae, con las secciones del catálogo
             const newsletters = (utilData.newsletters as Array<{ code: string, name: string, sections: Array<{ sectionKey: string, name: string }> }>)

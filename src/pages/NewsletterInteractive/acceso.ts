@@ -33,3 +33,13 @@ export const pielDePlantilla = (nombre?: string | null): 'p9' | 'p10' | null => 
 
 /** «Lo quiero en mi unidad»: directo a subir al Plan Elite (paga con tarjeta y se le abre en ese momento). */
 export const LIGA_LO_QUIERO = `${APP_ROUTES.HOME.PLAN_UPGRADE}?plan=elite`
+
+/** El boletín NACIONAL interactivo viene sólo en el plan Nacional. La API pide lo mismo. */
+const PLANES_NACIONAL = ['national']
+
+/** Mientras David lo revisa, sólo lo ven estas cuentas (la 028616 es su cuenta de prueba). `null` = todas las Nacionales. */
+const CUENTAS_DE_PRUEBA_NACIONAL = ['028616'] as string[] | null
+
+export const puedeVerBoletinNacional = (user?: IUser | null): boolean =>
+    !!user?.plan?.plan_key && PLANES_NACIONAL.includes(user.plan.plan_key)
+    && (import.meta.env.DEV || CUENTAS_DE_PRUEBA_NACIONAL === null || (!!user.account && CUENTAS_DE_PRUEBA_NACIONAL.includes(user.account)))

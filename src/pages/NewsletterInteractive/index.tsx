@@ -6,28 +6,12 @@ import { APP_ROUTES } from '@/constants/app'
 import useFetchQuery from '@/hooks/useFetchQuery'
 import { ApiResponse, NewsletterTypes } from '@/interfaces/common'
 import HttpService from '@/services/http'
-import LOGO_CLARO from '@/assets/images/eyplease-logo-color.png'
-import LOGO_OSCURO from '@/assets/images/eyplease-logo-fondo-oscuro.png'
 import useAuthStore from '@/store/auth'
 import { LIGA_LO_QUIERO, MES_DEL_EJEMPLO, ofrecerBoletinDinamico, planConBoletinDinamico, puedeVerBoletinDinamico } from './acceso'
 import { BoletinDinamicoDatos, crearBoletinDinamico } from './dinamico/motor'
-
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
-
-/** El mes del boletín por defecto es el anterior, igual que el PDF (`getReportDates`). */
-const lastMonths = (count: number): string[] => {
-    const date = new Date()
-    date.setDate(1)
-    return Array.from({ length: count }, () => {
-        date.setMonth(date.getMonth() - 1)
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-    })
-}
-const monthLabel = (yearMonth: string) => {
-    const [year, month] = yearMonth.split('-').map(Number)
-    const nombre = MESES[month - 1]
-    return `${nombre[0].toUpperCase()}${nombre.slice(1)} ${year}`
-}
+import { esMes, etiquetaMes as monthLabel, precargar, ultimosMeses as lastMonths } from './meses'
+import PantallaDeCarga from './PantallaDeCarga'
+import { useAvanceDeCarga } from './useAvanceDeCarga'
 
 type Ajustes = NonNullable<BoletinDinamicoDatos['ajustes']>
 type Persona = { foto?: string | null, fotoOriginal?: string | null }
@@ -37,14 +21,6 @@ const PIEZAS: Record<'p9' | 'p10', string[]> = {
     p9: ['kit-titulo', 'kit-honor', 'kit-joya', 'kit-marco', 'kit-silueta'],
     p10: ['portada_titulo', 'portada_filete', 'honor_linea1', 'honor_linea2', 'honor_emblema'],
 }
-const precargar = (urls: string[], tope = 6000) => Promise.race([
-    Promise.all(urls.map(url => new Promise<void>(listo => {
-        const img = new Image()
-        img.onload = img.onerror = () => listo()
-        img.src = url
-    }))),
-    new Promise<void>(listo => setTimeout(listo, tope)),
-])
 
 /** La piel es la plantilla del mes: la 9 («CELEBRA») hasta septiembre; la 10 («Papel en relieve») sale en
  *  noviembre, con el boletín de octubre. */
@@ -67,7 +43,7 @@ const NewsletterInteractivePage = () => {
     const ejemplo = params.get('ejemplo') === '1'
     const months = useMemo(() => lastMonths(6), [])
     const pedido = params.get('mes')
-    const yearMonth = ejemplo ? MES_DEL_EJEMPLO : pedido && /^\d{4}-(0[1-9]|1[0-2])$/.test(pedido) ? pedido : months[0]
+    const yearMonth = ejemplo ? MES_DEL_EJEMPLO : esMes(pedido) ? pedido : months[0]
     const hasUnity = newsletters.some(newsletter => newsletter.code === NewsletterTypes.UNITY)
     const conPlan = planConBoletinDinamico(user)
     const abierto = puedeVerBoletinDinamico(user)
@@ -89,16 +65,12 @@ const NewsletterInteractivePage = () => {
     const web = useRef({ params, setParams, navigate, yearMonth })
     web.current = { params, setParams, navigate, yearMonth }
 
-    /* La carga avanza por pasos reales (cuenta → datos → imágenes) y entre uno y otro se arrastra despacio,
-       para que nunca parezca detenida. El boletín se arma al llegar a 100: así su portada se anima ya a la vista. */
     /* la piel la elige la plantilla desde la que se abrió (`?piel=`), o la del mes */
     const pielPedida = params.get('piel')
     const piel = !ejemplo && (pielPedida === 'p9' || pielPedida === 'p10') ? pielPedida : pielDelMes(yearMonth)
     /* lo que se está armando: el mes, o el ejemplo */
     const clave = ejemplo ? 'ejemplo' : yearMonth
     const [imagenes, setImagenes] = useState<string | null>(null)
-    const [avance, setAvance] = useState(4)
-    const [mostrar, setMostrar] = useState(false)
     useEffect(() => {
         if (!datos) return
         let vigente = true
@@ -110,20 +82,8 @@ const NewsletterInteractivePage = () => {
         return () => { vigente = false }
     }, [datos, piel, clave])
     const listas = !!datos && imagenes === clave
-    const meta = listas ? 100 : datos ? 92 : user ? 72 : 18
-    useEffect(() => {
-        // con todo listo termina rápido: la barra no debe alargar la espera
-        const paso = meta === 100 ? (a: number) => Math.max(5, (100 - a) / 2.5) : (a: number) => Math.max(1, (meta - a) / 6)
-        const t = setInterval(() => setAvance(a => (a < meta ? Math.min(meta, a + paso(a)) : a)), 110)
-        return () => clearInterval(t)
-    }, [meta])
-    useEffect(() => {
-        if (avance < 100) { setMostrar(false); return }
-        const t = setTimeout(() => setMostrar(true), 280)
-        return () => clearTimeout(t)
-    }, [avance])
-    /* al cambiar de mes la carga empieza otra vez */
-    useEffect(() => { setAvance(a => Math.min(a, 30)) }, [clave])
+    /* El boletín se arma al llegar a 100: así su portada se anima ya a la vista */
+    const { avance, mostrar } = useAvanceDeCarga(listas ? 100 : datos ? 92 : user ? 72 : 18, clave)
 
     /* sin reportes cargados de ese mes no hay unidad que contar: se dice, en lugar de una página vacía */
     const vacio = !ejemplo && !!datos && !datos.personas?.length
@@ -178,40 +138,18 @@ const NewsletterInteractivePage = () => {
     return (
         <div className="boletin-dinamico min-h-dvh">
             {(!mostrar || aviso) && (
-                <div className="fixed inset-0 z-10 grid place-content-center bg-background px-6" role="status">
-                    <div className="flex w-[min(360px,86vw)] flex-col items-center gap-5 text-center">
-                        <img src={LOGO_CLARO} alt="Eyplease+" className="w-24 animate-[eypflota_2.4s_ease-in-out_infinite_alternate] drop-shadow-[0_14px_18px_rgba(78,49,192,.28)] dark:hidden" />
-                        <img src={LOGO_OSCURO} alt="Eyplease+" className="hidden w-24 animate-[eypflota_2.4s_ease-in-out_infinite_alternate] drop-shadow-[0_14px_18px_rgba(44,212,217,.25)] dark:block" />
-                        {aviso ? (
-                            <>
-                                <p className="text-base font-semibold">{aviso}</p>
-                                <div className="flex flex-wrap justify-center gap-2">
-                                    {verEjemplo && (
-                                        <button type="button" onClick={() => navigate(`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?ejemplo=1`)} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Ver un ejemplo</button>
-                                    )}
-                                    {mesAnterior && (
-                                        <button type="button" onClick={() => { const next = new URLSearchParams(params); next.set('mes', mesAnterior); setParams(next, { replace: true }) }} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Ver {monthLabel(mesAnterior).split(' ')[0].toLowerCase()}</button>
-                                    )}
-                                    {!!error && !datos && !sinPlan && !enPrueba && (
-                                        <button type="button" onClick={() => fetchRetry()} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Reintentar</button>
-                                    )}
-                                    <button type="button" onClick={() => navigate(APP_ROUTES.HOME.NEWSLETTER)} className="rounded-full border px-5 py-2.5 text-sm font-bold">Ir al boletín</button>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="bg-[linear-gradient(90deg,#4E31C0,#6C47FF,#2CD4D9)] bg-clip-text text-[64px] leading-none font-extrabold tracking-tight tabular-nums text-transparent">
-                                    {Math.round(avance)}<span className="text-3xl">%</span>
-                                </div>
-                                <div className="h-2 w-full overflow-hidden rounded-full bg-primary/10">
-                                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#4E31C0,#6C47FF,#2CD4D9)] transition-[width] duration-300" style={{ width: `${avance}%` }} />
-                                </div>
-                                <p className="text-sm font-semibold text-muted-foreground">{paso}</p>
-                                <p className="text-[10.5px] font-bold tracking-[.2em] text-muted-foreground/60 uppercase">Boletín interactivo · eyplease+</p>
-                            </>
-                        )}
-                    </div>
-                </div>
+                <PantallaDeCarga aviso={aviso} avance={avance} paso={paso} sello="Boletín interactivo · eyplease+" acciones={<>
+                    {verEjemplo && (
+                        <button type="button" onClick={() => navigate(`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?ejemplo=1`)} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Ver un ejemplo</button>
+                    )}
+                    {mesAnterior && (
+                        <button type="button" onClick={() => { const next = new URLSearchParams(params); next.set('mes', mesAnterior); setParams(next, { replace: true }) }} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Ver {monthLabel(mesAnterior).split(' ')[0].toLowerCase()}</button>
+                    )}
+                    {!!error && !datos && !sinPlan && !enPrueba && (
+                        <button type="button" onClick={() => fetchRetry()} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Reintentar</button>
+                    )}
+                    <button type="button" onClick={() => navigate(APP_ROUTES.HOME.NEWSLETTER)} className="rounded-full border px-5 py-2.5 text-sm font-bold">Ir al boletín</button>
+                </>} />
             )}
             <div ref={hostRef} />
             {/* El ejemplo se dice ejemplo todo el tiempo, y desde ahí se pide (o se abre el suyo, si ya lo tiene) */}

@@ -17,7 +17,7 @@ import { NEWSLETTER_TYPE_META, ReportFileType } from '@/pages/Dashboard/componen
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import '@/pages/Hoy/hoy.css'
 import InteractiveFeature from '@/pages/Newsletter/InteractiveFeature'
-import { LIGA_LO_QUIERO, ofrecerBoletinDinamico, pielDePlantilla, puedeVerBoletinDinamico } from '@/pages/NewsletterInteractive/acceso'
+import { LIGA_LO_QUIERO, ofrecerBoletinDinamico, pielDePlantilla, puedeVerBoletinDinamico, puedeVerBoletinNacional } from '@/pages/NewsletterInteractive/acceso'
 import { NEWSLETTER_TAG } from '@/pages/Reports/lib'
 import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
@@ -74,11 +74,13 @@ const NewsletterStudio = () => {
     const canGenerate = !!type && !!templateId && wizard.sections.length > 0
     const previewTemplate = templates.find(template => template.id === wizard.previewTemplateId)
 
-    /* El interactivo es del boletín de unidad. Con Elite o Nacional se abre; a los demás planes se les enseña con
-       candado (ejemplo y subir de plan). Sólo la 9 y la 10 tienen versión interactiva: con otra se ofrece cambiar. */
-    const conInteractivo = type === NewsletterTypes.UNITY && (puedeVerBoletinDinamico(user) || ofrecerBoletinDinamico(user))
-    const interactivoBloqueado = !puedeVerBoletinDinamico(user)
-    const piel = pielDePlantilla(selected?.name)
+    /* El interactivo de unidad: con Elite o Nacional se abre; a los demás planes se les enseña con candado (ejemplo y
+       subir de plan). Sólo la 9 y la 10 tienen versión interactiva: con otra se ofrece cambiar. El NACIONAL (plan
+       Nacional) va con la piel de la 9 sea cual sea la plantilla: es su propia página. */
+    const conNacional = type === NewsletterTypes.NATIONAL && puedeVerBoletinNacional(user)
+    const conInteractivo = conNacional || (type === NewsletterTypes.UNITY && (puedeVerBoletinDinamico(user) || ofrecerBoletinDinamico(user)))
+    const interactivoBloqueado = !conNacional && !puedeVerBoletinDinamico(user)
+    const piel = conNacional ? 'p9' : pielDePlantilla(selected?.name)
     const conVersion = templates.find(template => pielDePlantilla(template.name) === 'p9')
     const verInteractivo = conInteractivo && interactivo
     useEffect(() => { if (!conInteractivo) setInteractivo(false) }, [conInteractivo])
@@ -198,7 +200,7 @@ const NewsletterStudio = () => {
                                             </>
                                         ) : (
                                             /* en su propia pestaña: la plataforma sigue abierta donde estaba */
-                                            <Link to={`${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?piel=${piel}`} target="_blank" rel="noopener" className="hoy-cta flex h-11 items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-bold text-white">
+                                            <Link to={conNacional ? APP_ROUTES.HOME.NEWSLETTER_NATIONAL : `${APP_ROUTES.HOME.NEWSLETTER_INTERACTIVE}?piel=${piel}`} target="_blank" rel="noopener" className="hoy-cta flex h-11 items-center gap-2 rounded-[13px] px-5 text-[13.5px] font-bold text-white">
                                                 <MonitorPlayIcon className="size-4" /> Abrir boletín interactivo <ExternalLinkIcon className="size-3.5 opacity-80" />
                                             </Link>
                                         )}
@@ -220,6 +222,7 @@ const NewsletterStudio = () => {
                                         <p className="mt-2 text-[12px] text-muted-foreground">
                                             {!piel ? `La ${selected.name} no tiene versión interactiva; la ${conVersion?.name ?? 'Plantilla 9'} sí.`
                                                 : interactivoBloqueado ? 'Viene en los planes Elite y Nacional: subes y lo abres hoy mismo.'
+                                                : conNacional ? 'El cierre de tu Área contado como pasó, para presentarlo en tu junta. Se abre en otra pestaña; no se descarga.'
                                                 : 'El cierre del mes contado como pasó, para presentarlo en tu junta. Se abre en otra pestaña; no se descarga.'}
                                         </p>
                                     )}

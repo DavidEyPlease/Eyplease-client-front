@@ -86,6 +86,9 @@ export const API_ROUTES = {
         /* El boletín dinámico (el cierre del mes contado cómo pasó) y lo que la Directora decide de él */
         BOLETIN_DINAMICO: '/reports/boletin-dinamico',
         BOLETIN_DINAMICO_AJUSTES: '/reports/boletin-dinamico/ajustes',
+        /* El boletín nacional interactivo y el mensaje de la Directora Nacional para su junta */
+        BOLETIN_NACIONAL: '/reports/boletin-nacional',
+        BOLETIN_NACIONAL_AJUSTES: '/reports/boletin-nacional/ajustes',
         NATIONAL: '/reports/national',
         LIST_UPLOADS: '/reports/uploads',
         UPLOAD: '/reports/upload',
