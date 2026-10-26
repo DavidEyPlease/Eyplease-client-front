@@ -23,6 +23,10 @@ export function crearBoletinDinamico(host, D, op = {}) {
     // la piel de la plantilla del mes: la 9 (CELEBRA) o la 10 (Papel en relieve)
     const piel = op.piel === 'p10' ? 'p10' : 'p9'
     const base = op.base || `/boletin/${piel}`
+    // En la app del teléfono el documento no hace scroll: lo hace un contenedor fijo que llega en `op.scroller`
+    const desplazador = op.scroller || null
+    const sY = () => (desplazador ? desplazador.scrollTop : scrollY)
+    const desplazarA = (top, behavior = 'smooth') => (desplazador || window).scrollTo({ top, behavior })
     const root = host.shadowRoot || host.attachShadow({ mode: 'open' })
     root.innerHTML = `<style>${css}</style>${plantilla(base, piel)}`
     const pagina = root.querySelector('.pagina')
@@ -1090,7 +1094,7 @@ export function crearBoletinDinamico(host, D, op = {}) {
             if (s.matches('.entrada, .cierre')) { bloques.push(s); return }
             ;[...s.children].filter(c => !c.hidden && c.offsetHeight > 0).forEach(c => bloques.push(c))
         })
-        const top = el => el.getBoundingClientRect().top + scrollY
+        const top = el => el.getBoundingClientRect().top + sY()
         const alto = innerHeight * .9
         const res = []
         let inicio = null
@@ -1104,8 +1108,8 @@ export function crearBoletinDinamico(host, D, op = {}) {
     function irPaso(i) {
         iPaso = Math.max(0, Math.min(pasos.length - 1, i))
         const el = pasos[iPaso]
-        const t = el.getBoundingClientRect().top + scrollY - (el.matches('.escenario, .entrada') ? 0 : 24)
-        window.scrollTo({ top: Math.max(0, t), behavior: 'smooth' })
+        const t = el.getBoundingClientRect().top + sY() - (el.matches('.escenario, .entrada') ? 0 : 24)
+        desplazarA(Math.max(0, t))
         const [h, k] = nombreSeccion(el)
         $('.j-txt b').textContent = h
         $('.j-txt small').textContent = `${iPaso + 1} de ${pasos.length}${k ? ` · ${k}` : ''}`
@@ -1116,7 +1120,7 @@ export function crearBoletinDinamico(host, D, op = {}) {
         hud.hidden = !on
         if (on) {
             try { document.documentElement.requestFullscreen?.().catch(() => {}) } catch { /* sin pantalla completa: sigue igual */ }
-            later(() => { pasos = calcularPasos(); const y = scrollY + 10; const i = pasos.findIndex(p => p.getBoundingClientRect().top + scrollY >= y - innerHeight * .4); irPaso(i < 0 ? 0 : i) }, 350)
+            later(() => { pasos = calcularPasos(); const y = sY() + 10; const i = pasos.findIndex(p => p.getBoundingClientRect().top + sY() >= y - innerHeight * .4); irPaso(i < 0 ? 0 : i) }, 350)
         } else if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {})
     }
     $('[data-junta]').addEventListener('click', () => junta(!enJunta))

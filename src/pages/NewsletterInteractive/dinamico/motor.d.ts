@@ -16,6 +16,8 @@ export interface BoletinDinamicoOpciones {
     piel?: 'p9' | 'p10'
     /** Carpeta de las piezas de la plantilla. Por omisión /boletin/<piel>. */
     base?: string
+    /** Quién hace el scroll cuando no es el documento (la app del teléfono: un contenedor fijo). Por omisión, la ventana. */
+    scroller?: HTMLElement
     /** Meses que se pueden elegir en Ajustes y el que se está viendo (AAAA-MM). */
     meses?: Array<{ valor: string, etiqueta: string }>
     mes?: string
