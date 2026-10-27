@@ -37,8 +37,9 @@ export const LIGA_LO_QUIERO = `${APP_ROUTES.HOME.PLAN_UPGRADE}?plan=elite`
 /** El boletín NACIONAL interactivo viene sólo en el plan Nacional. La API pide lo mismo. */
 const PLANES_NACIONAL = ['national']
 
-/** Mientras David lo revisa, sólo lo ven estas cuentas (la 028616 es su cuenta de prueba). `null` = todas las Nacionales. */
-const CUENTAS_DE_PRUEBA_NACIONAL = ['028616'] as string[] | null
+/** Para probarlo con cuentas reales antes de abrirlo: sólo estas lo ven. `null` = todas las Nacionales. Abierto a todas el
+ *  26-oct-2026 (David: «ya lo revisé, colócalo para las demás»); la cuenta de prueba fue la 028616. */
+const CUENTAS_DE_PRUEBA_NACIONAL = null as string[] | null
 
 export const puedeVerBoletinNacional = (user?: IUser | null): boolean =>
     !!user?.plan?.plan_key && PLANES_NACIONAL.includes(user.plan.plan_key)
