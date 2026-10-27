@@ -11,6 +11,7 @@ import MainContainer from "@/components/sidebar/main-container"
 import UploadToastProgress from "@/components/generics/UploadToastProgress"
 import ReportTaskCenter from "@/components/generics/ReportTasks/ReportTaskCenter"
 import BoletinInteractivoAnuncio from "@/components/announcements/BoletinInteractivoAnuncio"
+import BoletinNacionalAnuncio from "@/components/announcements/BoletinNacionalAnuncio"
 import useAuthStore from "@/store/auth"
 import TopShell from "./TopShell"
 import { isNewShell } from "./TopShell/useNewShell"
@@ -72,6 +73,8 @@ const MainLayout = () => {
                 <ReportTaskCenter />
                 {/* La novedad del boletín interactivo: una vez por cuenta, al entrar */}
                 <BoletinInteractivoAnuncio />
+                {/* Y la del boletín nacional, sólo a las Directoras Nacionales: espera a que se cierre la otra */}
+                <BoletinNacionalAnuncio />
             </BillingEnforcementProvider>
         </section>
     )
