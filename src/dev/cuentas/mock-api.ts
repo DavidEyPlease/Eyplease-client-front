@@ -566,6 +566,24 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             await new Promise(listo => setTimeout(listo, 600))
             response = new Response(JSON.stringify({ success: false, message: 'Ya usaste los 120 mensajes de tu Asistente de este mes. Se renuevan el 1 de octubre. Si lo usas mucho, con el Plan Ejecutivo tienes más.', errors: { code: 'ASSISTANT_LIMIT' } }), { status: 429, headers: { 'Content-Type': 'application/json' } })
         }
+        /* Pedirle algo de la Biblioteca («¿tienes algo de Día de Muertos?», «la frase de hoy»): como show-library en la API real */
+        else if (path === '/chat/services' && /biblioteca|frase|carrusel|muertos/i.test(String(JSON.parse(String(init?.body ?? '{}')).message ?? ''))) {
+            await new Promise(listo => setTimeout(listo, 600))
+            const slides = ['Portada', 'Paso 1', 'Paso 2', 'Cierre'].map((name, i) => ({
+                artifact: 'image', label: `Lámina ${i + 1}`, url: piece('Día de Muertos', name, 20 + i * 12, '4:5'), uri: `demo/muertos-${i + 1}.svg`, ext: 'svg',
+            }))
+            const libraryCard = (id: string, title: string, section: string, files: unknown[]) => ({
+                id, kind: 'library', title, section: `Biblioteca · ${section}`, person: title, shared_at: null, is_regenerating: false, live: false, can_mark_sent: false, files,
+            })
+            response = respond({
+                conversation_id: 'demo',
+                message: 'Sí, en su Biblioteca hay 2 de Día de Muertos. Le comparto las dos; el carrusel son 4 láminas, compártalas en orden.',
+                pieces: [
+                    libraryCard('demo-lib-carrusel', 'Día de Muertos: altar de belleza', 'Publicaciones', slides),
+                    libraryCard('demo-lib-frase', 'Frase del día: honrar lo que somos', 'Historias', [{ artifact: 'image', label: 'Imagen', url: piece('Frase del día', 'Honrar lo que somos', 300, '9:16'), uri: 'demo/frase.svg', ext: 'svg' }]),
+                ],
+            })
+        }
         /* Pedirle una pieza («compárteme…», «enséñame…»): contesta con tarjetas, como show-pieces en la API real */
         else if (path === '/chat/services' && /compart|ense[ñn]a|m[aá]nda|pieza/i.test(String(JSON.parse(String(init?.body ?? '{}')).message ?? ''))) {
             await new Promise(listo => setTimeout(listo, 600))
