@@ -253,7 +253,13 @@ type Reply = { status: number, data: unknown, message?: string }
  * Contesta `consultant/strategy`, `consultant/inventory*` y `consultant/sales*`. `customerName` sale de sus clientas de
  * Mis Clientas; `onCustomerSaved` agrega a Mis Clientas la que se guarda con «+ Otra».
  */
-export const createStrategyDemo = (options: { customerName: (id: string) => string | null, onCustomerSaved: (name: string) => string }) => {
+export const createStrategyDemo = (options: {
+    customerName: (id: string) => string | null
+    onCustomerSaved: (name: string) => string
+    /** El tope de clientas de su plan (las gratis); sin él, no hay tope */
+    customersMax?: number | null
+    customersCount?: () => number
+}) => {
     const variant = sessionStorage.getItem('cuentas:inventario') ?? ''
     const start = variant === 'empieza'
     let stock: Stock[] = variant === 'vacio' ? [] : start ? seedStart() : seedBig()
@@ -329,7 +335,10 @@ export const createStrategyDemo = (options: { customerName: (id: string) => stri
             const name = customerId ? options.customerName(customerId) : String(body.customer_name ?? '').trim()
             if (customerId && !name) return fail('No query results for model [App\\Models\\ClientCustomer].')
             if (!name) return fail('Falta a quién le vendiste')
-            if (!customerId && body.save_customer) customerId = options.onCustomerSaved(name)
+            if (!customerId && body.save_customer) {
+                if (options.customersMax && options.customersCount && options.customersCount() >= options.customersMax) return fail('PLAN_LIMIT_CUSTOMERS')
+                customerId = options.onCustomerSaved(name)
+            }
             const items = (body.items as Array<{ sku?: string, name?: string, quantity: number, unit_price?: number }>).map(item => ({
                 sku: item.sku ?? null, name: item.name?.trim() || stock.find(r => r.sku === item.sku)?.name || 'Producto', quantity: Number(item.quantity), unit_price: Number(item.unit_price ?? 0),
             }))
