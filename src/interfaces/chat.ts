@@ -10,7 +10,7 @@ export interface IChatConversation {
 /** Un formato de una pieza que el Asistente enseñó en el chat */
 export interface IChatPieceFile {
 	artifact: 'image' | 'image_square' | 'video'
-	/** «Vertical», «Cuadrada», «Video» */
+	/** «Vertical», «Cuadrada», «Video»; «Opción 2» en un pedido; «Lámina 3» en un carrusel de la Biblioteca */
 	label: string
 	url: string
 	uri: string
@@ -31,6 +31,9 @@ export interface IChatPiece {
 	live: boolean
 	/** Las de clientes de Eyplease no las manda ella: no se marcan como enviadas */
 	can_mark_sent: boolean
+	/** «library»: una pieza de la Biblioteca (show-library); sin él, una pieza suya o la entrega de un pedido */
+	kind?: 'library'
+	/** Sus formatos, las opciones de un pedido o las láminas de un carrusel de la Biblioteca */
 	files: IChatPieceFile[]
 }
 

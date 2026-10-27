@@ -9,6 +9,7 @@ import useRequestQuery from '@/hooks/useRequestQuery'
 import { IChatPiece, IChatPieceFile } from '@/interfaces/chat'
 import { cn } from '@/lib/utils'
 import { HOY_POSTS_KEY } from '@/pages/Hoy/hooks/useSectionPosts'
+import { buildToolFileName } from '@/pages/Tools/utils'
 import { queryKeys } from '@/utils/cache'
 
 /** Proporción de la miniatura según el formato: la vertical es 9:16, la cuadrada 1:1 */
@@ -19,16 +20,21 @@ const THUMB: Record<IChatPieceFile['artifact'], string> = {
 }
 
 /**
- * Una pieza que el Asistente le enseñó en el chat («¿me compartes la de Ana?»).
+ * Una pieza que el Asistente le enseñó en el chat («¿me compartes la de Ana?»), la entrega de un pedido
+ * o una pieza de la Biblioteca.
  *
  * Descargar se comporta como en Publicaciones: la pieza sale hacia su gente, así que se marca
  * enviada sola, con «Deshacer» por si sólo quería mirarla (usePostActions.markAsSentOnDownload).
+ * Los archivos se eligen por posición: las opciones de un pedido y las láminas de un carrusel
+ * comparten formato, así que el formato no basta para distinguirlos.
  */
 const ChatPieceCard = ({ piece }: { piece: IChatPiece }) => {
 	const queryClient = useQueryClient()
 	const { executing: downloading, downloadFile } = useFiles()
-	const [format, setFormat] = useState(piece.files[0]?.artifact ?? 'image')
+	const [index, setIndex] = useState(0)
+	const [downloadingAll, setDownloadingAll] = useState(false)
 	const [sharedAt, setSharedAt] = useState<string | null>(piece.shared_at)
+	const isLibrary = piece.kind === 'library'
 
 	/* Marcar o desmarcar mueve también las cuentas de Hoy, Publicaciones y el seguimiento de unidad */
 	const { request } = useRequestQuery({
@@ -36,7 +42,7 @@ const ChatPieceCard = ({ piece }: { piece: IChatPiece }) => {
 		onError: () => { },
 	})
 
-	const file = piece.files.find(item => item.artifact === format) ?? piece.files[0]
+	const file = piece.files[index] ?? piece.files[0]
 	const sentUrl = API_ROUTES.POSTS.MARK_AS_SENT.replace('{id}', piece.id)
 
 	const refreshHoy = () => queryClient.invalidateQueries({ queryKey: HOY_POSTS_KEY })
@@ -52,10 +58,22 @@ const ChatPieceCard = ({ piece }: { piece: IChatPiece }) => {
 		}
 	}
 
+	const fileName = (item: IChatPieceFile, position: number) => isLibrary
+		? buildToolFileName(piece.title, position, item.ext)
+		: `${[piece.section, piece.person, piece.files.length > 1 ? item.label : null].filter(Boolean).join(' - ')}.${item.ext}`
+
+	/* Un carrusel de la Biblioteca se baja completo, en orden (como en la Biblioteca) */
+	const onDownloadAll = async () => {
+		setDownloadingAll(true)
+		for (const [position, item] of piece.files.entries()) {
+			await downloadFile(item.uri, fileName(item, position))
+		}
+		setDownloadingAll(false)
+	}
+
 	const onDownload = async () => {
 		if (!file) return
-		const name = `${[piece.section, piece.person].filter(Boolean).join(' - ')}.${file.ext}`
-		if (!(await downloadFile(file.uri, name))) return
+		if (!(await downloadFile(file.uri, fileName(file, piece.files.indexOf(file))))) return
 		if (!piece.can_mark_sent || sharedAt) return
 
 		setSharedAt(new Date().toISOString())
@@ -113,14 +131,14 @@ const ChatPieceCard = ({ piece }: { piece: IChatPiece }) => {
 
 				{piece.files.length > 1 && (
 					<div className="flex flex-wrap gap-1">
-						{piece.files.map(item => (
+						{piece.files.map((item, position) => (
 							<button
-								key={item.artifact}
+								key={`${item.artifact}-${position}`}
 								type="button"
-								onClick={() => setFormat(item.artifact)}
+								onClick={() => setIndex(position)}
 								className={cn(
 									'cursor-pointer rounded-full border px-2 py-0.5 text-[10.5px] font-semibold transition-colors',
-									item.artifact === file.artifact ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground hover:text-foreground',
+									item === file ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground hover:text-foreground',
 								)}
 							>
 								{item.label}
@@ -129,15 +147,28 @@ const ChatPieceCard = ({ piece }: { piece: IChatPiece }) => {
 					</div>
 				)}
 
-				<button
-					type="button"
-					onClick={onDownload}
-					disabled={downloading || piece.is_regenerating}
-					className="mt-auto inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-lg bg-primary-gradient px-3 py-1.5 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-60"
-				>
-					{downloading ? <Loader2Icon className="size-3.5 animate-spin" /> : <DownloadIcon className="size-3.5" />}
-					Descargar
-				</button>
+				<div className="mt-auto flex flex-wrap gap-1.5">
+					<button
+						type="button"
+						onClick={onDownload}
+						disabled={downloading || downloadingAll || piece.is_regenerating}
+						className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-lg bg-primary-gradient px-3 py-1.5 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-60"
+					>
+						{downloading && !downloadingAll ? <Loader2Icon className="size-3.5 animate-spin" /> : <DownloadIcon className="size-3.5" />}
+						Descargar
+					</button>
+					{isLibrary && piece.files.length > 1 && (
+						<button
+							type="button"
+							onClick={onDownloadAll}
+							disabled={downloading || downloadingAll}
+							className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-lg border border-primary px-3 py-1.5 text-[12px] font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-default disabled:opacity-60"
+						>
+							{downloadingAll ? <Loader2Icon className="size-3.5 animate-spin" /> : <DownloadIcon className="size-3.5" />}
+							Todas ({piece.files.length})
+						</button>
+					)}
+				</div>
 			</div>
 		</div>
 	)
