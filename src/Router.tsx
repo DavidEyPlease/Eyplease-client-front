@@ -28,6 +28,8 @@ import CustomServicesPage from "./pages/CustomServices"
 import ProfilePage from "./pages/Profile"
 import useAuth from "./hooks/useAuth"
 import MainLayout from "./layouts/MainLayout"
+import EstrategiaPage from "./pages/Estrategia"
+import InventarioPage from "./pages/Estrategia/Inventario"
 
 const Router = () => {
     const { isLogged, getMe } = useAuth()
@@ -59,6 +61,9 @@ const Router = () => {
                 <Route path={APP_ROUTES.MY_UNIT} element={<MyUnitPage />} />
                 <Route path={APP_ROUTES.HOME.GALLERY} element={<GalleryPage />} />
                 <Route path={APP_ROUTES.HOME.MY_CLIENTS} element={<MyClientsPage />} />
+                {/* «Tu estrategia» de la consultora (plan Standard); la entrada va detrás de su interruptor */}
+                <Route path={APP_ROUTES.STRATEGY} element={<EstrategiaPage />} />
+                <Route path={APP_ROUTES.INVENTORY} element={<InventarioPage />} />
                 <Route path={APP_ROUTES.TOOLS} element={<ToolsPage />} />
 
                 <Route path={APP_ROUTES.TRAININGS.LIST} element={<TrainingsPage />} />

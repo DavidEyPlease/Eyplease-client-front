@@ -21,6 +21,7 @@ import CommandBar from './CommandBar'
 import AccountSwitcher from '@/components/accounts/AccountSwitcher'
 import { requestLogout } from './logoutBridge'
 import ThemeModeSelector from './ThemeModeSelector'
+import useStrategyEntry, { STRATEGY_LINKS } from '@/pages/Estrategia/feature'
 
 /**
  * Cómo se reparte el menú de siempre en la barra. NO inventa entradas: agrupa las que ya
@@ -72,6 +73,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
        nuevo tiene su página, y el enlace sale sólo si el plan trae algún boletín. */
     const hasNewsletter = useAuthStore(state => state.utilData.newsletters.length > 0)
     const hasUnit = useAuthStore(state => state.permissions.includes(PermissionKeys.POSTS_UNITY))
+    const strategy = useStrategyEntry()
     /* Su plan y su cobro, en el menú de la cuenta. A las cuentas que se cobran por fuera no se les pide ni se les pinta */
     const { overview, canSeeBilling } = useBilling()
     const billing = canSeeBilling && overview ? billingStatusFrom(overview) : null
@@ -112,7 +114,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
 
                 {GROUPS.map(group => {
                     const items = pick(group.keys)
-                    const extras = group.label === 'Mi negocio' && hasUnit ? UNIT_EXTRAS : []
+                    const extras = group.label !== 'Mi negocio' ? [] : [...(hasUnit ? UNIT_EXTRAS : []), ...(strategy ? STRATEGY_LINKS : [])]
                     if (!items.length && !extras.length) return null
                     if (items.length === 1 && !extras.length) return direct(items[0])
 

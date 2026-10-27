@@ -26,3 +26,6 @@ dist-ssr
 
 # El video de muestra del simulador (local, no va al repo)
 src/dev/cuentas/*.mp4
+
+# Capturas de «Tu estrategia» (pesan; se regeneran con el simulador)
+docs/capturas-tu-estrategia/*.png

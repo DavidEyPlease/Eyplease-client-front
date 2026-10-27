@@ -8,6 +8,8 @@ import HoyRail from './components/HoyRail'
 import NovedadesStories from './components/NovedadesStories'
 import UnitFeed from './components/UnitFeed'
 import useUnitToday from './hooks/useUnitToday'
+import useStrategyEntry from '@/pages/Estrategia/feature'
+import StrategyHoyCard from '@/pages/Estrategia/components/StrategyHoyCard'
 import './hoy.css'
 
 /**
@@ -23,6 +25,8 @@ const HoyPage = () => {
     const feed = useUnitToday()
     const [chip, setChip] = useState('all')
     const feedRef = useRef<HTMLDivElement>(null)
+    // «Tu estrategia» de la consultora: entrada temporal, detrás de su interruptor (todavía no existe el cobro del plan)
+    const strategy = useStrategyEntry()
 
     const firstName = titleCaseName((user?.name ?? '').trim().split(/\s+/)[0] ?? '')
     const todayPieces = feed.todayGroups.reduce((sum, group) => sum + group.pieces.length, 0)
@@ -63,6 +67,8 @@ const HoyPage = () => {
             <div className="mx-auto grid w-full max-w-(--hoy-col) grid-cols-1 gap-4 [grid-area:body]">
                 <HomeOverdueBanner />
                 <BirthdayBanner />
+
+                {strategy && <StrategyHoyCard />}
 
                 <NovedadesStories index={1} />
 

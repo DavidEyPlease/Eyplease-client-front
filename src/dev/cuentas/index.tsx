@@ -5,6 +5,7 @@
 //   …&ir=/indicators                                       (página en la que abre; por defecto el Inicio)
 //   …&cobro=aldia|toca|atrasado                            (cómo va su pago; por defecto «toca»)
 //   …&boletin=sin-ordenes | con-fotos                      (boletín dinámico sin órdenes / con siluetas de ejemplo)
+//   …&inventario=empieza | vacio | revisado | sin-ligar     («Tu estrategia» de la consultora, plan=standard; ver estrategia-demo.ts)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useLocation } from 'react-router'
@@ -43,6 +44,11 @@ else if (params.has('plan')) sessionStorage.removeItem('cuentas:boletin')
  */
 const cuenta = params.get('cuenta')
 if (cuenta === 'col' || cuenta === 'mex') sessionStorage.setItem('cuentas:activa', cuenta === 'col' ? 'liga-col' : 'liga-mex')
+
+// «Tu estrategia» de la consultora: con qué inventario entra (la API de mentira lo lee al crearse)
+const inventario = params.get('inventario')
+if (inventario) sessionStorage.setItem('cuentas:inventario', inventario)
+else if (params.has('plan')) sessionStorage.removeItem('cuentas:inventario')
 
 installMockApi(plan, role, params.has('plan') && !params.has('rango') ? null : rank)
 // Para revisar desde la consola qué pidió la web y qué no estaba previsto

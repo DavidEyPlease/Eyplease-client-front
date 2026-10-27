@@ -6,6 +6,7 @@ import utilData from './util-data.json'
 import { boletinDinamicoDemo } from './boletin-dinamico-demo'
 // las cifras de un área real con la gente inventada y sin fotos (Boletin-Interactivo/nacional-p9)
 import boletinNacionalDemo from './boletin-nacional-demo.json'
+import { createStrategyDemo } from './estrategia-demo'
 
 export type DemoPlan = typeof plans[number]
 export const PLANS: DemoPlan[] = plans
@@ -393,6 +394,20 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
     // el plan puede cambiar a media sesión: al «pagar» la subida de plan
     let actual = plan
 
+    // Mis Clientas de la consultora (las de «+ Otra» guardadas se suman) y «Tu estrategia» con su inventario y ventas
+    const customers = role !== 'consultant' ? [] : PEOPLE.slice(0, 4).map((name, index) => ({
+        id: `customer-${index}`, name, gender: 'female', photo: null, dob: null,
+        created_at: new Date(Date.now() - (120 - index * 20) * 86400000).toISOString(), updated_at: new Date().toISOString(),
+    }))
+    const strategyDemo = createStrategyDemo({
+        customerName: id => customers.find(customer => customer.id === id)?.name ?? null,
+        onCustomerSaved: name => {
+            const id = `customer-${customers.length}`
+            customers.push({ id, name, gender: 'female', photo: null, dob: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+            return id
+        },
+    })
+
     window.fetch = async (input, init) => {
         const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
         if (!raw.startsWith(base)) return realFetch(input, init)
@@ -406,7 +421,17 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
 
         const scenario = sessionStorage.getItem('cuentas:cobro') ?? 'toca'
 
-        if (path === '/me') response = respond(userFor(actual, role, rank))
+        const strategyReply = strategyDemo(method, path, q, typeof init?.body === 'string' && init.body ? JSON.parse(init.body) : {})
+
+        if (strategyReply) {
+            // Un poco de red: la API arma la estrategia (y sincroniza el inventario con sus órdenes) en cada GET
+            await new Promise(resolve => setTimeout(resolve, 300))
+            response = strategyReply.status < 400
+                ? respond(strategyReply.data)
+                : new Response(JSON.stringify({ success: false, data: null, message: strategyReply.message }), { status: strategyReply.status, headers: { 'Content-Type': 'application/json' } })
+        }
+        else if (path === '/customers/client' && method === 'GET' && role === 'consultant') response = respond(page(customers))
+        else if (path === '/me') response = respond(userFor(actual, role, rank))
         /* Cambiar de cuenta: se apunta cuál queda activa para que la recarga abra en ESA */
         else if (/^\/me\/accounts\/[^/]+\/switch$/.test(path)) {
             const destino = path.split('/')[3]

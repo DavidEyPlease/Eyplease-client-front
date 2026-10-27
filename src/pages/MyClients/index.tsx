@@ -14,9 +14,17 @@ import { EmptySection } from "@/components/generics/EmptySection"
 import { IconMyClients } from "@/components/Svg/IconMyClients"
 import { Badge } from "@/components/ui/badge"
 import PageHead from '@/layouts/TopShell/PageHead'
+import { CustomerOfClient } from "@/interfaces/customerOfClients"
+import useStrategyEntry from '@/pages/Estrategia/feature'
+import CustomerSalesDialog from '@/pages/Estrategia/components/CustomerSalesDialog'
+import SaleDialog from '@/pages/Estrategia/components/SaleDialog'
 
 const MyClientsPage = () => {
     const [openForm, setOpenForm] = useState(false)
+    // «Tu estrategia»: lo que le ha comprado cada clienta y «Ya me compró» (detrás de su interruptor)
+    const strategy = useStrategyEntry()
+    const [purchasesOf, setPurchasesOf] = useState<CustomerOfClient | null>(null)
+    const [selling, setSelling] = useState(false)
 
     const {
         clients,
@@ -55,6 +63,11 @@ const MyClientsPage = () => {
                             {displayTotal} {displayTotal === 1 ? 'cliente' : 'clientes'}
                         </Badge>
                     )}
+                    {strategy && (
+                        <button type="button" onClick={() => setSelling(true)} className="h-11 cursor-pointer rounded-full border border-[#6C47FF]/35 px-5 text-[14px] font-bold text-[#4E31C0] hover:bg-[#6C47FF]/5 dark:text-[#BBAAFF]">
+                            Ya me compró
+                        </button>
+                    )}
                     <Button
                         text={
                             <>
@@ -76,7 +89,7 @@ const MyClientsPage = () => {
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {clients.map(client => (
-                        <CustomerItem key={client.id} item={client} />
+                        <CustomerItem key={client.id} item={client} onPurchases={strategy ? () => setPurchasesOf(client) : undefined} />
                     ))}
                 </div>
             )}
@@ -92,6 +105,13 @@ const MyClientsPage = () => {
             {hasNextPage &&
                 <LoadMorePaginator disabled={!hasNextPage} loading={isFetchingNextPage} onLoadMore={() => fetchNextPage()} />
             }
+
+            {strategy && (
+                <>
+                    <CustomerSalesDialog customer={purchasesOf} onClose={() => setPurchasesOf(null)} />
+                    <SaleDialog open={selling} onClose={() => setSelling(false)} />
+                </>
+            )}
 
             <Modal open={openForm} onOpenChange={setOpenForm} title="Crear Nuevo Cliente">
                 <CustomerByClientForm onSuccess={() => setOpenForm(false)} />

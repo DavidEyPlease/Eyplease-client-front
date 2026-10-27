@@ -38,6 +38,9 @@ export const APP_ROUTES = {
     REPORTS: '/reports',
     INDICATORS: '/indicators',
     MY_UNIT: '/my-unit',
+    /** «Tu estrategia» de la consultora (plan Standard) y su inventario */
+    STRATEGY: '/tu-estrategia',
+    INVENTORY: '/tu-inventario',
     HELP_CENTER: '/help-center',
     PAYMENTS_AND_BILLS: '/payments-and-bills',
     CHANGE_PASSWORD: '/change-password',

@@ -116,6 +116,20 @@ export const API_ROUTES = {
         PLAN_UPGRADE: '/billing/plan-upgrade',
         PLAN_UPGRADE_CONFIRM: '/billing/plan-upgrade/confirm',
     },
+    /** «Tu estrategia» (plan Standard de consultora): su estrategia del mes, su inventario y lo que vende a sus clientas */
+    CONSULTANT: {
+        STRATEGY: '/consultant/strategy',
+        INVENTORY: '/consultant/inventory',
+        /** «Ya lo revisé»: su revisión de una sola vez */
+        INVENTORY_REVIEW: '/consultant/inventory/review',
+        /** Agregar algo que no sale en sus pedidos */
+        INVENTORY_ITEMS: '/consultant/inventory/items',
+        /** Corregir «te quedan» de un producto */
+        INVENTORY_ITEM: '/consultant/inventory/items/{sku}',
+        /** «Ya me compró»: lista paginada (con `client_customer_id`, la de una clienta) y anotar */
+        SALES: '/consultant/sales',
+        SALE: '/consultant/sales/{id}',
+    },
     VERIFICATION_TEMPORARY_CODE: '/verification-temporary-code',
     DASHBOARD: '/dashboard',
     CANVA: {
