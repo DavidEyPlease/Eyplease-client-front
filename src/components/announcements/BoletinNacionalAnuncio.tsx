@@ -72,12 +72,12 @@ const BoletinNacionalAnuncio = () => {
                         <BoletinNacionalShowcase className="ifx-pantalla" />
 
                         <div className="min-w-0">
-                            <span className="ifx-nuevo"><SparklesIcon className="size-3" /> Nuevo en Eyplease+</span>
+                            <span className="ifx-nuevo"><SparklesIcon className="size-3" /> Nuevo · Boletín Nacional</span>
                             <DialogTitle asChild>
-                                <h2 className="ifx-titulo mt-3">Tu boletín nacional ahora es interactivo</h2>
+                                <h2 className="ifx-titulo mt-3">Ahora tu Boletín Nacional también es interactivo</h2>
                             </DialogTitle>
                             <DialogDescription className="mt-2 text-[15px] leading-relaxed text-white/85">
-                                El cierre de tu Área contado como pasó: el Cuadro de Honor con ceremonia y suspenso, la carrera de las unidades, el auto rosa y las Cortes con sus joyas. Escribe tu mensaje y preséntalo en tu junta o en Zoom, sin descargar nada.
+                                Además del de tu unidad, ahora el de tu <b className="text-white">Área completa</b>: el Cuadro de Honor nacional con ceremonia y suspenso, la carrera de las unidades, el auto rosa y las Cortes con sus joyas. Escribe tu mensaje y preséntalo en tu junta nacional o en Zoom, sin descargar nada.
                             </DialogDescription>
 
                             <ul className="mt-4 flex flex-wrap gap-1.5">
@@ -92,7 +92,7 @@ const BoletinNacionalAnuncio = () => {
 
                             <div className="mt-4 flex flex-wrap gap-2.5">
                                 <Link to={APP_ROUTES.HOME.NEWSLETTER_NATIONAL} target="_blank" rel="noopener" onClick={cerrar} className={BOTON}>
-                                    Abrir mi boletín nacional <ExternalLinkIcon className="size-4" />
+                                    Abrir mi Boletín Nacional <ExternalLinkIcon className="size-4" />
                                 </Link>
                             </div>
                             <p className="mt-2.5 text-[12px] text-white/65">También está en Boletín: elige el Boletín Nacional y el formato «Interactivo».</p>

@@ -2,12 +2,18 @@
    escenas y los pasos son los de `bsx-` (showcase.css). */
 .bnx { --oro: #f6c76b; }
 .bnx .bsx-pasos span.is-on i { animation: bnx-avance var(--dura) linear both; }
+.bnx-barra { position: absolute; z-index: 4; top: 3%; left: 3%; right: 3%; display: flex; align-items: center; gap: 2cqw; height: 6.4cqw; padding: 0 2cqw; border-radius: 1.6cqw; background: rgba(19, 12, 18, .62); box-shadow: 0 0 0 1px rgba(243, 171, 195, .22) inset; }
+.bnx-barra > b { font: 700 1.9cqw/1 'Inter', sans-serif; color: var(--marfil); }
+.bnx-barra > b i { font-style: normal; color: var(--rosa); }
+.bnx-barra span { display: grid; gap: .4cqw; font: 600 1.9cqw/1 'Playfair Display', serif; color: var(--marfil); }
+.bnx-barra small { font: 700 1.2cqw/1 'Inter', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--rosa); }
+.bnx .bsx-escena { top: 10%; }
 .bnx-kicker { font: 600 1.7cqw/1 'Inter', sans-serif; letter-spacing: .2em; text-transform: uppercase; color: var(--oro); }
 .bnx-tit { font: 600 4.6cqw/1.05 'Playfair Display', Georgia, serif; color: var(--marfil); }
 
 /* 1. la ceremonia */
-.bnx-honor { display: grid; justify-items: center; align-content: start; gap: 2.4cqw; padding: 4% 8% 0; }
-.bnx-honor-t { width: 52%; height: auto; }
+.bnx-honor { display: grid; justify-items: center; align-content: start; gap: 1.6cqw; padding: 2% 8% 0; }
+.bnx-honor-t { width: 44%; height: auto; }
 .bnx-cartas { display: grid; grid-template-columns: repeat(3, 15cqw); gap: 3cqw; perspective: 900px; }
 .bnx-carta { position: relative; aspect-ratio: 3 / 4; transform-style: preserve-3d; }
 .bnx-a, .bnx-b { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: .8cqw; border-radius: 1.6cqw; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
@@ -22,7 +28,7 @@
 .is-on .bnx-carta { animation: bnx-voltea .9s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(1s + var(--n) * .5s); }
 .is-on .bnx-carta:nth-child(3) { animation-delay: 1.5s; }
 .is-on .bnx-reina { animation-name: bnx-corona; animation-delay: 2.6s; }
-.is-on .bnx-honor-t, .is-on .bnx-pregunta { animation: bsx-sube .8s cubic-bezier(.2, .8, .2, 1) both; }
+.is-on .bnx-honor .bnx-kicker, .is-on .bnx-honor-t, .is-on .bnx-pregunta { animation: bsx-sube .8s cubic-bezier(.2, .8, .2, 1) both; }
 
 /* 2. el auto rosa */
 .bnx-trofeo { display: grid; justify-items: center; align-content: center; gap: 1.6cqw; padding: 0 8%; text-align: center; }
