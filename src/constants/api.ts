@@ -115,6 +115,9 @@ export const API_ROUTES = {
         /** Subir de plan con tarjeta: cuánto cuesta hoy (GET ?plan=), la liga de pago (POST) y la confirmación al volver */
         PLAN_UPGRADE: '/billing/plan-upgrade',
         PLAN_UPGRADE_CONFIRM: '/billing/plan-upgrade/confirm',
+        /** Contratar el Plan Standard de consultora con tarjeta (cotiza, abre Stripe) y confirmarlo al volver */
+        STANDARD: '/billing/standard',
+        STANDARD_CONFIRM: '/billing/standard/confirm',
     },
     /** «Tu estrategia» (plan Standard de consultora): su estrategia del mes, su inventario y lo que vende a sus clientas */
     CONSULTANT: {

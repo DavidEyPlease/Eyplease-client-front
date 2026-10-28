@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { BadgeCheckIcon, ChartNoAxesColumnIcon, NewspaperIcon, SearchIcon, SparklesIcon, UsersRoundIcon } from 'lucide-react'
-import useStrategyEntry, { STRATEGY_LINKS } from '@/pages/Estrategia/feature'
+import { strategyLinks, useStrategyAccess } from '@/pages/Estrategia/feature'
 
 import { ICONS } from '@/components/sidebar/icons'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -37,7 +37,7 @@ const CommandBar = ({ labelOf }: Props) => {
     const hasNewsletter = useAuthStore(state => state.utilData.newsletters.length > 0)
     const permissions = useAuthStore(state => state.permissions)
     const hasUnit = permissions.includes(PermissionKeys.POSTS_UNITY)
-    const strategy = useStrategyEntry()
+    const strategy = useStrategyAccess()
     const [open, setOpen] = useState(false)
     const [query, setQuery] = useState('')
 
@@ -64,7 +64,7 @@ const CommandBar = ({ labelOf }: Props) => {
             { key: 'indicators', label: 'Indicadores', path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon },
             { key: 'my-unit', label: 'Mi unidad', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
         ] : []),
-        ...(strategy ? STRATEGY_LINKS : []),
+        ...(strategy.show ? strategyLinks(strategy.locked) : []),
         { key: 'profile', label: 'Perfil', path: APP_ROUTES.HOME.PROFILE, Icon: BadgeCheckIcon },
     ]
 

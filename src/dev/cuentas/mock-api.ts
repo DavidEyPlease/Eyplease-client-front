@@ -267,6 +267,32 @@ const PLAN_KEYS: Record<string, string> = {
     'f3dd9821-9a5f-47d9-a672-b6eb2202c0cc': 'free', '27a1e667-05eb-48e5-a388-4815d11a42f5': 'standard',
     'fb85b91b-63d3-4227-9cff-0cfe3c9dcf8e': 'basic', '98bb65ac-86b2-450b-80a3-09a269f08ae1': 'executive',
     '4d1f7fb7-b26b-4fdd-817b-96fde7d4ef26': 'elite', 'dd84da0a-efa1-4566-ae9a-d95a1ded138f': 'national',
+    'a2cab71b-ed42-4bc3-937e-65549f51938b': 'free_consultant',
+}
+
+/*
+ * Contratar el Plan Standard con tarjeta (StandardSubscriptionService::quote, API 651f890). La Gratis Consultora puede
+ * sola, con la oferta de lanzamiento (3 meses a $99, luego $139); `&standard=` la pone en cada caso que no puede.
+ */
+const STANDARD_ID = '27a1e667-05eb-48e5-a388-4815d11a42f5'
+const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
+    const destino = PLANS.find(p => p.id === STANDARD_ID)
+    const caso = sessionStorage.getItem('cuentas:standard') ?? ''
+    const base = {
+        available: false, reason: null as string | null, message: null as string | null, whatsapp: '524610000000', currency: 'MXN',
+        current: { key: PLAN_KEYS[actual.id], name: actual.name },
+        plan: destino ? { key: 'standard', name: destino.name, color: destino.color, features: destino.features } : null,
+    }
+    const no = (reason: string, message: string) => ({ ...base, reason, message })
+    if (role !== 'consultant') return no('plan', 'El Plan Standard es para consultoras.')
+    if (caso === 'apagado') return no('apagado', 'Muy pronto podrás contratarlo desde aquí. Escríbenos y te lo activamos.')
+    if (caso === 'contacto') return no('contacto', 'Escríbenos y te activamos tu Plan Standard.')
+    if (caso === 'automatica') return no('automatica', 'Tu plan ya se cobra solo a tu tarjeta.')
+    if (caso === 'prueba') return no('prueba', 'Tienes el Plan Standard de prueba hasta el 4 de noviembre. Desde ese día lo contratas aquí.')
+    if (actual.id === STANDARD_ID) return no('ya_lo_tiene', 'Ya tienes el Plan Standard.')
+    if (!actual.free) return no('plan', 'Tu plan ya incluye esto.')
+    const offer = caso === 'sin-oferta' ? null : { months: 3, amount: 99 }
+    return { ...base, available: true, monthly: 139, due_now: offer?.amount ?? 139, offer }
 }
 
 const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => ({
@@ -277,7 +303,7 @@ const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string 
     user_role: { name: 'Cliente', slug: 'client' },
     client_role: rank ? { name: RANK_NAMES[rank] ?? rank, slug: rank } : role === 'consultant' ? { name: 'Consultora', slug: 'user_consultant' } : { name: 'Directora', slug: 'director' },
     on_biometric_auth: false, on_notifications: true, logotype: null,
-    plan: { id: plan.id, name: plan.name, plan_key: PLAN_KEYS[plan.id], features: plan.features, price: plan.price, color: plan.color, trial_days: 0, accesses: plan.accesses },
+    plan: { id: plan.id, name: plan.name, plan_key: PLAN_KEYS[plan.id], features: plan.features, price: plan.price, color: plan.color, trial_days: 0, audience: role === 'consultant' ? 'clients' : 'unit', accesses: plan.accesses },
     canva_connected: false, template_id: null, unread_notifications_count: 2, trial_ends_at: null, on_trial: false,
     // Dos cuentas de la MISMA persona, para poder ver el selector de países. Con `?cuentas=1`.
     accounts: CON_DOS_CUENTAS
@@ -424,8 +450,25 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         const strategyReply = strategyDemo(method, path, q, typeof init?.body === 'string' && init.body ? JSON.parse(init.body) : {})
         const slide = path.match(/^\/consultant\/strategy\/images\/([0-9a-z_]+)$/)
 
+        // «Tu estrategia» no viene en los planes gratis: 403 con el código que la web convierte en candado (EnsureStrategyPlan)
+        const strategyRoute = path === '/consultant/strategy' || path.startsWith('/consultant/strategy/') || path.startsWith('/consultant/inventory') || path.startsWith('/consultant/sales')
+        if (strategyRoute && (PLAN_KEYS[actual.id] ?? '').startsWith('free')) {
+            response = new Response(JSON.stringify({ success: false, message: 'PLAN_REQUIRED_STRATEGY', errors: [] }), { status: 403, headers: { 'Content-Type': 'application/json' } })
+        }
+        else if (path === '/billing/standard' && method === 'GET') response = respond(standardQuote(actual, role))
+        else if (path === '/billing/standard' && method === 'POST') {
+            const quote = standardQuote(actual, role)
+            // Como si Stripe ya hubiera cobrado: regresa directo a la página con su sesión
+            response = quote.available
+                ? respond({ checkout_url: '/plan-standard?sesion=cs_demo_standard', amount: 'due_now' in quote ? quote.due_now : 139, currency: 'MXN', expires_at: new Date(Date.now() + 3600000).toISOString() }, 201)
+                : new Response(JSON.stringify({ success: false, data: null, message: quote.message }), { status: 422, headers: { 'Content-Type': 'application/json' } })
+        }
+        else if (path === '/billing/standard/confirm') {
+            actual = PLANS.find(p => p.id === STANDARD_ID) ?? actual
+            response = respond({ status: 'paid', plan: 'standard' })
+        }
         // Las láminas de «Tu estrategia» con su logo: en la demo, las de prueba de ./laminas (la API las compone al pedirlas)
-        if (slide) {
+        else if (slide) {
             const file = await realFetch(`/src/dev/cuentas/laminas/${slide[1]}.jpg`)
             response = file.ok && (file.headers.get('content-type') ?? '').includes('image')
                 ? new Response(await file.blob(), { status: 200, headers: { 'Content-Type': 'image/jpeg' } })

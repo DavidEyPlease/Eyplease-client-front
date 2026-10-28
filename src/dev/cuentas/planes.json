@@ -246,6 +246,81 @@
   ]
  },
  {
+  "id": "a2cab71b-ed42-4bc3-937e-65549f51938b",
+  "name": "Plan Gratis Consultora",
+  "free": true,
+  "price": 0.0,
+  "color": "#1aaee0",
+  "features": [
+   "Los reconocimientos que te hace tu Directora",
+   "Hasta 5 clientas con su felicitación de cumpleaños",
+   "1 pieza de biblioteca de cada 5, con tu logo"
+  ],
+  "accesses": [
+   {
+    "name": "Publicaciones",
+    "permission_key": "posts",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Clientes",
+    "permission_key": "clients",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "customer_birthdays",
+      "label": "Cumpleaños"
+     }
+    ]
+   },
+   {
+    "name": "Mis Clientes",
+    "permission_key": "customers",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Biblioteca",
+    "permission_key": "tools",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Propuestas",
+    "permission_key": "proposals",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Productos",
+    "permission_key": "products",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Inicia",
+    "permission_key": "get_started",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   }
+  ]
+ },
+ {
   "id": "27a1e667-05eb-48e5-a388-4815d11a42f5",
   "name": "Plan Standard",
   "price": 99.0,

@@ -8,6 +8,9 @@ import { StrategyLevel, StrategyPiece } from '@/interfaces/strategy'
 import useStrategy from '@/hooks/useStrategy'
 import PageHead from '@/layouts/TopShell/PageHead'
 import { cn } from '@/lib/utils'
+import { isStrategyLockedError, useStrategyAccess } from './feature'
+import { estrategiaDeEjemplo } from './ejemplo'
+import StrategyLock from './components/StrategyLock'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { dayLabel, friendlyError, money, splitPrice } from './format'
 import { Card, Chip } from './components/Chips'
@@ -59,8 +62,9 @@ const LevelCard = ({ level, month }: { level: StrategyLevel, month: string }) =>
     </Card>
 )
 
-const PieceCard = ({ piece, price, onShare }: { piece: StrategyPiece, price: number, onShare: () => void }) => {
-    const cost = usePieceCost(piece)
+const PieceCard = ({ piece, price, onShare, example = false }: { piece: StrategyPiece, price: number, onShare: () => void, example?: boolean }) => {
+    // En el ejemplo no hay inventario que consultar: lo que gana ya viene en la pieza
+    const cost = usePieceCost(example ? null : piece)
     const gain = cost !== null ? price - cost : piece.profit
     return (
         <article className="flex flex-col gap-2.5 rounded-3xl border bg-card p-3 shadow-card">
@@ -85,8 +89,16 @@ const PieceCard = ({ piece, price, onShare }: { piece: StrategyPiece, price: num
  * clientas volver a ofrecerles. Las piezas traen las láminas de Astra con su logo; sin imagen todavía, va el boceto.
  */
 const EstrategiaPage = () => {
-    const { data, isLoading, error, refetch } = useStrategy()
-    const { done, toggle } = useDone(data?.level.month)
+    const access = useStrategyAccess()
+    // Con plan gratis no se pide nada a la API (respondería 403): se enseña el ejemplo con candado
+    const query = useStrategy(!access.locked)
+    const locked = access.locked || isStrategyLockedError(query.error)
+    const [ejemplo] = useState(estrategiaDeEjemplo)
+    const data = locked ? ejemplo : query.data
+    const isLoading = !locked && query.isLoading
+    const error = locked ? null : query.error
+    const refetch = query.refetch
+    const { done, toggle } = useDone(locked ? undefined : data?.level.month)
     const [prices, setPrices] = useState<Record<string, number>>({})
     const [sharing, setSharing] = useState<StrategyPiece | null>(null)
     const [selling, setSelling] = useState<{ preset: SalePreset | null } | null>(null)
@@ -113,13 +125,19 @@ const EstrategiaPage = () => {
             <PageHead
                 eyebrow={data ? `Tu estrategia de ${data.month}` : 'Tu estrategia'}
                 title={data ? <Headline text={data.headline} focus={data.focus?.label ?? null} /> : <>Tu <em>estrategia</em></>}
-                sub={data && data.segment !== 'empty' ? `La armé con ${lastOrder ? `tu pedido del ${dayLabel(lastOrder.date)}` : 'tu inventario'}: qué mover primero, cuánto ganas y las piezas para tus clientas.` : undefined}
+                sub={locked ? 'Un ejemplo de lo que te armo cada mes con tus pedidos de Mary Kay.' : data && data.segment !== 'empty' ? `La armé con ${lastOrder ? `tu pedido del ${dayLabel(lastOrder.date)}` : 'tu inventario'}: qué mover primero, cuánto ganas y las piezas para tus clientas.` : undefined}
             >
-                <Link to={APP_ROUTES.INVENTORY} className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-[13.5px] font-semibold hover:border-[#6C47FF]/40">
-                    <BoxIcon className="size-4 text-[#6C47FF]" /> Tu inventario
-                </Link>
-                {data && <SellButton onClick={() => setSelling({ preset: null })} />}
+                {!locked && (
+                    <>
+                        <Link to={APP_ROUTES.INVENTORY} className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-[13.5px] font-semibold hover:border-[#6C47FF]/40">
+                            <BoxIcon className="size-4 text-[#6C47FF]" /> Tu inventario
+                        </Link>
+                        {data && <SellButton onClick={() => setSelling({ preset: null })} />}
+                    </>
+                )}
             </PageHead>
+
+            {locked && <StrategyLock />}
 
             {isLoading ? (
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -133,8 +151,15 @@ const EstrategiaPage = () => {
                     <button type="button" onClick={() => refetch()} className="hoy-cta mt-4 h-11 cursor-pointer rounded-full px-6 text-[13.5px] font-bold text-white">Intentar de nuevo</button>
                 </Card>
             ) : (
-                <>
-                <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+                <div className={cn('relative flex flex-col gap-4', locked && 'pointer-events-none select-none')} aria-hidden={locked || undefined}>
+                {/* Con candado: el ejemplo de una consultora inventada, marcado y sin poder tocarse */}
+                {locked && (
+                    <p className="flex items-center gap-2 px-1 text-[12.5px] font-bold text-muted-foreground">
+                        <span className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[11px] font-extrabold tracking-wider text-amber-700 uppercase dark:text-amber-300">Ejemplo</span>
+                        Así se ve con los pedidos de una consultora de ejemplo. Con tu Plan Standard, se arma con los tuyos.
+                    </p>
+                )}
+                <div className={cn('grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]', locked && 'opacity-80 blur-[1.2px]')}>
                     <div className="grid grid-cols-1 gap-4">
                         <Card className="hoy-edge">
                             <div className="flex flex-wrap gap-1.5">
@@ -192,19 +217,19 @@ const EstrategiaPage = () => {
                 </div>
 
                     {data.pieces.length > 0 && (
-                        <section className="@container">
+                        <section className={cn('@container', locked && 'opacity-80 blur-[1.2px]')}>
                             <div className="mb-2.5 flex items-baseline justify-between gap-2 px-1">
                                 <h2 className="text-[16px] font-extrabold tracking-tight">Para tus clientas</h2>
                                 <small className="hidden text-[12px] text-muted-foreground sm:inline">{data.pieces.some(piece => piece.slides?.length) ? 'Con tu logo, listas para mandar' : 'Con tu nombre · bocetos: las finales llevan la foto del producto'}</small>
                             </div>
                             <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @4xl:grid-cols-3">
-                                {data.pieces.map(piece => <PieceCard key={piece.key} piece={piece} price={priceOf(piece)} onShare={() => setSharing(piece)} />)}
+                                {data.pieces.map(piece => <PieceCard key={piece.key} piece={piece} price={priceOf(piece)} onShare={() => setSharing(piece)} example={locked} />)}
                             </div>
                         </section>
                     )}
 
                     {data.reminders.length > 0 && (
-                        <Card title="Vuelve a ofrecerles" aside={<small className="text-[11.5px] font-semibold text-muted-foreground">ya les toca</small>}>
+                        <Card title="Vuelve a ofrecerles" className={cn(locked && 'opacity-80 blur-[1.2px]')} aside={<small className="text-[11.5px] font-semibold text-muted-foreground">ya les toca</small>}>
                             <div className="mt-1">
                                 {data.reminders.map(reminder => (
                                     <div key={`${reminder.client_customer_id ?? reminder.customer_name}-${reminder.sold_at}`} className="flex flex-wrap items-center gap-3 border-b border-border py-3 last:border-b-0">
@@ -228,7 +253,7 @@ const EstrategiaPage = () => {
                             </div>
                         </Card>
                     )}
-                </>
+                </div>
             )}
 
             <ShareDialog

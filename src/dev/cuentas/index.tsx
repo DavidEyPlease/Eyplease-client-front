@@ -6,6 +6,7 @@
 //   …&cobro=aldia|toca|atrasado                            (cómo va su pago; por defecto «toca»)
 //   …&boletin=sin-ordenes | con-fotos                      (boletín dinámico sin órdenes / con siluetas de ejemplo)
 //   …&inventario=empieza | vacio | revisado | sin-ligar     («Tu estrategia» de la consultora, plan=standard; ver estrategia-demo.ts)
+//   plan=gratis-consultora …&standard=apagado | prueba | automatica | contacto | sin-oferta  (contratar el Standard con tarjeta)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useLocation } from 'react-router'
@@ -14,14 +15,14 @@ import '../../index.css'
 import { SESSION_KEY } from '@/constants/app'
 import { calls, installMockApi, PLANS } from './mock-api'
 
-const slug = (name: string) => name.replace(/^plan\s+/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+const slug = (name: string) => name.replace(/^plan\s+/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, '-')
 
 const params = new URLSearchParams(window.location.search)
 const wanted = params.get('plan') ?? sessionStorage.getItem('cuentas:plan') ?? 'elite'
 const plan = PLANS.find(p => slug(p.name) === wanted) ?? PLANS[0]
 sessionStorage.setItem('cuentas:plan', slug(plan.name))
 // El Standard es el plan de la consultora: no tiene unidad, sólo sus clientas
-const role = slug(plan.name) === 'standard' ? 'consultant' : 'director'
+const role = plan.accesses.some(access => access.permission_key === 'unity') ? 'director' : 'consultant'
 
 const rank = params.get('rango') ?? sessionStorage.getItem('cuentas:rango')
 if (params.has('rango')) sessionStorage.setItem('cuentas:rango', params.get('rango') ?? '')
@@ -44,6 +45,11 @@ else if (params.has('plan')) sessionStorage.removeItem('cuentas:boletin')
  */
 const cuenta = params.get('cuenta')
 if (cuenta === 'col' || cuenta === 'mex') sessionStorage.setItem('cuentas:activa', cuenta === 'col' ? 'liga-col' : 'liga-mex')
+
+// Contratar el Standard (plan=gratis-consultora): por qué no podría sola; sin él, puede y con la oferta de 3 meses a $99
+const standard = params.get('standard')
+if (standard) sessionStorage.setItem('cuentas:standard', standard)
+else if (params.has('plan')) sessionStorage.removeItem('cuentas:standard')
 
 // «Tu estrategia» de la consultora: con qué inventario entra (la API de mentira lo lee al crearse)
 const inventario = params.get('inventario')

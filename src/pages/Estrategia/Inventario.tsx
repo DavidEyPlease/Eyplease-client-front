@@ -10,6 +10,8 @@ import PageHead from '@/layouts/TopShell/PageHead'
 import { cn } from '@/lib/utils'
 import { dayLabel, friendlyError, money } from './format'
 import { groupItems } from './groups'
+import { isStrategyLockedError, useStrategyAccess } from './feature'
+import StrategyLock from './components/StrategyLock'
 import AddItemDialog from './components/AddItemDialog'
 import { Card } from './components/Chips'
 import ItemRow, { ItemGroup } from './components/ItemRow'
@@ -34,10 +36,14 @@ export const SellButton = ({ onClick, className }: { onClick: () => void, classN
  * pedidos anteriores va primero («Muévelo primero»), lo revisa UNA vez y baja cuando anota «Ya me compró».
  */
 const InventarioPage = () => {
+    const access = useStrategyAccess()
     const { data, loading, error, refetch, stepOnHand, review, addItem } = useInventory({
+        // Con plan gratis no se pide (la API respondería 403): va el candado
+        enabled: !access.locked,
         onSaveError: saveError => toast.error(friendlyError(saveError, 'No se guardó ese cambio. Intenta de nuevo.')),
     })
-    const sales = useSales({ perPage: 6 })
+    const sales = useSales({ perPage: 6, enabled: !access.locked })
+    const locked = access.locked || isStrategyLockedError(error)
     const [adding, setAdding] = useState(false)
     const [selling, setSelling] = useState(false)
     const [showOut, setShowOut] = useState(false)
@@ -76,10 +82,12 @@ const InventarioPage = () => {
                 <Link to={APP_ROUTES.STRATEGY} className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-[13.5px] font-semibold hover:border-[#6C47FF]/40">
                     <SparklesIcon className="size-4 text-[#6C47FF]" /> Tu estrategia
                 </Link>
-                {data && !error && <SellButton onClick={() => setSelling(true)} />}
+                {data && !error && !locked && <SellButton onClick={() => setSelling(true)} />}
             </PageHead>
 
-            {loading ? (
+            {locked ? (
+                <StrategyLock title="Tu inventario viene con el Plan Standard" text="Tus pedidos de Mary Kay se suman solos, ves cuánto tienes guardado y lo que te costó, y lo que vendes baja al anotarlo en «Ya me compró»." />
+            ) : loading ? (
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
                     <div className="hoy-skel h-[420px] rounded-3xl" />
                     <div className="hoy-skel h-[260px] rounded-3xl" />

@@ -5,6 +5,8 @@ export interface IPlan {
     name: string
     /** free, standard, basic, executive, elite, national… */
     plan_key?: string
+    /** unit (Directora) o clients (consultora) */
+    audience?: string | null
     price: number
     features: string[]
     accesses: IPermission[]

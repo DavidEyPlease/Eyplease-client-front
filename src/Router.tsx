@@ -14,6 +14,7 @@ import NewsletterPage from "./pages/Newsletter"
 import NewsletterInteractivePage from "./pages/NewsletterInteractive"
 import NewsletterNationalPage from "./pages/NewsletterNational"
 import PlanUpgradePage from "./pages/PlanUpgrade"
+import PlanStandardPage from "./pages/PlanStandard"
 import IndicatorsPage from "./pages/Indicators"
 import MyUnitPage from "./pages/MyUnit"
 import GalleryPage from "./pages/Gallery"
@@ -54,6 +55,8 @@ const Router = () => {
             <Route path={APP_ROUTES.HOME.NEWSLETTER_NATIONAL} element={<NewsletterNationalPage />} />
             {/* Subir de plan: una sola tarjeta, sin el marco de la web (también es adonde regresa Stripe) */}
             <Route path={APP_ROUTES.HOME.PLAN_UPGRADE} element={<PlanUpgradePage />} />
+            {/* Contratar el Plan Standard de consultora con tarjeta (también es adonde regresa Stripe) */}
+            <Route path={APP_ROUTES.HOME.PLAN_STANDARD} element={<PlanStandardPage />} />
             <Route element={<MainLayout />}>
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
                 <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />
