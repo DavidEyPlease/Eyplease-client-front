@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { dayLabel, friendlyError, money, splitPrice } from './format'
 import { Card, Chip } from './components/Chips'
-import PieceBoceto from './components/PieceBoceto'
+import PieceVisual from './components/PieceVisual'
 import SaleDialog, { SalePreset } from './components/SaleDialog'
 import ShareDialog from './components/ShareDialog'
 import usePieceCost from './usePieceCost'
@@ -64,9 +64,9 @@ const PieceCard = ({ piece, price, onShare }: { piece: StrategyPiece, price: num
     const gain = cost !== null ? price - cost : piece.profit
     return (
         <article className="flex flex-col gap-2.5 rounded-3xl border bg-card p-3 shadow-card">
-            <button type="button" onClick={onShare} className="cursor-pointer rounded-[20px] transition-transform hover:-translate-y-0.5" aria-label={`Compartir ${piece.title}`}>
-                <PieceBoceto piece={piece} price={price} />
-            </button>
+            <div role="button" tabIndex={0} onClick={onShare} onKeyDown={event => event.key === 'Enter' && onShare()} className="cursor-pointer rounded-[20px] transition-transform hover:-translate-y-0.5" aria-label={`Compartir ${piece.title}`}>
+                <PieceVisual piece={piece} price={price} />
+            </div>
             <div className="px-1">
                 <b className="line-clamp-2 text-[13.5px] leading-snug font-bold">{piece.title}</b>
                 <span className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -82,7 +82,7 @@ const PieceCard = ({ piece, price, onShare }: { piece: StrategyPiece, price: num
 /**
  * «Tu estrategia» del mes (plan Standard, parte 3), en la web. La arma la API con su inventario, su nivel y sus ventas:
  * el enfoque y lo que más le urge mover, el plan de la semana, tres piezas con su precio (y lo que gana) y a qué
- * clientas volver a ofrecerles. Las piezas todavía son bocetos: el arte llega con la parte 4.
+ * clientas volver a ofrecerles. Las piezas traen las láminas de Astra con su logo; sin imagen todavía, va el boceto.
  */
 const EstrategiaPage = () => {
     const { data, isLoading, error, refetch } = useStrategy()
@@ -195,7 +195,7 @@ const EstrategiaPage = () => {
                         <section className="@container">
                             <div className="mb-2.5 flex items-baseline justify-between gap-2 px-1">
                                 <h2 className="text-[16px] font-extrabold tracking-tight">Para tus clientas</h2>
-                                <small className="hidden text-[12px] text-muted-foreground sm:inline">Con tu nombre · bocetos: las finales llevan la foto del producto</small>
+                                <small className="hidden text-[12px] text-muted-foreground sm:inline">{data.pieces.some(piece => piece.slides?.length) ? 'Con tu logo, listas para mandar' : 'Con tu nombre · bocetos: las finales llevan la foto del producto'}</small>
                             </div>
                             <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @4xl:grid-cols-3">
                                 {data.pieces.map(piece => <PieceCard key={piece.key} piece={piece} price={priceOf(piece)} onShare={() => setSharing(piece)} />)}

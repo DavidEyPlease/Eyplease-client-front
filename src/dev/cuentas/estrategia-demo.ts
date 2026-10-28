@@ -112,6 +112,31 @@ const range = (from: Date, to: Date) => from.getMonth() === to.getMonth()
 
 type Row = InventoryItem & { cat: typeof OTHER }
 
+/**
+ * La biblioteca de Astra de la demo (parte 4): qué productos ya tienen lámina. En la API se busca por nombre en
+ * config/strategy_library.php; aquí por producto. Las imágenes de prueba están en ./laminas (con un logo de ejemplo).
+ */
+const LIBRARY: Record<string, string> = {
+    '10216713': '08_cc_cream',
+    '10045632': '02_locion_desmaquillante_ojos',
+    '10195642': '03_if_you_believe',
+    '10230518': '07_joy_emotion',
+}
+const COVERS: Record<string, string> = { buen_fin: '00_portada_buen_fin' }
+const slideUrl = (key: string) => `${import.meta.env.VITE_API_URL}/consultant/strategy/images/${key}`
+
+/** Como StrategyLibraryService::slides: el dúo lleva la portada del momento; si a un producto le falta, ninguna */
+const slidesFor = (piece: StrategyPiece, moment: StrategyMoment | null) => {
+    const keys: string[] = []
+    if (piece.key === 'duo' && moment && COVERS[moment.key]) keys.push(COVERS[moment.key])
+    for (const item of piece.products) {
+        const key = LIBRARY[item.sku]
+        if (!key) return []
+        keys.push(key)
+    }
+    return keys.map(key => ({ key, url: slideUrl(key) }))
+}
+
 const product = (item: Row): StrategyProduct => ({ sku: item.sku, name: short(item.name), shade: item.shade, price: item.price, on_hand: item.on_hand, category: item.cat.key })
 
 const single = (key: StrategyPiece['key'], tag: string, item: Row, phrase: string): StrategyPiece => {
@@ -239,7 +264,7 @@ const buildStrategy = (inventory: ConsultantInventory, sales: CustomerSale[], le
         level,
         moment,
         plan,
-        pieces,
+        pieces: pieces.map(piece => ({ ...piece, slides: slidesFor(piece, moment) })),
         reminders,
         inventory: { summary: inventory.summary, reviewed: inventory.reviewed, last_order: inventory.last_order },
     }

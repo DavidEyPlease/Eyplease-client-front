@@ -422,8 +422,16 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         const scenario = sessionStorage.getItem('cuentas:cobro') ?? 'toca'
 
         const strategyReply = strategyDemo(method, path, q, typeof init?.body === 'string' && init.body ? JSON.parse(init.body) : {})
+        const slide = path.match(/^\/consultant\/strategy\/images\/([0-9a-z_]+)$/)
 
-        if (strategyReply) {
+        // Las láminas de «Tu estrategia» con su logo: en la demo, las de prueba de ./laminas (la API las compone al pedirlas)
+        if (slide) {
+            const file = await realFetch(`/src/dev/cuentas/laminas/${slide[1]}.jpg`)
+            response = file.ok && (file.headers.get('content-type') ?? '').includes('image')
+                ? new Response(await file.blob(), { status: 200, headers: { 'Content-Type': 'image/jpeg' } })
+                : respond(null, 404)
+        }
+        else if (strategyReply) {
             // Un poco de red: la API arma la estrategia (y sincroniza el inventario con sus órdenes) en cada GET
             await new Promise(resolve => setTimeout(resolve, 300))
             response = strategyReply.status < 400

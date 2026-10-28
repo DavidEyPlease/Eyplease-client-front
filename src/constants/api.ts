@@ -119,6 +119,8 @@ export const API_ROUTES = {
     /** «Tu estrategia» (plan Standard de consultora): su estrategia del mes, su inventario y lo que vende a sus clientas */
     CONSULTANT: {
         STRATEGY: '/consultant/strategy',
+        /** Una lámina de su estrategia con su logo (JPEG; pide sesión) */
+        STRATEGY_IMAGE: '/consultant/strategy/images/{key}',
         INVENTORY: '/consultant/inventory',
         /** «Ya lo revisé»: su revisión de una sola vez */
         INVENTORY_REVIEW: '/consultant/inventory/review',

@@ -51,6 +51,12 @@ export interface StrategyProduct {
     category: string
 }
 
+/** Una lámina de la biblioteca de Astra con el logo de ella (JPEG 1080×1920). La imagen PIDE SESIÓN: se baja con la API. */
+export interface StrategySlide {
+    key: string
+    url: string
+}
+
 export interface StrategyPiece {
     /** ahora: entrega inmediata · duo: el dúo del momento · regalo: Navidad · tambien: otro disponible */
     key: 'ahora' | 'duo' | 'regalo' | 'tambien'
@@ -64,6 +70,8 @@ export interface StrategyPiece {
     profit: number | null
     /** El texto para WhatsApp */
     message: string
+    /** Sus láminas en orden (el dúo: portada del momento + cada producto). Vacío = aún sin imagen: boceto y sólo el mensaje */
+    slides?: StrategySlide[]
 }
 
 export interface StrategyReminder {
