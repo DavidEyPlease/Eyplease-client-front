@@ -5,7 +5,20 @@ import { ApiResponse } from '@/interfaces/common'
 import HttpService from '@/services/http'
 import useAuthStore from '@/store/auth'
 
-/** Lo que manda `GET billing/standard` (StandardSubscriptionService::quote, API 651f890). */
+/** Su suscripción del Standard a tarjeta (Stripe), para pintarla en Pagos y cancelarla o reanudarla ella sola. */
+export interface StandardSubscription {
+    status: string
+    /** Ya la canceló: no se le cobra más y termina en `ends_at` */
+    canceled: boolean
+    ends_at: string | null
+    /** «28 de noviembre» */
+    ends_at_label: string | null
+    next_charge_date: string | null
+    next_charge_label: string | null
+    card: { brand: string | null, last4: string } | null
+}
+
+/** Lo que manda `GET billing/standard` (StandardSubscriptionService::quote, API 651f890 + 7d133a5). */
 export interface StandardQuote {
     available: boolean
     /** Por qué no puede ella sola: plan · apagado · contacto · automatica · prueba · ya_lo_tiene · descuento */
@@ -21,6 +34,8 @@ export interface StandardQuote {
     due_now?: number
     /** Oferta de lanzamiento: sus primeros `months` meses a `amount` */
     offer?: { months: number, amount: number } | null
+    /** Nula si no tiene un Standard que se cobre a su tarjeta */
+    subscription?: StandardSubscription | null
 }
 
 export const STANDARD_QUOTE_KEY = ['billing', 'standard']

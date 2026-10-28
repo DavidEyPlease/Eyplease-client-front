@@ -7,6 +7,7 @@
 //   …&boletin=sin-ordenes | con-fotos                      (boletín dinámico sin órdenes / con siluetas de ejemplo)
 //   …&inventario=empieza | vacio | revisado | sin-ligar     («Tu estrategia» de la consultora, plan=standard; ver estrategia-demo.ts)
 //   plan=gratis-consultora …&standard=apagado | prueba | automatica | contacto | sin-oferta  (contratar el Standard con tarjeta)
+//   plan=standard&tarjeta=si (o &cancelada=1)&ir=/profile?section=billing  (su Standard a tarjeta: cancelarlo o reanudarlo)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useLocation } from 'react-router'

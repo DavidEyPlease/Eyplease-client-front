@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import { ArrowRightIcon, CheckIcon, CreditCardIcon, LoaderCircleIcon, LockIcon, MessageCircleIcon, PartyPopperIcon } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
+import { BILLING_PATH } from '@/components/billing/SubscriptionCard'
 import useAuth from '@/hooks/useAuth'
 import useStandardQuote, { STANDARD_QUOTE_KEY } from '@/hooks/useStandardQuote'
 import { STRATEGY_KEY } from '@/hooks/useInventory'
@@ -156,7 +157,7 @@ const PlanStandardPage = () => {
                                     </button>
                                     <p className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground"><LockIcon className="size-3" /> Pago seguro con Stripe. Tu estrategia se abre en cuanto se confirma.</p>
                                     <p className="mt-1 text-center text-xs text-muted-foreground">
-                                        Se cobra solo cada mes. Para cancelarlo, {whatsapp ? <a href={whatsapp} target="_blank" rel="noopener" className="font-semibold text-primary underline-offset-2 hover:underline">escríbenos</a> : 'escríbenos'}.
+                                        Se cobra solo cada mes. Lo cancelas cuando quieras desde <Link to={BILLING_PATH} className="font-semibold text-primary underline-offset-2 hover:underline">Mi perfil → Pagos</Link>.
                                     </p>
                                 </>
                             )}
@@ -164,7 +165,11 @@ const PlanStandardPage = () => {
                             {cotizacion && !cotizacion.available && (
                                 <div className="mt-6 grid gap-3">
                                     <p className="rounded-2xl bg-muted/60 p-4 text-sm font-semibold">{cotizacion.message}</p>
-                                    {cotizacion.reason === 'ya_lo_tiene' ? (
+                                    {cotizacion.subscription ? (
+                                        <button type="button" onClick={() => navigate(BILLING_PATH)} className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-primary-gradient px-5 text-[15px] font-extrabold text-white shadow-primary-glow">
+                                            Ver mi plan en Pagos <ArrowRightIcon className="size-4" />
+                                        </button>
+                                    ) : cotizacion.reason === 'ya_lo_tiene' ? (
                                         <button type="button" onClick={() => navigate(APP_ROUTES.STRATEGY)} className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-primary-gradient px-5 text-[15px] font-extrabold text-white shadow-primary-glow">
                                             Ver mi estrategia <ArrowRightIcon className="size-4" />
                                         </button>

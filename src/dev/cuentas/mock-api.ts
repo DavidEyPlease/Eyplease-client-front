@@ -275,6 +275,19 @@ const PLAN_KEYS: Record<string, string> = {
  * sola, con la oferta de lanzamiento (3 meses a $99, luego $139); `&standard=` la pone en cada caso que no puede.
  */
 const STANDARD_ID = '27a1e667-05eb-48e5-a388-4815d11a42f5'
+
+/*
+ * Su Standard a tarjeta (StandardSubscriptionService::subscriptionInfo, API 7d133a5): `&tarjeta=si` lo trae vivo y
+ * `&cancelada=1` ya cancelado (termina a fin de mes). Cancelar y reanudar lo cambian en la sesión del simulador.
+ */
+const enDias = (dias: number) => { const d = new Date(Date.now() + dias * 86400000); return { date: d.toISOString().slice(0, 10), label: `${d.getDate()} de ${['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'][d.getMonth()]}` } }
+const SUSCRIPCION_PARAMS = new URLSearchParams(location.search)
+let standardSubscription: Record<string, unknown> | null = SUSCRIPCION_PARAMS.get('tarjeta') === 'si' || SUSCRIPCION_PARAMS.get('cancelada') === '1'
+    ? (SUSCRIPCION_PARAMS.get('cancelada') === '1'
+        ? { status: 'active', canceled: true, ends_at: enDias(20).date, ends_at_label: enDias(20).label, next_charge_date: null, next_charge_label: null, card: { brand: 'visa', last4: '4242' } }
+        : { status: 'active', canceled: false, ends_at: null, ends_at_label: null, next_charge_date: enDias(20).date, next_charge_label: enDias(20).label, card: { brand: 'visa', last4: '4242' } })
+    : null
+
 const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
     const destino = PLANS.find(p => p.id === STANDARD_ID)
     const caso = sessionStorage.getItem('cuentas:standard') ?? ''
@@ -282,9 +295,12 @@ const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
         available: false, reason: null as string | null, message: null as string | null, whatsapp: '524610000000', currency: 'MXN',
         current: { key: PLAN_KEYS[actual.id], name: actual.name },
         plan: destino ? { key: 'standard', name: destino.name, color: destino.color, features: destino.features } : null,
+        subscription: role === 'consultant' ? standardSubscription : null,
     }
     const no = (reason: string, message: string) => ({ ...base, reason, message })
     if (role !== 'consultant') return no('plan', 'El Plan Standard es para consultoras.')
+    if (standardSubscription && !standardSubscription.canceled) return no('automatica', 'Tu Plan Standard se cobra solo a tu tarjeta.')
+    if (standardSubscription) return no('ya_lo_tiene', 'Ya tienes el Plan Standard.')
     if (caso === 'apagado') return no('apagado', 'Muy pronto podrás contratarlo desde aquí. Escríbenos y te lo activamos.')
     if (caso === 'contacto') return no('contacto', 'Escríbenos y te activamos tu Plan Standard.')
     if (caso === 'automatica') return no('automatica', 'Tu plan ya se cobra solo a tu tarjeta.')
@@ -462,6 +478,16 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             response = quote.available
                 ? respond({ checkout_url: '/plan-standard?sesion=cs_demo_standard', amount: 'due_now' in quote ? quote.due_now : 139, currency: 'MXN', expires_at: new Date(Date.now() + 3600000).toISOString() }, 201)
                 : new Response(JSON.stringify({ success: false, data: null, message: quote.message }), { status: 422, headers: { 'Content-Type': 'application/json' } })
+        }
+        else if (path === '/billing/standard/cancel' || path === '/billing/standard/resume') {
+            if (!standardSubscription) response = new Response(JSON.stringify({ success: false, data: null, message: 'No encontramos un Plan Standard que se cobre a tu tarjeta.' }), { status: 422, headers: { 'Content-Type': 'application/json' } })
+            else {
+                const fin = enDias(20)
+                standardSubscription = path.endsWith('/cancel')
+                    ? { ...standardSubscription, canceled: true, ends_at: fin.date, ends_at_label: fin.label, next_charge_date: null, next_charge_label: null }
+                    : { ...standardSubscription, canceled: false, ends_at: null, ends_at_label: null, next_charge_date: fin.date, next_charge_label: fin.label }
+                response = respond(standardSubscription)
+            }
         }
         else if (path === '/billing/standard/confirm') {
             actual = PLANS.find(p => p.id === STANDARD_ID) ?? actual

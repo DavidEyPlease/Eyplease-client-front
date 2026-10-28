@@ -4,6 +4,7 @@ import AutomateCardOffer from '@/components/billing/AutomateCardOffer'
 import BillingHistory from '@/components/billing/BillingHistory'
 import PaymentMethodPanel from '@/components/billing/PaymentMethodPanel'
 import SubscriptionCard from '@/components/billing/SubscriptionCard'
+import StandardPlanCard from '@/components/billing/StandardPlanCard'
 import useBilling from '@/components/billing/useBilling'
 import ReferralCard from '@/components/referrals/ReferralCard'
 import { useCardAutomationReturn } from '@/components/billing/useCardAutomation'
@@ -22,6 +23,9 @@ const Billing = () => {
         <div className="flex flex-col gap-4">
             {/* Con el marco nuevo no hay tarjeta de cobro en el menú lateral: su resumen va aquí, en grande */}
             {newShell && <SubscriptionCard />}
+
+            {/* Consultora con el Standard a su tarjeta: cuándo se cobra y cancelarlo o reanudarlo ella sola */}
+            <StandardPlanCard />
 
             {/* Mientras le aplique (sin deudas, sin promoción, interruptor encendido), la invitación se queda aquí */}
             {overview?.card_automation?.available && <AutomateCardOffer automation={overview.card_automation} />}

@@ -118,6 +118,9 @@ export const API_ROUTES = {
         /** Contratar el Plan Standard de consultora con tarjeta (cotiza, abre Stripe) y confirmarlo al volver */
         STANDARD: '/billing/standard',
         STANDARD_CONFIRM: '/billing/standard/confirm',
+        /** Cancelar su Standard (sigue hasta el fin del mes que pagó) o reanudarlo antes de ese día */
+        STANDARD_CANCEL: '/billing/standard/cancel',
+        STANDARD_RESUME: '/billing/standard/resume',
     },
     /** «Tu estrategia» (plan Standard de consultora): su estrategia del mes, su inventario y lo que vende a sus clientas */
     CONSULTANT: {
