@@ -7,12 +7,12 @@ import useAuthStore from '@/store/auth'
 /**
  * Interruptor de «Tu estrategia», «Tu inventario» y «Ya me compró» en la web (plan Standard de consultora).
  *
- * Apagado en la web publicada mientras no exista el cobro del plan ($139): la API ya está en producción, pero la
- * entrada (la tarjeta del Hoy, las dos filas de «Mi negocio» y «Sus compras» en Mis Clientas) no se enseña. En el
- * servidor local (`pnpm dev` y el simulador de cuentas) se ve siempre, para probarlo. Para abrirlo a todas las
- * consultoras se pone en `true` y se sube; cuando exista el plan, la entrada se cuelga de su permiso.
+ * ENCENDIDO con el lanzamiento del Standard a $139 (David, 29-oct-2026): la entrada (la tarjeta del Hoy, las dos filas
+ * de «Mi negocio» y «Sus compras» en Mis Clientas) se enseña a todas las consultoras; con plan gratis, con candado y
+ * «Contratar el Plan Standard». Ponerlo en `false` y subir la esconde otra vez (en `pnpm dev` y el simulador se ve
+ * siempre).
  */
-export const TU_ESTRATEGIA_EN_LA_WEB = false
+export const TU_ESTRATEGIA_EN_LA_WEB = true
 
 /** El código con el que la API rechaza «Tu estrategia» en los planes gratis (EnsureStrategyPlan) */
 export const STRATEGY_LOCKED_CODE = 'PLAN_REQUIRED_STRATEGY'

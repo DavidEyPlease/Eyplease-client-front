@@ -15,6 +15,7 @@ import { AuthResponse } from "@/interfaces/common"
 import { PlanKeys } from "@/interfaces/plans"
 
 import { type ISignUp, SignUpSchema } from "../schema"
+import useRecommendedPlan from "./useRecommendedPlan"
 
 export type StepKey =
     | 'name'
@@ -93,6 +94,11 @@ const useSignUpWizard = () => {
     const unitSize = watch('unitSize')
     const directorYears = watch('directorYears')
     const recommendedPlan = watch('recommendedPlan')
+
+    const planToShow: PlanKeys = recommendedPlan
+        ?? recommendPlan(userType, unitSize, directorYears)
+    // Con oferta de entrada (el Standard desde su lanzamiento) no hay prueba: al terminar se le lleva a contratarlo
+    const { deal } = useRecommendedPlan(planToShow, userType !== 'other')
 
     const { request, requestState } = useRequestQuery({ onError: () => { } })
 
@@ -316,12 +322,15 @@ const useSignUpWizard = () => {
             setSubmitting(false)
             return
         }
+        // Sin prueba gratis la cuenta nace en la Gratis Consultora: el Standard se contrata ahí mismo, en la web (en la app
+        // de las tiendas no se puede decir cómo pagar). «Ahora no» la deja en la cuenta lista de siempre.
+        if (deal.kind === 'offer' && planToShow === PlanKeys.STANDARD) {
+            navigate(`${APP_ROUTES.HOME.PLAN_STANDARD}?bienvenida=1`)
+            return
+        }
         const params = new URLSearchParams({ email: getValues('email') })
         navigate(`${APP_ROUTES.AUTH.SUCCESS_REGISTER}?${params.toString()}`)
     }
-
-    const planToShow: PlanKeys = recommendedPlan
-        ?? recommendPlan(userType, unitSize, directorYears)
 
     return {
         form,
@@ -336,6 +345,8 @@ const useSignUpWizard = () => {
         fullName,
         firstName,
         planToShow,
+        /** Cómo entra a su plan: oferta de entrada, prueba gratis o ninguna (para los botones) */
+        deal,
         loading: submitting || requestState.loading,
         goNext,
         goBack,

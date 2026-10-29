@@ -295,7 +295,8 @@ let standardSubscription: Record<string, unknown> | null = SUSCRIPCION_PARAMS.ge
  * primera dice «todavía no nos llega», como el día hábil siguiente).
  */
 const CASH_PARAMS = new URLSearchParams(location.search)
-const SIN_TARJETA = CASH_PARAMS.get('sintarjeta') === '1'
+// El lanzamiento (`?registro=lanzamiento`) los enciende junto con el Standard a $139 (`plans:standard-launch --oxxo --spei`)
+const SIN_TARJETA = CASH_PARAMS.get('sintarjeta') === '1' || CASH_PARAMS.get('registro') === 'lanzamiento'
 const SIN_CORREO = CASH_PARAMS.get('sincorreo') === '1'
 const FICHA = (['oxxo', 'transfer'] as const).find(m => m === CASH_PARAMS.get('ficha')) ?? null
 const DEMO_CLABE = { clabe: '646180157000000004', bank: 'STP' }
@@ -325,6 +326,25 @@ const cashPublic = (cash: DemoCash | null | undefined) => {
 }
 const awaitingCash = (cash: DemoCash | null | undefined) => cash?.status === 'awaiting' ? cashPublic(cash) : null
 const cashError = (message: string) => new Response(JSON.stringify({ success: false, data: null, message }), { status: 422, headers: { 'Content-Type': 'application/json' } })
+
+/*
+ * El registro (sin sesión): `?registro=lanzamiento` es el Standard ya lanzado (sin prueba, $139 con la oferta de 3 meses
+ * a $99: al crear la cuenta entra a la Gratis Consultora y va a contratarlo) y `?registro=prueba` el de antes (un mes
+ * gratis a $99). Los planes de Directora traen su mes gratis. Nada se guarda: al recargar, vuelve a empezar.
+ */
+const REGISTRO = (['lanzamiento', 'prueba'] as const).find(m => m === new URLSearchParams(location.search).get('registro')) ?? null
+const FREE_CONSULTANT_ID = 'a2cab71b-ed42-4bc3-937e-65549f51938b'
+const STANDARD_FEATURES_LANZAMIENTO = [
+    'Tu estrategia del mes: qué ofrecer y a qué precio', 'Tu inventario y tus ventas, desde tus órdenes',
+    'Piezas con tu logo para tus clientas', 'Mis clientas y a quién volver a ofrecerle', 'Biblioteca',
+]
+const recommendedPlan = (key: string) => {
+    const found = PLANS.find(p => PLAN_KEYS[p.id] === key)
+    if (!found) return null
+    const base = { ...found, plan_key: key, trial_days: 30, offer: null as { months: number, amount: number } | null }
+    if (key !== 'standard' || REGISTRO !== 'lanzamiento') return base
+    return { ...base, price: 139, trial_days: 0, offer: { months: 3, amount: 99 }, features: STANDARD_FEATURES_LANZAMIENTO }
+}
 
 const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
     if (standardCash === undefined) standardCash = FICHA && role === 'consultant' && actual.free ? newCash('standard', FICHA, [{ period: periodOf(0), amount: 99 }]) : null
@@ -480,6 +500,8 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
 
     // el plan puede cambiar a media sesión: al «pagar» la subida de plan
     let actual = plan
+    // Con `?registro=` no hay sesión hasta crear la cuenta en el registro
+    let registrada = !REGISTRO
 
     // Mis Clientas de la consultora (las de «+ Otra» guardadas se suman) y «Tu estrategia» con su inventario y ventas
     const customers = role !== 'consultant' ? [] : PEOPLE.slice(0, 4).map((name, index) => ({
@@ -597,7 +619,22 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
                 : new Response(JSON.stringify({ success: false, data: null, message: strategyReply.message }), { status: strategyReply.status, headers: { 'Content-Type': 'application/json' } })
         }
         else if (path === '/customers/client' && method === 'GET' && role === 'consultant') response = respond(page(customers))
-        else if (path === '/me') response = respond(userFor(actual, role, rank))
+        else if (path === '/me') response = registrada
+            ? respond(userFor(actual, role, rank))
+            : new Response(JSON.stringify({ success: false, data: null, message: 'Unauthenticated.' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+        else if (path === '/sign-up/validate-email' || path === '/sign-up/validate-username') response = respond(null)
+        else if (path.startsWith('/sign-up/recommended-plan/')) {
+            const found = recommendedPlan(path.split('/').pop() ?? '')
+            response = found ? respond(found) : new Response(JSON.stringify({ success: false, data: null, message: 'PLAN_NOT_FOUND' }), { status: 422, headers: { 'Content-Type': 'application/json' } })
+        }
+        else if (path === '/sign-up/register' && method === 'POST') {
+            const body = typeof init?.body === 'string' && init.body ? JSON.parse(init.body) : {}
+            const elegido = recommendedPlan(body.planKey ?? 'standard')
+            // Sin prueba gratis, la cuenta nace en la Gratis Consultora (como la API) y contrata el Standard después
+            actual = (elegido?.offer ? PLANS.find(p => p.id === FREE_CONSULTANT_ID) : PLANS.find(p => p.id === elegido?.id)) ?? actual
+            registrada = true
+            response = respond({ token: 'simulador', user: userFor(actual, role, rank) })
+        }
         /* Cambiar de cuenta: se apunta cuál queda activa para que la recarga abra en ESA */
         else if (/^\/me\/accounts\/[^/]+\/switch$/.test(path)) {
             const destino = path.split('/')[3]

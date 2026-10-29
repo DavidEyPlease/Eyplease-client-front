@@ -31,6 +31,7 @@ const SignUpPage = () => {
         fullName,
         firstName,
         planToShow,
+        deal,
         loading,
         goNext,
         goBack,
@@ -124,10 +125,13 @@ const SignUpPage = () => {
                 isFinal={step === totalSteps - 1}
                 nextLabel={
                     currentKey === 'plan'
-                        ? 'Activar mi mes gratis'
-                        : (currentKey === 'otherContext'
+                        ? deal.cta
+                        : currentKey === 'otherContext'
                             ? 'Enviar solicitud'
-                            : undefined)
+                            // Con la oferta de entrada, al crear la cuenta sigue contratar el plan: que no la sorprenda
+                            : step === totalSteps - 1 && deal.kind === 'offer'
+                                ? 'Crear cuenta y contratar'
+                                : undefined
                 }
             />
 

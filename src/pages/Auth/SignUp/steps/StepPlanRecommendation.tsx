@@ -1,12 +1,10 @@
-import { Check, Sparkles, Gift } from "lucide-react"
+import { Check, Sparkles, Gift, BadgePercent } from "lucide-react"
 
 import StepShell from "../components/StepShell"
 import StepPlanRecommendationSkeleton from "./StepPlanRecommendationSkeleton"
 import { PLANS_METADATA } from "@/constants/plans"
-import { IPlan, PlanKeys } from "@/interfaces/plans"
-import useFetchQuery from "@/hooks/useFetchQuery"
-import { API_ROUTES } from "@/constants/api"
-import { queryKeys } from "@/utils/cache"
+import { PlanKeys } from "@/interfaces/plans"
+import useRecommendedPlan from "../hooks/useRecommendedPlan"
 
 interface Props {
     planKey: PlanKeys
@@ -16,16 +14,10 @@ interface Props {
 const formatPrice = (n: number) => `$${n.toLocaleString('es-MX')}`
 
 const StepPlanRecommendation = ({ planKey, firstName }: Props) => {
-    const { response: plan, loading } = useFetchQuery<IPlan>(
-        API_ROUTES.SIGN_UP.GET_RECOMMENDED_PLAN.replace('{plan_key}', planKey),
-        {
-            customQueryKey: queryKeys.detail('plan', planKey),
-            enabled: !!planKey
-        }
-    )
+    const { plan, loading, deal } = useRecommendedPlan(planKey)
 
     const planMetadata = PLANS_METADATA[planKey]
-    const planWithMetadata = plan ? { ...plan.data, ...planMetadata } : null
+    const planWithMetadata = plan ? { ...plan, ...planMetadata } : null
 
     const personalGreeting = firstName ? `${firstName}, este plan es para ti` : 'Este plan es para ti'
 
@@ -83,19 +75,18 @@ const StepPlanRecommendation = ({ planKey, firstName }: Props) => {
                             ))}
                         </ul>
 
-                        <div className="su-soft mt-5 flex items-center gap-3 rounded-2xl p-3">
-                            <span className="su-accent grid size-10 shrink-0 place-items-center rounded-xl bg-card shadow-sm">
-                                <Gift className="size-5" />
-                            </span>
-                            <div className="flex-1 text-left">
-                                <p className="text-[14px] font-bold">
-                                    Pruébalo un mes gratis
-                                </p>
-                                <p className="text-[12.5px] text-muted-foreground">
-                                    Sin cobro automático. Cancela cuando quieras.
-                                </p>
+                        {/* La oferta de entrada o la prueba gratis, según el plan (sin ninguna de las dos, nada) */}
+                        {deal.kind !== 'none' && (
+                            <div className="su-soft mt-5 flex items-center gap-3 rounded-2xl p-3">
+                                <span className="su-accent grid size-10 shrink-0 place-items-center rounded-xl bg-card shadow-sm">
+                                    {deal.kind === 'offer' ? <BadgePercent className="size-5" /> : <Gift className="size-5" />}
+                                </span>
+                                <div className="flex-1 text-left">
+                                    <p className="text-[14px] font-bold">{deal.title}</p>
+                                    <p className="text-[12.5px] text-muted-foreground">{deal.detail}</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             )}

@@ -8,6 +8,8 @@
 //   …&inventario=empieza | vacio | revisado | sin-ligar     («Tu estrategia» de la consultora, plan=standard; ver estrategia-demo.ts)
 //   plan=gratis-consultora …&standard=apagado | prueba | automatica | contacto | sin-oferta  (contratar el Standard con tarjeta)
 //   plan=standard&tarjeta=si (o &cancelada=1)&ir=/profile?section=billing  (su Standard a tarjeta: cancelarlo o reanudarlo)
+//   …&sintarjeta=1 (y &ficha=oxxo|transfer, &sincorreo=1, &clabe=1)   (pagar en OXXO o por transferencia: ver mock-api.ts)
+//   ?registro=lanzamiento | prueba                         (el registro SIN sesión: el Standard con su oferta o con su mes gratis)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useLocation } from 'react-router'
@@ -19,7 +21,9 @@ import { calls, installMockApi, PLANS } from './mock-api'
 const slug = (name: string) => name.replace(/^plan\s+/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, '-')
 
 const params = new URLSearchParams(window.location.search)
-const wanted = params.get('plan') ?? sessionStorage.getItem('cuentas:plan') ?? 'elite'
+// El registro empieza sin sesión y, al crear la cuenta, entra como consultora
+const registro = params.has('registro')
+const wanted = params.get('plan') ?? (registro ? 'gratis-consultora' : null) ?? sessionStorage.getItem('cuentas:plan') ?? 'elite'
 const plan = PLANS.find(p => slug(p.name) === wanted) ?? PLANS[0]
 sessionStorage.setItem('cuentas:plan', slug(plan.name))
 // El Standard es el plan de la consultora: no tiene unidad, sólo sus clientas
@@ -50,7 +54,7 @@ if (cuenta === 'col' || cuenta === 'mex') sessionStorage.setItem('cuentas:activa
 // Contratar el Standard (plan=gratis-consultora): por qué no podría sola; sin él, puede y con la oferta de 3 meses a $99
 const standard = params.get('standard')
 if (standard) sessionStorage.setItem('cuentas:standard', standard)
-else if (params.has('plan')) sessionStorage.removeItem('cuentas:standard')
+else if (params.has('plan') || registro) sessionStorage.removeItem('cuentas:standard')
 
 // «Tu estrategia» de la consultora: con qué inventario entra (la API de mentira lo lee al crearse)
 const inventario = params.get('inventario')
@@ -72,7 +76,8 @@ document.addEventListener('click', event => {
 
 // La sesión es de mentira y vive sólo en esta pestaña: MainLayout pide que exista la clave
 const hadSession = localStorage.getItem(SESSION_KEY)
-if (!hadSession) localStorage.setItem(SESSION_KEY, 'simulador')
+if (registro) { if (hadSession === 'simulador') localStorage.removeItem(SESSION_KEY) }
+else if (!hadSession) localStorage.setItem(SESSION_KEY, 'simulador')
 window.addEventListener('pagehide', () => { if (localStorage.getItem(SESSION_KEY) === 'simulador') localStorage.removeItem(SESSION_KEY) })
 
 // `?nuevo=0|1` elige el marco igual que en la web real (sólo para esta pestaña); aquí hay que
@@ -82,7 +87,7 @@ if (shell === '0') sessionStorage.setItem('eyplease:shell', 'old')
 if (shell === '1') sessionStorage.removeItem('eyplease:shell')
 
 // La web no conoce la ruta /cuentas.html: arranca en el Inicio, o donde diga `ir` (el plan ya quedó en sessionStorage)
-const startAt = params.get('ir') ?? ''
+const startAt = params.get('ir') ?? (registro ? '/auth/sign-up' : '')
 window.history.replaceState(null, '', startAt.startsWith('/') && !startAt.startsWith('//') ? startAt : '/dashboard')
 
 
@@ -96,6 +101,12 @@ const BackToDemo = () => {
     if (!pathname.startsWith('/auth')) return null
 
     const link = { padding: '8px 16px', borderRadius: 999, font: '800 12.5px Inter, Arial', textDecoration: 'none' } as const
+    if (registro) return (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2147483647, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '8px 16px', background: '#FDE68A', color: '#1A1830', font: '700 12.5px Inter, Arial' }}>
+            <span>DEMO del registro: no se crea ninguna cuenta. Usuario Mary Kay y contraseña pueden ser cualquiera.</span>
+            <a href={`/cuentas.html?registro=${params.get('registro')}`} style={{ ...link, padding: '6px 14px', background: '#4E31C0', color: '#fff' }}>Empezar de nuevo</a>
+        </div>
+    )
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2147483647, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '10px 16px', background: '#FDE68A', color: '#1A1830', font: '700 13px Inter, Arial', boxShadow: '0 8px 24px -10px rgba(10,5,60,.5)' }}>
             <span>Estás en la DEMO: aquí no se entra con tu usuario y contraseña.</span>

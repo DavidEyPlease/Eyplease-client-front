@@ -1,8 +1,9 @@
 import { Check, ShieldCheck, User } from "lucide-react"
 
 import { COUNTRIES } from "@/constants/countries"
-import { DIRECTOR_YEARS_OPTIONS, TRIAL_LABEL, UNIT_SIZE_OPTIONS } from "@/constants/plans"
+import { DIRECTOR_YEARS_OPTIONS, UNIT_SIZE_OPTIONS } from "@/constants/plans"
 import { PlanKeys } from "@/interfaces/plans"
+import useRecommendedPlan from "../hooks/useRecommendedPlan"
 import { cn } from "@/lib/utils"
 import type { StepKey } from "../hooks/useSignUpWizard"
 import type { ISignUp } from "../schema"
@@ -41,6 +42,8 @@ const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0
  * Mary Kay nunca aparece.
  */
 const AccountPreview = ({ values, steps, current, planKey }: Props) => {
+    // Cómo entra a su plan (oferta de entrada o prueba gratis): la misma petición que el paso del plan
+    const { deal } = useRecommendedPlan(planKey, values.userType !== 'other')
     const reached = (key: StepKey) => {
         const i = steps.indexOf(key)
         return i !== -1 && i <= current
@@ -60,7 +63,7 @@ const AccountPreview = ({ values, steps, current, planKey }: Props) => {
                 return { label: 'Tu unidad', value: [size, years].filter(Boolean).join(' · '), placeholder: 'Tamaño y experiencia' }
             }
             case 'plan':
-                return { label: 'Plan', value: reached('plan') ? `${PLAN_NAMES[planKey]} · ${TRIAL_LABEL}` : '', placeholder: 'Te recomendamos uno' }
+                return { label: 'Plan', value: reached('plan') ? [PLAN_NAMES[planKey], deal.short].filter(Boolean).join(' · ') : '', placeholder: 'Te recomendamos uno' }
             case 'mk':
                 return { label: 'Mary Kay', value: values.mkUserId?.trim() ? `Usuario ${values.mkUserId.trim()}` : '', placeholder: 'Conexión con tu unidad' }
             case 'password':
@@ -132,7 +135,11 @@ const AccountPreview = ({ values, steps, current, planKey }: Props) => {
                 <ShieldCheck className="size-4 shrink-0 text-[#9DF3F5]" />
                 {values.userType === 'other'
                     ? 'Revisamos tu caso y te escribimos por WhatsApp.'
-                    : `${TRIAL_LABEL} · Sin cobro automático · Cancela cuando quieras`}
+                    : deal.kind === 'offer'
+                        ? `${deal.short} · Cancela cuando quieras`
+                        : deal.kind === 'trial'
+                            ? `${deal.short} · Sin cobro automático · Cancela cuando quieras`
+                            : 'Cancela cuando quieras'}
             </p>
         </div>
     )

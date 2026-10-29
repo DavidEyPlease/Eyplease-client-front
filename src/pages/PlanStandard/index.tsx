@@ -31,9 +31,10 @@ const METODOS: Array<{ key: Metodo, label: string, hint: string, Icon: typeof Cr
 const ACTIVA = 'Tu plan se activa en cuanto se confirme tu pago (OXXO: al día hábil siguiente; transferencia: en minutos).'
 
 /**
- * Contratar el Plan Standard («Tu estrategia») con tarjeta, desde la web (David, 28-oct-2026): cuánto paga hoy (con la
- * oferta de lanzamiento, 3 meses a $99) y cada mes, paga en Stripe y al volver se confirma aquí y se le abre su
- * estrategia. Lo que no puede sola (otra moneda, ya se le cobra solo, su prueba…) la manda con el equipo.
+ * Contratar el Plan Standard («Tu estrategia») desde la web (David, 28-oct-2026): cuánto paga hoy (con la oferta de
+ * lanzamiento, 3 meses a $99) y cada mes, paga con tarjeta en Stripe (al volver se confirma aquí) o con OXXO o
+ * transferencia (los datos se enseñan aquí), y se le abre su estrategia. Desde el lanzamiento el registro la trae aquí
+ * en cuanto crea su cuenta (`?bienvenida=1`), porque el Standard ya no tiene prueba gratis. Lo que no puede sola (otra moneda, ya se le cobra solo, su prueba…) la manda con el equipo.
  * Es de la web: en la app de las tiendas no se puede decir cómo pagar (ahí va la compra integrada).
  */
 const PlanStandardPage = () => {
@@ -45,6 +46,8 @@ const PlanStandardPage = () => {
     const [params] = useSearchParams()
     const sesion = params.get('sesion')
     const cancelado = params.get('cancelado') === '1'
+    // Recién registrada (el Standard ya no tiene prueba gratis): su cuenta ya existe y aquí lo contrata
+    const bienvenida = params.get('bienvenida') === '1'
 
     const { data: cotizacion, error: errorCotizacion, isLoading } = useStandardQuote(!sesion)
     const [error, setError] = useState<string | null>(null)
@@ -166,6 +169,11 @@ const PlanStandardPage = () => {
                     {!vuelta && (
                         <>
                             {cancelado && <p className="mb-4 rounded-xl bg-muted px-4 py-2.5 text-center text-sm font-semibold">No se hizo ningún cargo. Cuando quieras, aquí sigue.</p>}
+                            {bienvenida && !cancelado && (
+                                <p className="mb-4 flex items-center justify-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-center text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                                    <CheckIcon className="size-4 shrink-0" /> Tu cuenta está lista{user?.name ? `, ${user.name.split(' ')[0]}` : ''}. Ahora activa tu plan.
+                                </p>
+                            )}
                             <p className="text-[11px] font-extrabold tracking-[.16em] text-[#C0066A] uppercase dark:text-[#FF7AC0]">Tu estrategia</p>
                             <h1 className="mt-1 text-[28px] leading-tight font-extrabold tracking-tight">{nombrePlan}</h1>
                             <p className="mt-1 text-sm text-muted-foreground">Cada mes te digo qué ofrecer con lo que compraste, cuánto ganas, a quién volver a ofrecerle y te doy las piezas con tu logo, listas para WhatsApp.</p>
@@ -276,7 +284,14 @@ const PlanStandardPage = () => {
 
                             {mensajeError && <p className="mt-4 rounded-xl bg-destructive/10 px-4 py-2.5 text-center text-sm font-semibold text-destructive">{mensajeError}</p>}
 
-                            <button type="button" onClick={() => navigate(APP_ROUTES.HOME.INITIAL)} className="mt-4 w-full text-center text-sm font-semibold text-muted-foreground hover:text-foreground">Ahora no</button>
+                            {/* Recién registrada, «Ahora no» la deja en la cuenta lista de siempre (bajar la app) */}
+                            <button
+                                type="button"
+                                onClick={() => navigate(bienvenida ? `${APP_ROUTES.AUTH.SUCCESS_REGISTER}?${new URLSearchParams({ email: user?.email ?? '' })}` : APP_ROUTES.HOME.INITIAL)}
+                                className="mt-4 w-full text-center text-sm font-semibold text-muted-foreground hover:text-foreground"
+                            >
+                                Ahora no
+                            </button>
                         </>
                     )}
                 </section>
