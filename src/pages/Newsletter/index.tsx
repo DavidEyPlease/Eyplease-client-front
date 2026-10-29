@@ -221,7 +221,7 @@ const NewsletterStudio = () => {
                                     {verInteractivo && (
                                         <p className="mt-2 text-[12px] text-muted-foreground">
                                             {!piel ? `La ${selected.name} no tiene versión interactiva; la ${conVersion?.name ?? 'Plantilla 9'} sí.`
-                                                : interactivoBloqueado ? 'Viene en los planes Elite y Nacional: subes y lo abres hoy mismo.'
+                                                : interactivoBloqueado ? 'Viene en los planes Elite y Área: subes y lo abres hoy mismo.'
                                                 : conNacional ? 'El cierre de tu Área contado como pasó, para presentarlo en tu junta. Se abre en otra pestaña; no se descarga.'
                                                 : 'El cierre del mes contado como pasó, para presentarlo en tu junta. Se abre en otra pestaña; no se descarga.'}
                                         </p>

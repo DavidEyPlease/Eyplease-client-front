@@ -42,11 +42,11 @@ const BoletinNacionalShowcase = ({ className = '' }: { className?: string }) => 
     return (
         <div ref={caja} className={`bsx bnx ${quieto ? 'bnx-quieto' : ''} ${className}`} aria-hidden="true" style={{ '--fondo': `url(${BASE}/kit-fondo-h.webp)`, '--dura': `${DURA}ms` } as React.CSSProperties}>
             {/* la barra de la página: que se vea desde el primer momento que es el boletín NACIONAL */}
-            <div className="bnx-barra"><b>eyplease<i>+</i></b><span><small>Boletín nacional de septiembre</small>Tu Área completa</span></div>
+            <div className="bnx-barra"><b>eyplease<i>+</i></b><span><small>Boletín del área de septiembre</small>Tu Área completa</span></div>
 
             {/* 1. La ceremonia: tres finalistas boca abajo y la corona al final */}
             <div className={`bsx-escena bnx-honor ${escena === 0 ? 'is-on' : ''}`}>
-                <span className="bnx-kicker">Top nacional de septiembre</span>
+                <span className="bnx-kicker">Top del área de septiembre</span>
                 <img src={`${BASE}/kit-honor.webp`} alt="" className="bnx-honor-t" />
                 <div className="bnx-cartas">
                     {FINALISTAS.map(({ ini, lugar }, n) => (

@@ -52,7 +52,7 @@ export const REPORT_STATUS_META: Record<ReportStatus, ReportStatusMeta> = {
 /** Etiqueta corta del boletín para el tag del panel. */
 export const NEWSLETTER_TAG: Record<NewsletterTypes, string> = {
 	[NewsletterTypes.UNITY]: 'Unidad',
-	[NewsletterTypes.NATIONAL]: 'Nacional',
+	[NewsletterTypes.NATIONAL]: 'Área',
 }
 
 export interface ResolvedSectionReport {

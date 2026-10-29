@@ -72,12 +72,12 @@ const BoletinNacionalAnuncio = () => {
                         <BoletinNacionalShowcase className="ifx-pantalla" />
 
                         <div className="min-w-0">
-                            <span className="ifx-nuevo"><SparklesIcon className="size-3" /> Nuevo · Boletín Nacional</span>
+                            <span className="ifx-nuevo"><SparklesIcon className="size-3" /> Nuevo · Boletín de Área</span>
                             <DialogTitle asChild>
-                                <h2 className="ifx-titulo mt-3">Ahora tu Boletín Nacional también es interactivo</h2>
+                                <h2 className="ifx-titulo mt-3">Ahora tu Boletín de Área también es interactivo</h2>
                             </DialogTitle>
                             <DialogDescription className="mt-2 text-[15px] leading-relaxed text-white/85">
-                                Además del de tu unidad, ahora el de tu <b className="text-white">Área completa</b>: el Cuadro de Honor nacional con ceremonia y suspenso, la carrera de las unidades, el auto rosa y las Cortes con sus joyas. Escribe tu mensaje y preséntalo en tu junta nacional o en Zoom, sin descargar nada.
+                                Además del de tu unidad, ahora el de tu <b className="text-white">Área completa</b>: el Cuadro de Honor de tu área con ceremonia y suspenso, la carrera de las unidades, el auto rosa y las Cortes con sus joyas. Escribe tu mensaje y preséntalo en tu junta nacional o en Zoom, sin descargar nada.
                             </DialogDescription>
 
                             <ul className="mt-4 flex flex-wrap gap-1.5">
@@ -87,15 +87,15 @@ const BoletinNacionalAnuncio = () => {
                             </ul>
 
                             <p className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-emerald-400/18 px-3 py-1.5 text-[12px] font-extrabold text-emerald-100 ring-1 ring-emerald-300/40">
-                                <BadgeCheckIcon className="size-3.5" /> Ya es parte de tu {user.plan?.name ?? 'Plan Nacional'}
+                                <BadgeCheckIcon className="size-3.5" /> Ya es parte de tu {user.plan?.name ?? 'Plan Área'}
                             </p>
 
                             <div className="mt-4 flex flex-wrap gap-2.5">
                                 <Link to={APP_ROUTES.HOME.NEWSLETTER_NATIONAL} target="_blank" rel="noopener" onClick={cerrar} className={BOTON}>
-                                    Abrir mi Boletín Nacional <ExternalLinkIcon className="size-4" />
+                                    Abrir mi Boletín de Área <ExternalLinkIcon className="size-4" />
                                 </Link>
                             </div>
-                            <p className="mt-2.5 text-[12px] text-white/65">También está en Boletín: elige el Boletín Nacional y el formato «Interactivo».</p>
+                            <p className="mt-2.5 text-[12px] text-white/65">También está en Boletín: elige el Boletín de Área y el formato «Interactivo».</p>
                             <button type="button" onClick={cerrar} className="mt-4 text-[13px] font-bold text-white/70 hover:text-white">Lo veo después</button>
                         </div>
                     </div>

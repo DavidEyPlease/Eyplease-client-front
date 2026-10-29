@@ -32,7 +32,7 @@ export const PLANS_METADATA: Record<PlanKeys, { audience: string; headline: stri
     },
     [PlanKeys.NATIONAL]: {
         audience: 'Directoras',
-        headline: 'Para Directoras Nacionales que coordinan varias unidades',
+        headline: 'Para Directoras con directoras debajo: toda tu área en un solo lugar',
     },
 }
 

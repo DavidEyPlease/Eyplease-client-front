@@ -107,7 +107,7 @@ const PlanUpgradePage = () => {
 
     if (!initialLoading && !user) return <Navigate to={APP_ROUTES.AUTH.SIGN_IN} replace />
 
-    const nombrePlan = cotizacion?.plan?.name ?? (planKey === 'national' ? 'Plan Nacional' : 'Plan Elite')
+    const nombrePlan = cotizacion?.plan?.name ?? (planKey === 'national' ? 'Plan Área' : 'Plan Elite')
     const whatsapp = cotizacion?.whatsapp
         ? `https://wa.me/${cotizacion.whatsapp}?text=${encodeURIComponent(`Hola, soy ${user?.name ?? ''} (cuenta ${user?.account ?? ''}). Quiero subir al ${nombrePlan}.`)}`
         : null

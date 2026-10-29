@@ -27,6 +27,6 @@ export const NEWSLETTER_TYPE_META: Record<NewsletterTypes, { icon: LucideIcon; d
     },
     [NewsletterTypes.NATIONAL]: {
         icon: Globe,
-        description: 'Cortes y reinas a nivel de área nacional.',
+        description: 'Cortes y reinas de toda tu área.',
     },
 }

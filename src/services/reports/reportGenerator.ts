@@ -189,7 +189,9 @@ export const generatePptxReport = async (params: ReportParams): Promise<void> =>
             base = `${user.account}-Boletín-Unidad-${report.year_month}`
             blob = await buildUnityPptx(template_resources as unknown as LayoutPptxPayload, onProgress)
         } else {
-            base = `${user.account}-Boletín-Nacional-${report.year_month}`
+            // «Nacional» sólo para una Nacional; una Élite o Ejecutiva con directoras debajo baja el de su Área
+            const deArea = ['elite_director', 'executive_director'].includes(user.client_role?.slug ?? '')
+            base = `${user.account}-Boletín-${deArea ? 'Area' : 'Nacional'}-${report.year_month}`
             blob = await buildNationalPptx(template_resources as unknown as LayoutPptxPayload, onProgress)
         }
 

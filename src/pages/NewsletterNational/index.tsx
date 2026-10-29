@@ -94,9 +94,9 @@ const NewsletterNationalPage = () => {
 
     const sinPlan = !initialLoading && !!user && (!hasNational || !abierto)
     const mes = nombreMes(yearMonth)
-    const aviso = sinPlan ? 'El boletín nacional interactivo viene en el plan Nacional.'
-        : error && !datos ? 'No pudimos armar tu boletín nacional. Revisa tu conexión e inténtalo otra vez.'
-        : vacio ? `Tu boletín nacional de ${mes} todavía no tiene datos: se arma con los reportes de tu Área. En cuanto estén cargados, aquí lo verás.`
+    const aviso = sinPlan ? 'El boletín interactivo del área viene en el Plan Área.'
+        : error && !datos ? 'No pudimos armar tu boletín del área. Revisa tu conexión e inténtalo otra vez.'
+        : vacio ? `Tu boletín del área de ${mes} todavía no tiene datos: se arma con los reportes de tu Área. En cuanto estén cargados, aquí lo verás.`
         : null
     // con el mes vacío se le ofrece el anterior, que puede tener sus reportes
     const mesAnterior = vacio ? months[months.indexOf(yearMonth) + 1] : undefined
@@ -108,7 +108,7 @@ const NewsletterNationalPage = () => {
     return (
         <div className="boletin-dinamico min-h-dvh">
             {(!mostrar || aviso) && (
-                <PantallaDeCarga aviso={aviso} avance={avance} paso={paso} sello="Boletín nacional · eyplease+" acciones={<>
+                <PantallaDeCarga aviso={aviso} avance={avance} paso={paso} sello="Boletín de Área · eyplease+" acciones={<>
                     {mesAnterior && (
                         <button type="button" onClick={() => { const next = new URLSearchParams(params); next.set('mes', mesAnterior); setParams(next, { replace: true }) }} className="rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Ver {nombreMes(mesAnterior)}</button>
                     )}

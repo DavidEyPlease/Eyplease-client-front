@@ -123,7 +123,7 @@ const NewsletterInteractivePage = () => {
     const sinPlan = !ejemplo && !initialLoading && !!user && (!hasUnity || !conPlan)
     const enPrueba = !ejemplo && !initialLoading && !!user && !sinPlan && !abierto
     const verEjemplo = sinPlan && hasUnity && ofrecerBoletinDinamico(user)
-    const aviso = sinPlan ? 'El boletín interactivo viene en los planes Elite y Nacional.'
+    const aviso = sinPlan ? 'El boletín interactivo viene en los planes Elite y Área.'
         : enPrueba ? 'Muy pronto: el boletín dinámico de tu unidad está en sus últimas pruebas.'
         : error && !datos ? 'No pudimos armar tu boletín. Revisa tu conexión e inténtalo otra vez.'
         : vacio ? `Tu boletín de ${monthLabel(yearMonth).split(' ')[0].toLowerCase()} todavía no tiene datos: se arma con los reportes de tu unidad. En cuanto estén cargados, aquí lo verás.`

@@ -14,7 +14,7 @@ const PLAN_NAMES: Record<PlanKeys, string> = {
     [PlanKeys.BASIC]: 'Básico',
     [PlanKeys.EXECUTIVE]: 'Ejecutivo',
     [PlanKeys.ELITE]: 'Elite',
-    [PlanKeys.NATIONAL]: 'Nacional',
+    [PlanKeys.NATIONAL]: 'Área',
 }
 
 const PROFILES: Record<ISignUp['userType'], string> = {

@@ -36,7 +36,7 @@ const InteractiveFeature = ({ bloqueado = false }: { bloqueado?: boolean }) => {
                     </ul>
 
                     <p className={`mt-5 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-extrabold ${bloqueado ? 'bg-white/12 ring-1 ring-white/25' : 'bg-emerald-400/18 text-emerald-100 ring-1 ring-emerald-300/40'}`}>
-                        {bloqueado ? <><LockIcon className="size-3.5" /> Viene en los planes Elite y Nacional</> : <><BadgeCheckIcon className="size-3.5" /> Ya es parte de tu {plan ?? 'plan'}</>}
+                        {bloqueado ? <><LockIcon className="size-3.5" /> Viene en los planes Elite y Área</> : <><BadgeCheckIcon className="size-3.5" /> Ya es parte de tu {plan ?? 'plan'}</>}
                     </p>
 
                     {/* En su propia pestaña: la plataforma sigue abierta donde estaba */}
