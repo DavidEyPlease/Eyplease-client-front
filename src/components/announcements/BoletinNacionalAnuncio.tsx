@@ -77,7 +77,7 @@ const BoletinNacionalAnuncio = () => {
                                 <h2 className="ifx-titulo mt-3">Ahora tu Boletín de Área también es interactivo</h2>
                             </DialogTitle>
                             <DialogDescription className="mt-2 text-[15px] leading-relaxed text-white/85">
-                                Además del de tu unidad, ahora el de tu <b className="text-white">Área completa</b>: el Cuadro de Honor de tu área con ceremonia y suspenso, la carrera de las unidades, el auto rosa y las Cortes con sus joyas. Escribe tu mensaje y preséntalo en tu junta nacional o en Zoom, sin descargar nada.
+                                Además del de tu unidad, ahora el de tu <b className="text-white">Área completa</b>: el Cuadro de Honor de tu área con ceremonia y suspenso, la carrera de las unidades, el auto rosa y las Cortes con sus joyas. Escribe tu mensaje y preséntalo en la junta de tu área o en Zoom, sin descargar nada.
                             </DialogDescription>
 
                             <ul className="mt-4 flex flex-wrap gap-1.5">

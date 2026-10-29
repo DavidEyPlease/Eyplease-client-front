@@ -145,7 +145,8 @@ export const generateAnnualReport = async ({ reportType, fileType, title }: Annu
             return new Promise(resolve => setTimeout(resolve, 250))
         }
 
-        const scope = template_resources.type === NewsletterTypes.UNITY ? 'Unidad' : 'Nacional'
+        const deArea = ['elite_director', 'executive_director'].includes(user.client_role?.slug ?? '')
+        const scope = template_resources.type === NewsletterTypes.UNITY ? 'Unidad' : (deArea ? 'Area' : 'Nacional')
         const base = `${user.account}-Reporte-Anual-${scope}-${report.year_month}`
         const blob = template_resources.type === NewsletterTypes.UNITY
             ? await buildUnityPptx(template_resources as unknown as LayoutPptxPayload, onProgress)
