@@ -6,6 +6,10 @@ export interface BoletinNacionalDatos {
     mesEnCurso: string
     directora: { nombre: string | null, foto: string | null, nivel: string }
     area: { nombre: string, directoras: number }
+    /** false si la Directora no es Nacional (una Élite con directoras debajo): el motor dice «del área» y su rango. */
+    nacional?: boolean
+    /** false si el área no trae Reconocimiento de Área: no salen los bonos ni el Camino al Éxito. */
+    reconocimiento?: boolean
     personas: Array<{ id: string, nombre: string, foto: string | null }>
     ajustes?: { mensaje: string | null } | null
     [seccion: string]: unknown

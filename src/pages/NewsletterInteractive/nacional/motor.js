@@ -42,8 +42,14 @@ export function crearBoletinNacional(host, D, op = {}) {
         document.head.appendChild(l)
     }
     const base = op.base || '/boletin/p9'
+    // No es sólo de Nacionales: una Directora Élite con directoras debajo tiene su boletín de área. Con ella no se dice
+    // «nacional» y su rango sale de la API; sin Reconocimiento de Área no hay bonos ni Camino al Éxito que contar.
+    const NAC = D.nacional !== false
+    const DEL = NAC ? 'nacional' : 'del área'
+    const nivel = D.directora?.nivel || 'Directora Nacional'
+    const sinReconocimiento = D.reconocimiento === false
     const tituloAntes = document.title
-    document.title = `Boletín nacional de ${D.mes} · ${D.area?.nombre || ''}`
+    document.title = `Boletín ${DEL} de ${D.mes} · ${D.area?.nombre || ''}`
     const root = host.shadowRoot || host.attachShadow({ mode: 'open' })
     const PER = new Map((D.personas || []).map(p => [p.id, p]))
     const quien = id => PER.get(id) || { nombre: '', foto: null }
@@ -63,10 +69,12 @@ export function crearBoletinNacional(host, D, op = {}) {
     // ---- datos que se cuentan en más de un lugar ----
     const desde = D.seminario?.desde ?? 6
     const mesesC = D.meses.slice(desde)
-    const unidades = (D.unidades || []).filter(u => u.total).map(u => {
+    // con el acumulado oficial (Unit Club) corren las que lo traen; un área sin él corre con su producción de unidad
+    const hayTotales = (D.unidades || []).some(u => u.total)
+    const unidades = (D.unidades || []).filter(u => (hayTotales ? u.total : u.prod.some(Boolean))).map(u => {
         const cum = [0]
         mesesC.forEach((_, k) => cum.push(cum[k] + (u.prod[desde + k] || 0)))
-        cum[cum.length - 1] = u.total // manda el acumulado oficial (el del Unit Club)
+        if (u.total) cum[cum.length - 1] = u.total // manda el acumulado oficial (el del Unit Club)
         return { ...u, cum }
     })
     const conBono = (D.bonos || []).length
@@ -80,9 +88,9 @@ export function crearBoletinNacional(host, D, op = {}) {
     <header class="barra">
         <button type="button" class="volver" data-volver aria-label="Cerrar el boletín"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <span class="marca">eyplease<b>+</b></span>
-        <span class="quien"><small><span class="bn">Boletín </span>nacional de ${esc(mes)}</small><b>${esc(D.area.nombre)}</b></span>
+        <span class="quien"><small><span class="bn">Boletín </span>${DEL} de ${esc(mes)}</small><b>${esc(D.area.nombre)}</b></span>
         <nav class="secciones" aria-label="Secciones">
-            <a href="#top">Cuadro de Honor</a><a href="#trofeo" data-tsr-link>Trofeo</a><a href="#carrera">Carrera</a><a href="#bonos">Bonos</a><a href="#cortes">Cortes</a><a href="#estrellas">Estrellas</a><a href="#camino">Camino al Éxito</a><a href="#celebraciones">Celebraciones</a>
+            <a href="#top">Cuadro de Honor</a><a href="#trofeo" data-tsr-link>Trofeo</a><a href="#carrera">Carrera</a><a href="#unidades">Unidades</a><a href="#bonos">Bonos</a><a href="#cortes">Cortes</a><a href="#estrellas">Estrellas</a><a href="#camino">Camino al Éxito</a><a href="#celebraciones">Celebraciones</a>
         </nav>
         <button type="button" class="barra-b junta-b" data-junta aria-label="Modo junta" title="Modo junta: presentar en pantalla completa">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Modo junta</span>
@@ -101,10 +109,10 @@ export function crearBoletinNacional(host, D, op = {}) {
     <main>
         <section class="entrada" aria-labelledby="titulo">
             <div class="letras">
-                <h1 id="titulo" class="sr">Reconocimiento nacional de ${esc(mes)}</h1>
+                <h1 id="titulo" class="sr">Reconocimiento ${DEL} de ${esc(mes)}</h1>
                 <p class="mes-g" aria-hidden="true">${esc(Mes)}</p>
                 <img class="l1" src="${base}/kit-titulo.webp" alt="" width="1400" height="537">
-                <p class="lead">El cierre de ${esc(mes)} del <b>${esc(D.area.nombre)}</b>: <b>${unidades.length} unidades</b> en la carrera, <b>${conBono} directoras con bono</b> y <b>${nEstrellas} Estrellas nacionales</b>.</p>
+                <p class="lead">El cierre de ${esc(mes)} del <b>${esc(D.area.nombre)}</b>: ${[`<b>${unidades.length} unidades</b> en la carrera`, ...(sinReconocimiento ? [] : [`<b>${conBono} directoras con bono</b>`]), `<b>${nEstrellas} ${nEstrellas === 1 ? 'Estrella' : 'Estrellas'}${NAC ? (nEstrellas === 1 ? ' nacional' : ' nacionales') : ''}</b>`].join(', ').replace(/, ([^,]*)$/, ' y $1')}.</p>
                 <button type="button" class="ir" data-ir><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>Empezar</button>
             </div>
             <figure class="dire">
@@ -114,7 +122,7 @@ export function crearBoletinNacional(host, D, op = {}) {
                     <img class="flota f1" src="${base}/kit-f03.webp" alt="" aria-hidden="true">
                     <img class="flota f2" src="${base}/kit-f05.webp" alt="" aria-hidden="true">
                 </div>
-                <figcaption><small class="dire-tit">Tu Directora Nacional</small><b class="dire-nombre">${esc(D.directora.nombre)}</b><span class="dire-nivel">${esc(D.area.nombre)} · ${D.area.directoras} directoras</span></figcaption>
+                <figcaption><small class="dire-tit">Tu ${esc(nivel)}</small><b class="dire-nombre">${esc(D.directora.nombre)}</b><span class="dire-nivel">${esc(D.area.nombre)} · ${D.area.directoras} directoras</span></figcaption>
             </figure>
         </section>
 
@@ -122,7 +130,7 @@ export function crearBoletinNacional(host, D, op = {}) {
             <article class="carta-n panel revela">
                 <div class="carta-foto"><i class="brillo" aria-hidden="true"></i>${D.directora.foto ? `<span class="cara"><img src="${esc(D.directora.foto)}" alt=""></span>` : ''}</div>
                 <div class="carta-txt">
-                    <p class="kicker">Un mensaje de tu Directora Nacional</p>
+                    <p class="kicker">Un mensaje de tu ${esc(nivel)}</p>
                     <h2 id="msj-t" class="sr">Mensaje de ${esc(D.directora.nombre)}</h2>
                     <div class="msj-texto" data-msj></div>
                     <p class="firma"><span class="firma-m" aria-hidden="true">${esc(D.directora.nombre.split(' ')[0] || '')}</span><b>${esc(D.directora.nombre)}</b><small>${esc(D.directora.nivel)} · ${esc(D.area.nombre)}</small></p>
@@ -131,13 +139,13 @@ export function crearBoletinNacional(host, D, op = {}) {
         </section>
 
         <section class="seccion honor-n" id="top" aria-labelledby="top-t">
-            <header class="cab revela"><p class="kicker">Top nacional de ${esc(mes)}</p><h2 id="top-t" class="sr">Cuadro de Honor nacional</h2>
+            <header class="cab revela"><p class="kicker">Top ${DEL} de ${esc(mes)}</p><h2 id="top-t" class="sr">Cuadro de Honor ${DEL}</h2>
                 <img class="tit-honor" src="${base}/kit-honor.webp" alt="" width="1400" height="494">
                 <p class="sub">El top 10 de cada categoría. Toca a una reina para ver su ceremonia.</p></header>
             <div class="reinas-n revela" role="tablist" aria-label="Categorías del Cuadro de Honor"></div>
             <div class="ceremonia panel revela" role="tabpanel">
                 <div class="cer-cab">
-                    <div><p class="kicker">Top 10 nacional · <span data-cat-n></span></p><h3 data-cat-t></h3></div>
+                    <div><p class="kicker">Top 10 ${DEL} · <span data-cat-n></span></p><h3 data-cat-t></h3></div>
                     <div class="cer-mandos">
                         <button type="button" class="chico redondo" data-cat-ant aria-label="Categoría anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
                         <button type="button" class="chico" data-cat-otra>Repetir</button>
@@ -189,6 +197,12 @@ export function crearBoletinNacional(host, D, op = {}) {
             </div>
         </section>
 
+        <section class="seccion" id="unidades" aria-labelledby="uni-t">
+            <header class="cab revela"><p class="kicker">${esc(Mes)} · unidad por unidad</p><h2 id="uni-t">Las unidades del área</h2>
+                <p class="sub">Cuántas consultoras tiene cada unidad, cuántas están activas, cuántas ordenaron y cuántas se iniciaron en ${esc(mes)}.</p></header>
+            <div class="unidades-n revela"></div>
+        </section>
+
         <section class="seccion" id="bonos" aria-labelledby="bon-t">
             <header class="cab revela"><p class="kicker">Bonos del mes</p><h2 id="bon-t">${conBono === 1 ? '1 directora ganó bono' : `${conBono} directoras ganaron bono`}</h2>
                 <p class="sub">Por la producción de su unidad en ${esc(mes)}. En total, <b>${pesos(montoBonos)}</b> en bonos para tu área.</p></header>
@@ -197,24 +211,24 @@ export function crearBoletinNacional(host, D, op = {}) {
         </section>
 
         <section class="seccion cortes-n" id="cortes" aria-labelledby="cor-t">
-            <header class="cab revela"><p class="kicker">Cortes nacionales · Año Seminario ${anioSem}-${anioSem + 1}</p><h2 id="cor-t">Rumbo a las Cortes</h2>
+            <header class="cab revela"><p class="kicker">${NAC ? 'Cortes nacionales' : 'Cortes'} · Año Seminario ${anioSem}-${anioSem + 1}</p><h2 id="cor-t">Rumbo a las Cortes</h2>
                 <p class="sub" data-cortes-s></p></header>
             <div class="cortes-lista"></div>
         </section>
 
         <section class="seccion" id="estrellas" aria-labelledby="est-t">
-            <header class="cab revela"><p class="kicker">Estrellas nacionales · ${triTexto(mNumero)}</p><h2 id="est-t">${cierreTri ? `${nEstrellas} ${nEstrellas === 1 ? 'Estrella' : 'Estrellas'} en tu área` : `${nEstrellas} van por su Estrella`}</h2><p class="sub">${cierreTri ? 'Las que cerraron el trimestre con su estrella.' : `Lo que lleva cada una del trimestre al cierre de ${esc(mes)}.`}</p></header>
+            <header class="cab revela"><p class="kicker">${NAC ? 'Estrellas nacionales' : 'Estrellas del área'} · ${triTexto(mNumero)}</p><h2 id="est-t">${cierreTri ? `${nEstrellas} ${nEstrellas === 1 ? 'Estrella' : 'Estrellas'} en tu área` : `${nEstrellas} van por su Estrella`}</h2><p class="sub">${cierreTri ? 'Las que cerraron el trimestre con su estrella.' : `Lo que lleva cada una del trimestre al cierre de ${esc(mes)}.`}</p></header>
             <div class="gemas revela"></div>
             <div class="metas-e revela"></div>
         </section>
 
         <section class="seccion" id="camino" aria-labelledby="cam-t">
-            <header class="cab revela"><p class="kicker">Camino al Éxito nacional</p><h2 id="cam-t">Hacia la cumbre</h2><p class="sub">Cada directora en su escalón, según sus directoras en primera línea.</p></header>
+            <header class="cab revela"><p class="kicker">Camino al Éxito ${DEL}</p><h2 id="cam-t">Hacia la cumbre</h2><p class="sub">Cada directora en su escalón, según sus directoras en primera línea.</p></header>
             <div class="camino revela"></div>
         </section>
 
         <section class="seccion" id="celebraciones" aria-labelledby="cel-t">
-            <header class="cab revela"><p class="kicker">Celebraciones nacionales de ${esc(D.mesEnCurso)}</p><h2 id="cel-t">¡A celebrar!</h2><p class="sub" data-fiestas-s></p></header>
+            <header class="cab revela"><p class="kicker">Celebraciones ${NAC ? 'nacionales' : 'del área'} de ${esc(D.mesEnCurso)}</p><h2 id="cel-t">¡A celebrar!</h2><p class="sub" data-fiestas-s></p></header>
             <div class="fiestas revela"></div>
         </section>
 
@@ -878,6 +892,30 @@ export function crearBoletinNacional(host, D, op = {}) {
     on($('[data-otra]'), 'click', () => { detener(); reiniciar(); correr() })
     pintar(0)
 
+    // ---- las unidades del área en el mes: su gente (Análisis de Área). Sólo se celebra lo que subió: una unidad que
+    // bajó no se señala frente a toda el área. ----
+    const iM = D.meses.length - 1
+    // sólo con el Análisis de Área (activas y ordenantes): el Reconocimiento solo trae el tamaño y eso ya lo cuenta el top
+    const conGente = (D.unidades || []).filter(u => u.activas != null || u.ordenantes != null)
+    $('.unidades-n').innerHTML = [...conGente].sort((a, b) => (b.prod[iM] || 0) - (a.prod[iM] || 0)).map((u, n) => {
+        const ahora = u.prod[iM] || 0
+        const antes = u.prod[iM - 1] || 0
+        const sube = antes && ahora > antes ? Math.round(((ahora - antes) / antes) * 100) : 0
+        const dato = (v, t) => (v == null ? '' : `<span><b class="cifra">${num(v)}</b><small>${t}</small></span>`)
+        return `<article class="unidad-n panel" style="--n:${n}"><header>${cara(u.p)}<b>${esc(quien(u.p).nombre)}</b></header>`
+            + (ahora ? `<p class="prod-u"><b class="cifra">${pts(ahora)}</b> de producción${sube ? `<small class="sube">▲ ${sube} % más que ${esc(NOMBRE_MES[Number(D.meses[iM - 1].slice(5)) - 1])}</small>` : ''}</p>` : '')
+            + `<div class="gente-u">${dato(u.tamano, 'consultoras')}${dato(u.activas, 'activas')}${dato(u.ordenantes, 'ordenaron')}${dato(u.inicios, u.inicios === 1 ? 'nueva' : 'nuevas')}</div>`
+            + (u.inicios_seminario ? `<p class="sem-u">${ini(u.inicios_seminario)} en el Año Seminario</p>` : '')
+            + '</article>'
+    }).join('')
+
+    // ---- las secciones sin datos no salen (ni su liga en la barra) ----
+    const ocultas = [...(conGente.length ? [] : ['unidades']), ...(sinReconocimiento ? ['bonos', 'camino'] : [])]
+    ocultas.forEach(id => {
+        $(`#${id}`).hidden = true
+        $(`.secciones a[href="#${id}"]`)?.setAttribute('hidden', '')
+    })
+
     // ---- lo que aparece al verse, la carrera arranca sola la primera vez ----
     const io = new IntersectionObserver(entradas => entradas.forEach(e => { if (e.isIntersecting) { e.target.classList.add('ver'); io.unobserve(e.target) } }), { threshold: .15 })
     $$('.revela').forEach(el => io.observe(el))
@@ -944,7 +982,7 @@ export function crearBoletinNacional(host, D, op = {}) {
         if (!s || s.matches('.entrada')) return ['Portada', '']
         if (s.matches('.cierre')) return ['Cierre', '']
         if (s.id === 'mensaje') return ['Mensaje de tu Directora', '']
-        if (s.id === 'top') return ['Cuadro de Honor', `Top nacional de ${mes}`]
+        if (s.id === 'top') return ['Cuadro de Honor', `Top ${DEL} de ${mes}`]
         return [$('h2', s)?.textContent || '', $('.kicker', s)?.textContent || '']
     }
     const calcularPasos = () => {
