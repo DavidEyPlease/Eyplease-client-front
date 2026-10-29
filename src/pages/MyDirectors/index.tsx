@@ -24,7 +24,7 @@ const normal = (text: string) => text.toLocaleLowerCase('es-MX').normalize('NFD'
  * nacional). Cada Directora sabe que su Nacional ve esto (se le avisa en su tarjeta de seguimiento).
  */
 const MyDirectorsPage = () => {
-    const { enabled, loading, data } = useAreaDirectors()
+    const { enabled, loading, error, data } = useAreaDirectors()
     const [filter, setFilter] = useState<Filter>('all')
     const [search, setSearch] = useState('')
 
@@ -64,6 +64,8 @@ const MyDirectorsPage = () => {
 
             {loading ? (
                 <span className="hoy-skel block h-40 rounded-[22px]" />
+            ) : error ? (
+                <p className="rounded-2xl border border-dashed px-4 py-5 text-center text-[12.5px] text-muted-foreground">No se pudo cargar ahora. Intenta de nuevo en un momento.</p>
             ) : !data?.area_month ? (
                 <section className={CARD}>
                     <h2 className="text-[15px] font-extrabold tracking-tight">Falta tu Reconocimiento del Área</h2>

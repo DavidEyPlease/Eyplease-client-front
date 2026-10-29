@@ -59,14 +59,15 @@ const useAreaDirectors = () => {
     const user = useAuthStore(state => state.user)
     const enabled = planConMisDirectoras(user)
 
-    const { response, loading } = useFetchQuery<AreaDirectors>(API_ROUTES.AREA.DIRECTORS, {
+    const { response, loading, error } = useFetchQuery<AreaDirectors>(API_ROUTES.AREA.DIRECTORS, {
         customQueryKey: ['area', 'directors'],
         enabled,
         staleTime: 60_000,
         refetchOnWindowFocus: true,
     })
 
-    return { enabled, loading: enabled && loading, data: response?.data }
+    /* Si la consulta falla no hay nada que decir: mejor no pintar que pedirle un reporte que sí cargó */
+    return { enabled, loading: enabled && loading, error: enabled && !!error, data: response?.data }
 }
 
 export default useAreaDirectors

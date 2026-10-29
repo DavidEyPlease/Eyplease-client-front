@@ -13,8 +13,8 @@ const MAX_FILAS = 4
 
 /** «Mis Directoras» en Indicadores (plan Nacional): un vistazo al Área y la entrada a la página. */
 const AreaDirectorsCard = ({ style }: { style?: React.CSSProperties }) => {
-    const { enabled, loading, data } = useAreaDirectors()
-    if (!enabled) return null
+    const { enabled, loading, error, data } = useAreaDirectors()
+    if (!enabled || error) return null
 
     const summary = data?.summary
     const withApp = (data?.directors ?? []).filter(director => director.app)
