@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
-import { ArrowRightIcon, CheckIcon, CreditCardIcon, LoaderCircleIcon, LockIcon, MessageCircleIcon, PartyPopperIcon } from 'lucide-react'
+import { ArrowRightIcon, CheckIcon, CreditCardIcon, LandmarkIcon, LoaderCircleIcon, LockIcon, MessageCircleIcon, PartyPopperIcon, StoreIcon } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
 import { BILLING_PATH } from '@/components/billing/SubscriptionCard'
+import CashPaymentCard from '@/components/billing/CashPaymentCard'
+import { ICashPayment } from '@/interfaces/billing'
+import { cn } from '@/lib/utils'
 import useAuth from '@/hooks/useAuth'
 import useStandardQuote, { STANDARD_QUOTE_KEY } from '@/hooks/useStandardQuote'
 import { STRATEGY_KEY } from '@/hooks/useInventory'
@@ -17,6 +20,15 @@ import LOGO_OSCURO from '@/assets/images/eyplease-logo-fondo-oscuro.png'
 
 const pesos = (valor = 0, moneda = 'MXN') => `${valor.toLocaleString('es-MX', { style: 'currency', currency: moneda, maximumFractionDigits: 2 })} ${moneda}`
 const dormir = (ms: number) => new Promise(listo => setTimeout(listo, ms))
+
+type Metodo = 'card' | 'oxxo' | 'transfer'
+/** Cómo se paga cada forma: con tarjeta se cobra sola; con OXXO o transferencia, ella paga cada mes */
+const METODOS: Array<{ key: Metodo, label: string, hint: string, Icon: typeof CreditCardIcon, boton: string }> = [
+    { key: 'card', label: 'Tarjeta', hint: 'Se cobra sola cada mes', Icon: CreditCardIcon, boton: 'Contratar con tarjeta' },
+    { key: 'oxxo', label: 'OXXO', hint: 'Pagas en efectivo cada mes; se confirma al día hábil siguiente', Icon: StoreIcon, boton: 'Generar mi ficha de OXXO' },
+    { key: 'transfer', label: 'Transferencia', hint: 'Desde tu banco cada mes; se confirma en minutos', Icon: LandmarkIcon, boton: 'Ver los datos para transferir' },
+]
+const ACTIVA = 'Tu plan se activa en cuanto se confirme tu pago (OXXO: al día hábil siguiente; transferencia: en minutos).'
 
 /**
  * Contratar el Plan Standard («Tu estrategia») con tarjeta, desde la web (David, 28-oct-2026): cuánto paga hoy (con la
@@ -37,6 +49,11 @@ const PlanStandardPage = () => {
     const { data: cotizacion, error: errorCotizacion, isLoading } = useStandardQuote(!sesion)
     const [error, setError] = useState<string | null>(null)
     const [pagando, setPagando] = useState(false)
+    const [metodo, setMetodo] = useState<Metodo>('card')
+    // La ficha de OXXO o la transferencia que pidió para contratarlo (o la que ya tenía abierta)
+    const [ficha, setFicha] = useState<ICashPayment | null>(null)
+    const [cambiando, setCambiando] = useState(false)
+    useEffect(() => { if (cotizacion?.cash_pending) setFicha(cotizacion.cash_pending) }, [cotizacion?.cash_pending])
     // al volver de Stripe: confirmando → listo | pendiente
     const [vuelta, setVuelta] = useState<'confirmando' | 'listo' | 'pendiente' | null>(sesion ? 'confirmando' : null)
     const confirmado = useRef(false)
@@ -69,11 +86,27 @@ const PlanStandardPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, sesion])
 
+    /* Al confirmarse su ficha o su transferencia: se le abre el plan como si volviera de Stripe */
+    const pagado = async () => {
+        await getMe()
+        queryClient.removeQueries({ queryKey: STRATEGY_KEY })
+        queryClient.removeQueries({ queryKey: STANDARD_QUOTE_KEY })
+        setVuelta('listo')
+    }
+
     const pagar = async () => {
         setPagando(true)
         setError(null)
         try {
-            const res = await HttpService.post<ApiResponse<{ checkout_url: string }>>(API_ROUTES.BILLING.STANDARD, {})
+            const res = await HttpService.post<ApiResponse<{ checkout_url: string, cash_payment?: ICashPayment | null }>>(API_ROUTES.BILLING.STANDARD, { method: metodo })
+            // OXXO y transferencia: los datos se enseñan aquí mismo (la página de Stripe queda en «Ver mi ficha»)
+            if (metodo !== 'card' && res.data?.cash_payment) {
+                setFicha(res.data.cash_payment)
+                setCambiando(false)
+                setPagando(false)
+                queryClient.invalidateQueries({ queryKey: STANDARD_QUOTE_KEY })
+                return
+            }
             const url = res.data?.checkout_url
             if (!url) throw new Error('Sin liga de pago')
             // a Stripe en la misma pestaña: al pagar regresa aquí y se confirma
@@ -139,7 +172,17 @@ const PlanStandardPage = () => {
 
                             {isLoading && <div className="grid place-items-center py-10"><LoaderCircleIcon className="size-7 animate-spin text-primary" /></div>}
 
-                            {cotizacion?.available && (
+                            {/* Su ficha o transferencia abierta: los datos para pagarla, y cambiar de forma si quiere */}
+                            {ficha && ficha.status === 'awaiting' && !cambiando && (
+                                <div className="mt-6 grid gap-3">
+                                    <CashPaymentCard payment={ficha} onUpdate={setFicha} onPaid={pagado} note={ACTIVA} />
+                                    {cotizacion?.available && (
+                                        <button type="button" onClick={() => setCambiando(true)} className="text-center text-[13px] font-semibold text-muted-foreground hover:text-foreground">Pagar de otra forma</button>
+                                    )}
+                                </div>
+                            )}
+
+                            {cotizacion?.available && (!ficha || ficha.status !== 'awaiting' || cambiando) && (
                                 <>
                                     <div className="mt-6 rounded-2xl bg-muted/60 p-4">
                                         <p className="text-xs font-bold text-muted-foreground uppercase">Hoy pagas</p>
@@ -151,14 +194,49 @@ const PlanStandardPage = () => {
                                         </p>
                                         {cotizacion.offer && <p className="mt-2 inline-flex rounded-full bg-[#E5077D]/10 px-2.5 py-0.5 text-[11px] font-extrabold text-[#C0066A] dark:text-[#FF7AC0]">Precio de lanzamiento</p>}
                                     </div>
+                                    {/* Con OXXO y transferencia ella paga cada mes; con tarjeta se cobra sola */}
+                                    {cotizacion.methods && (cotizacion.methods.oxxo || cotizacion.methods.transfer) && (
+                                        <fieldset className="mt-5">
+                                            <legend className="mb-2 text-[11px] font-extrabold tracking-wider text-muted-foreground uppercase">¿Cómo quieres pagar?</legend>
+                                            <div className="grid gap-2">
+                                                {METODOS.filter(item => cotizacion.methods?.[item.key]).map(item => {
+                                                    const sinCorreo = item.key === 'oxxo' && cotizacion.methods?.oxxo_needs_email
+                                                    const elegido = metodo === item.key
+                                                    return (
+                                                        <label key={item.key} className={cn('flex cursor-pointer items-center gap-3 rounded-2xl border-[1.5px] px-3.5 py-3 transition-colors', elegido ? 'border-[#6C47FF] bg-[#6C47FF]/[0.06]' : 'border-border hover:border-[#6C47FF]/40', sinCorreo && 'cursor-default opacity-60')}>
+                                                            <input type="radio" name="metodo" value={item.key} checked={elegido} disabled={!!sinCorreo} onChange={() => setMetodo(item.key)} className="size-4 accent-[#6C47FF]" />
+                                                            <item.Icon className="size-5 shrink-0 text-[#6C47FF]" />
+                                                            <span className="min-w-0 flex-1 leading-tight">
+                                                                <b className="block text-[14px]">{item.label}</b>
+                                                                <small className="block text-[12px] text-muted-foreground">
+                                                                    {sinCorreo ? <>Agrega tu correo en <Link to={`${APP_ROUTES.HOME.PROFILE}?section=personal`} className="font-semibold text-primary underline-offset-2 hover:underline">Mi perfil</Link> para pagar en OXXO</> : item.hint}
+                                                                </small>
+                                                            </span>
+                                                        </label>
+                                                    )
+                                                })}
+                                            </div>
+                                            {cambiando && ficha && (
+                                                <p className="mt-2 text-[12px] text-amber-700 dark:text-amber-300">
+                                                    Si pides otra forma de pago, tu ficha anterior ya no sirve. <button type="button" onClick={() => setCambiando(false)} className="font-bold underline underline-offset-2">Volver a mi ficha</button>
+                                                </p>
+                                            )}
+                                        </fieldset>
+                                    )}
                                     <button type="button" onClick={pagar} disabled={pagando} className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-primary-gradient px-5 text-[15px] font-extrabold text-white shadow-primary-glow disabled:opacity-70">
-                                        {pagando ? <LoaderCircleIcon className="size-5 animate-spin" /> : <CreditCardIcon className="size-5" />}
-                                        {pagando ? 'Abriendo el pago…' : 'Contratar con tarjeta'}
+                                        {pagando ? <LoaderCircleIcon className="size-5 animate-spin" /> : (() => { const Icon = METODOS.find(item => item.key === metodo)?.Icon ?? CreditCardIcon; return <Icon className="size-5" /> })()}
+                                        {pagando ? (metodo === 'card' ? 'Abriendo el pago…' : 'Preparando tus datos…') : METODOS.find(item => item.key === metodo)?.boton}
                                     </button>
-                                    <p className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground"><LockIcon className="size-3" /> Pago seguro con Stripe. Tu estrategia se abre en cuanto se confirma.</p>
-                                    <p className="mt-1 text-center text-xs text-muted-foreground">
-                                        Se cobra solo cada mes. Lo cancelas cuando quieras desde <Link to={BILLING_PATH} className="font-semibold text-primary underline-offset-2 hover:underline">Mi perfil → Pagos</Link>.
-                                    </p>
+                                    {metodo === 'card' ? (
+                                        <>
+                                            <p className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground"><LockIcon className="size-3" /> Pago seguro con Stripe. Tu estrategia se abre en cuanto se confirma.</p>
+                                            <p className="mt-1 text-center text-xs text-muted-foreground">
+                                                Se cobra solo cada mes. Lo cancelas cuando quieras desde <Link to={BILLING_PATH} className="font-semibold text-primary underline-offset-2 hover:underline">Mi perfil → Pagos</Link>.
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p className="mt-2.5 text-center text-xs text-muted-foreground">Con {metodo === 'oxxo' ? 'OXXO' : 'transferencia'} pagas tú cada mes desde Mi perfil → Pagos (no se cobra solo). {ACTIVA}</p>
+                                    )}
                                 </>
                             )}
 

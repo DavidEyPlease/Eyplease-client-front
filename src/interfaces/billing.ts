@@ -37,6 +37,38 @@ interface IManualPaymentMethod {
     instructions: string | null
     /** Pagar con tarjeta por su cuenta. Lo decide la API (Finanzas lo enciende y apaga). */
     card_checkout?: { enabled: boolean }
+    /** Pagar ella en OXXO o por transferencia SPEI a su CLABE propia (Stripe). Opcional: lo manda la API con su interruptor */
+    cash?: ICashOptions
+}
+
+/**
+ * Una ficha de OXXO o una transferencia SPEI de Stripe (API feat/standard-oxxo-spei): para contratar el Standard
+ * (`purpose: standard`) o pagar sus meses (`dues`). Con OXXO se confirma al día hábil siguiente; con SPEI, en minutos.
+ */
+export interface ICashPayment {
+    id: string
+    purpose: 'standard' | 'dues'
+    method: 'oxxo' | 'transfer'
+    status: 'awaiting' | 'paid' | 'expired' | 'canceled'
+    amount: number
+    currency: string
+    periods: { period: string, amount: number }[]
+    created_at: string
+    paid_at: string | null
+    /** La página de Stripe: la ficha imprimible o las instrucciones de la transferencia */
+    url: string
+    oxxo: { number: string, voucher_url: string | null, expires_at: string, expires_label: string } | null
+    transfer: { clabe: string, bank: string, reference: string | null, amount_remaining: number, instructions_url: string | null } | null
+}
+
+/** Lo que puede pagar sin tarjeta (sólo con cobro manual, MXN y el interruptor encendido) */
+export interface ICashOptions {
+    available: boolean
+    methods: { oxxo: boolean, transfer: boolean }
+    oxxo_needs_email: boolean
+    /** Su CLABE propia, la misma siempre (después de su primera transferencia) */
+    clabe: { clabe: string, bank: string } | null
+    pending: ICashPayment | null
 }
 
 /** Liga de pago con tarjeta (Stripe) abierta para el cliente: qué meses cubre y cuánto de cada uno. */

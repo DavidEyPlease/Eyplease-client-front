@@ -121,6 +121,9 @@ export const API_ROUTES = {
         /** Cancelar su Standard (sigue hasta el fin del mes que pagó) o reanudarlo antes de ese día */
         STANDARD_CANCEL: '/billing/standard/cancel',
         STANDARD_RESUME: '/billing/standard/resume',
+        /** Pagar sus meses en OXXO o por transferencia SPEI (ficha nueva) y ver cómo va una (pregunta a Stripe) */
+        CASH_PAYMENT: '/billing/cash-payment',
+        CASH_PAYMENT_ITEM: '/billing/cash-payment/{id}',
     },
     /** «Tu estrategia» (plan Standard de consultora): su estrategia del mes, su inventario y lo que vende a sus clientas */
     CONSULTANT: {

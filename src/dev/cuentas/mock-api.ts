@@ -288,7 +288,46 @@ let standardSubscription: Record<string, unknown> | null = SUSCRIPCION_PARAMS.ge
         : { status: 'active', canceled: false, ends_at: null, ends_at_label: null, next_charge_date: enDias(20).date, next_charge_label: enDias(20).label, card: { brand: 'visa', last4: '4242' } })
     : null
 
+/*
+ * Pagar sin tarjeta, en OXXO o por transferencia SPEI (API feat/standard-oxxo-spei, SIN SUBIR): `&sintarjeta=1` lo
+ * enciende (en /plan-standard y en Pagos), `&sincorreo=1` deja OXXO sin correo, `&ficha=oxxo|transfer` trae una ficha
+ * abierta y `&clabe=1` su CLABE propia. «Ya pagué»: la transferencia queda a la primera; OXXO, a la segunda (la
+ * primera dice «todavía no nos llega», como el día hábil siguiente).
+ */
+const CASH_PARAMS = new URLSearchParams(location.search)
+const SIN_TARJETA = CASH_PARAMS.get('sintarjeta') === '1'
+const SIN_CORREO = CASH_PARAMS.get('sincorreo') === '1'
+const FICHA = (['oxxo', 'transfer'] as const).find(m => m === CASH_PARAMS.get('ficha')) ?? null
+const DEMO_CLABE = { clabe: '646180157000000004', bank: 'STP' }
+let clabeDemo: typeof DEMO_CLABE | null = CASH_PARAMS.get('clabe') === '1' ? DEMO_CLABE : null
+type DemoCash = Record<string, unknown> & { id: string, purpose: 'standard' | 'dues', method: 'oxxo' | 'transfer', status: string, amount: number, periods: Array<{ period: string, amount: number }>, checks: number }
+let cashSeq = 0
+const newCash = (purpose: DemoCash['purpose'], method: DemoCash['method'], periods: DemoCash['periods']): DemoCash => {
+    const amount = periods.reduce((sum, item) => sum + item.amount, 0)
+    const vence = enDias(3)
+    const url = method === 'oxxo' ? 'https://docs.stripe.com/payments/oxxo' : 'https://docs.stripe.com/payments/bank-transfers'
+    return {
+        id: `cash-demo-${++cashSeq}`, purpose, method, status: 'awaiting', amount, currency: 'MXN', periods,
+        created_at: new Date().toISOString(), paid_at: null, url, checks: 0,
+        oxxo: method === 'oxxo' ? { number: '93000262316823112345', voucher_url: url, expires_at: `${vence.date}T05:59:00Z`, expires_label: vence.label } : null,
+        transfer: method === 'transfer' ? { clabe: DEMO_CLABE.clabe, bank: DEMO_CLABE.bank, reference: '4821937', amount_remaining: amount, instructions_url: url } : null,
+    }
+}
+// La ficha para contratar el Standard y la de sus meses (undefined = todavía no se arma la de `&ficha=`)
+let standardCash: DemoCash | null | undefined
+let duesCash: DemoCash | null | undefined
+const cashPaidPeriods = new Set<string>()
+const cashPublic = (cash: DemoCash | null | undefined) => {
+    if (!cash) return null
+    const rest: Record<string, unknown> = { ...cash }
+    delete rest.checks
+    return rest
+}
+const awaitingCash = (cash: DemoCash | null | undefined) => cash?.status === 'awaiting' ? cashPublic(cash) : null
+const cashError = (message: string) => new Response(JSON.stringify({ success: false, data: null, message }), { status: 422, headers: { 'Content-Type': 'application/json' } })
+
 const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
+    if (standardCash === undefined) standardCash = FICHA && role === 'consultant' && actual.free ? newCash('standard', FICHA, [{ period: periodOf(0), amount: 99 }]) : null
     const destino = PLANS.find(p => p.id === STANDARD_ID)
     const caso = sessionStorage.getItem('cuentas:standard') ?? ''
     const base = {
@@ -296,6 +335,7 @@ const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
         current: { key: PLAN_KEYS[actual.id], name: actual.name },
         plan: destino ? { key: 'standard', name: destino.name, color: destino.color, features: destino.features } : null,
         subscription: role === 'consultant' ? standardSubscription : null,
+        cash_pending: role === 'consultant' ? awaitingCash(standardCash) : null,
     }
     const no = (reason: string, message: string) => ({ ...base, reason, message })
     if (role !== 'consultant') return no('plan', 'El Plan Standard es para consultoras.')
@@ -308,7 +348,8 @@ const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
     if (actual.id === STANDARD_ID) return no('ya_lo_tiene', 'Ya tienes el Plan Standard.')
     if (!actual.free) return no('plan', 'Tu plan ya incluye esto.')
     const offer = caso === 'sin-oferta' ? null : { months: 3, amount: 99 }
-    return { ...base, available: true, monthly: 139, due_now: offer?.amount ?? 139, offer }
+    const methods = SIN_TARJETA ? { card: true, oxxo: true, transfer: true, oxxo_needs_email: SIN_CORREO } : { card: true, oxxo: false, transfer: false, oxxo_needs_email: false }
+    return { ...base, available: true, monthly: 139, due_now: offer?.amount ?? 139, offer, methods }
 }
 
 const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => ({
@@ -337,13 +378,17 @@ const dayOfThisMonth = (day: number, monthsAhead = 0) => { const d = new Date(no
  */
 const billingFor = (plan: DemoPlan, scenario: string) => {
     const price = Number(plan.price) || 0
-    const owed = scenario === 'aldia' || !price ? [] : scenario === 'atrasado' ? [periodOf(1), periodOf(0)] : [periodOf(0)]
+    const owed = (scenario === 'aldia' || !price ? [] : scenario === 'atrasado' ? [periodOf(1), periodOf(0)] : [periodOf(0)]).filter(period => !cashPaidPeriods.has(period))
     const overdue = scenario === 'atrasado'
+    if (duesCash === undefined) duesCash = FICHA && SIN_TARJETA && owed.length ? newCash('dues', FICHA, owed.map(period => ({ period, amount: price }))) : null
+    const cash = SIN_TARJETA && price
+        ? { available: true, methods: { oxxo: true, transfer: true }, oxxo_needs_email: SIN_CORREO, clabe: clabeDemo, pending: awaitingCash(duesCash) }
+        : undefined
     return {
         billing_type: 'manual', plan: { name: plan.name, price }, next_amount: price, currency: 'MXN',
         next_charge_date: dayOfThisMonth(5, 1), payment_day: 5, balance: price * owed.length,
         oldest_unpaid_period: owed[0] ?? null, unpaid_periods: owed.length,
-        payment_method: { type: 'manual', accounts: [{ bank: 'Banco de ejemplo', beneficiary: 'Beneficiario de ejemplo', number: '000000000000000000', numberType: 'CLABE' }], instructions: 'Pon tu número de cuenta Mary Kay en el concepto.', card_checkout: { enabled: false } },
+        payment_method: { type: 'manual', accounts: [{ bank: 'Banco de ejemplo', beneficiary: 'Beneficiario de ejemplo', number: '000000000000000000', numberType: 'CLABE' }], instructions: 'Pon tu número de cuenta Mary Kay en el concepto.', card_checkout: { enabled: false }, ...(cash ? { cash } : {}) },
         current_payment: owed.length ? {
             period: owed[owed.length - 1], status: overdue ? 'overdue' : 'pending', amount: price, remaining: price, currency: 'MXN',
             due_date: overdue ? dayOfThisMonth(5, -1) : dayOfThisMonth(25), is_due: true, is_overdue: overdue, has_receipt: false, can_upload_receipt: true,
@@ -364,7 +409,7 @@ const paymentsFor = (plan: DemoPlan, scenario: string) => {
     if (!price) return []
     const owed = scenario === 'aldia' ? 0 : scenario === 'atrasado' ? 2 : 1
     return [0, 1, 2, 3, 4].map(back => {
-        const pending = back < owed
+        const pending = back < owed && !cashPaidPeriods.has(periodOf(back))
         return {
             id: `pay-${back}`, period: periodOf(back), amount: price, paid: pending ? 0 : price, remaining: pending ? price : 0, currency: 'MXN',
             status: pending ? (scenario === 'atrasado' ? 'overdue' : 'pending') : 'paid', method: pending ? null : 'transfer',
@@ -474,8 +519,19 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/billing/standard' && method === 'GET') response = respond(standardQuote(actual, role))
         else if (path === '/billing/standard' && method === 'POST') {
             const quote = standardQuote(actual, role)
+            const elegido = (typeof init?.body === 'string' && init.body ? JSON.parse(init.body).method : null) ?? 'card'
+            // OXXO o transferencia: la ficha (pedir la misma forma otra vez da la misma; otra forma cancela la anterior)
+            if (quote.available && (elegido === 'oxxo' || elegido === 'transfer')) {
+                if (!SIN_TARJETA) response = cashError('Por ahora sólo se puede contratar con tarjeta.')
+                else if (elegido === 'oxxo' && SIN_CORREO) response = cashError('Agrega tu correo en tu perfil para pagar en OXXO.')
+                else {
+                    if (standardCash?.status === 'awaiting' && standardCash.method !== elegido) standardCash.status = 'canceled'
+                    if (standardCash?.status !== 'awaiting') standardCash = newCash('standard', elegido, [{ period: periodOf(0), amount: 'due_now' in quote ? Number(quote.due_now) : 139 }])
+                    response = respond({ checkout_url: standardCash.url, amount: standardCash.amount, currency: 'MXN', expires_at: null, method: elegido, cash_payment: cashPublic(standardCash) }, 201)
+                }
+            }
             // Como si Stripe ya hubiera cobrado: regresa directo a la página con su sesión
-            response = quote.available
+            else response = quote.available
                 ? respond({ checkout_url: '/plan-standard?sesion=cs_demo_standard', amount: 'due_now' in quote ? quote.due_now : 139, currency: 'MXN', expires_at: new Date(Date.now() + 3600000).toISOString() }, 201)
                 : new Response(JSON.stringify({ success: false, data: null, message: quote.message }), { status: 422, headers: { 'Content-Type': 'application/json' } })
         }
@@ -487,6 +543,39 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
                     ? { ...standardSubscription, canceled: true, ends_at: fin.date, ends_at_label: fin.label, next_charge_date: null, next_charge_label: null }
                     : { ...standardSubscription, canceled: false, ends_at: null, ends_at_label: null, next_charge_date: fin.date, next_charge_label: fin.label }
                 response = respond(standardSubscription)
+            }
+        }
+        else if (path === '/billing/cash-payment' && method === 'POST') {
+            const body = typeof init?.body === 'string' && init.body ? JSON.parse(init.body) : {}
+            const price = Number(plan.price) || 0
+            const owed = (billingFor(plan, scenario).debt.periods as Array<{ period: string }>).map(item => item.period)
+            const periods: string[] = Array.isArray(body.periods) && body.periods.length ? body.periods : owed
+            if (!SIN_TARJETA) response = cashError('Por ahora no se puede pagar así.')
+            else if (body.method !== 'oxxo' && body.method !== 'transfer') response = cashError('Elige OXXO o transferencia.')
+            else if (body.method === 'oxxo' && SIN_CORREO) response = cashError('Agrega tu correo en tu perfil para pagar en OXXO.')
+            else if (!periods.length) response = cashError('No tienes nada por pagar.')
+            else if (periods.some((period, index) => period !== owed[index])) response = cashError('Primero se paga lo más antiguo.')
+            else if (body.method === 'oxxo' && price * periods.length > 10000) response = cashError('En OXXO se pagan hasta $10,000 por ficha. Elige menos meses o paga por transferencia.')
+            else {
+                if (duesCash?.status === 'awaiting') duesCash.status = 'canceled'
+                duesCash = newCash('dues', body.method, periods.map(period => ({ period, amount: price })))
+                response = respond(cashPublic(duesCash), 201)
+            }
+        }
+        else if (/^\/billing\/cash-payment\/[^/]+$/.test(path)) {
+            const id = path.split('/').pop()
+            const cash = [standardCash, duesCash].find(item => item?.id === id)
+            if (!cash) response = new Response(JSON.stringify({ success: false, data: null, message: 'No encontramos ese pago.' }), { status: 404, headers: { 'Content-Type': 'application/json' } })
+            else {
+                cash.checks += 1
+                if (cash.status === 'awaiting' && (cash.method === 'transfer' || cash.checks >= 2)) {
+                    cash.status = 'paid'
+                    cash.paid_at = new Date().toISOString()
+                    if (cash.method === 'transfer') { clabeDemo = DEMO_CLABE; if (cash.transfer) (cash.transfer as Record<string, unknown>).amount_remaining = 0 }
+                    if (cash.purpose === 'standard') actual = PLANS.find(p => p.id === STANDARD_ID) ?? actual
+                    else cash.periods.forEach(item => cashPaidPeriods.add(item.period))
+                }
+                response = respond(cashPublic(cash))
             }
         }
         else if (path === '/billing/standard/confirm') {

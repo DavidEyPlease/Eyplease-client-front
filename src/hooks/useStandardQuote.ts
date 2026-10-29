@@ -4,6 +4,7 @@ import { API_ROUTES } from '@/constants/api'
 import { ApiResponse } from '@/interfaces/common'
 import HttpService from '@/services/http'
 import useAuthStore from '@/store/auth'
+import { ICashPayment } from '@/interfaces/billing'
 
 /** Su suscripción del Standard a tarjeta (Stripe), para pintarla en Pagos y cancelarla o reanudarla ella sola. */
 export interface StandardSubscription {
@@ -36,6 +37,10 @@ export interface StandardQuote {
     offer?: { months: number, amount: number } | null
     /** Nula si no tiene un Standard que se cobre a su tarjeta */
     subscription?: StandardSubscription | null
+    /** Cómo puede contratarlo (sólo con `available`): con OXXO necesita correo en su perfil */
+    methods?: { card: boolean, oxxo: boolean, transfer: boolean, oxxo_needs_email: boolean }
+    /** La ficha o transferencia que pidió para contratarlo y aún no se confirma */
+    cash_pending?: ICashPayment | null
 }
 
 export const STANDARD_QUOTE_KEY = ['billing', 'standard']

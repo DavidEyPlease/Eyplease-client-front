@@ -9,6 +9,7 @@ import { formatCurrency } from '@/utils'
 import { formatDate } from '@/utils/dates'
 import PaymentAccounts from './PaymentAccounts'
 import CardPayDialog from './CardPayDialog'
+import CashPayPanel from './CashPayPanel'
 import { canPayWithCard } from './useCardCheckout'
 import { periodLabel } from './utils'
 
@@ -37,6 +38,7 @@ const PaymentMethodPanel = ({ overview, loading, hideSummary = false }: Props) =
     const { payment_method: paymentMethod } = overview
     const isAutomatic = paymentMethod.type === 'automatic'
     const cardAvailable = canPayWithCard(overview)
+    const cashAvailable = paymentMethod.type === 'manual' && !!paymentMethod.cash?.available
     const nextChargeDate = overview.next_charge_date
         ? formatDate(overview.next_charge_date, { formatter: { date: 'medium' }, dateOnly: true })
         : null
@@ -80,10 +82,13 @@ const PaymentMethodPanel = ({ overview, loading, hideSummary = false }: Props) =
                 </section>
             )}
 
+            {/* OXXO o transferencia SPEI a su CLABE propia: se acredita solo (lo enciende la API) */}
+            <CashPayPanel overview={overview} />
+
             <section className="rounded-2xl border bg-card p-4">
                 <h4 className="mb-2.5 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-muted-foreground uppercase [&>svg]:size-3.5">
                     {isAutomatic ? <CreditCardIcon aria-hidden /> : <LandmarkIcon aria-hidden />}
-                    {isAutomatic ? 'Tu tarjeta' : cardAvailable ? 'O paga por transferencia' : 'Dónde pagar'}
+                    {isAutomatic ? 'Tu tarjeta' : cashAvailable ? 'O deposita y sube tu comprobante' : cardAvailable ? 'O paga por transferencia' : 'Dónde pagar'}
                 </h4>
 
                 {paymentMethod.type === 'automatic' ? (
