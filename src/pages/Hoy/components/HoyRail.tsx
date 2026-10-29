@@ -10,6 +10,7 @@ import useUnitFollowUp, { ESCALONES } from '@/pages/Dashboard/components/useUnit
 import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
 import { titleCaseName } from '../lib'
+import NationalNotice from './NationalNotice'
 import RingMeter from './RingMeter'
 
 /** Cuántas secciones con pendientes caben sin que la tarjeta se vuelva una lista que se ignora. */
@@ -85,6 +86,8 @@ const HoyRail = ({ onPickSection }: Props) => {
                     ) : (
                         <p className="mt-1 text-[12.5px] text-muted-foreground">Te preparé el contenido. Sólo falta enviarlo.</p>
                     )}
+
+                    {cobertura?.followed_by?.name && <NationalNotice nationalName={cobertura.followed_by.name} />}
 
                     {pendientes.length > 0 && (
                         <>

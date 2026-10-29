@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router'
-import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, LogOutIcon, PanelRightIcon, UsersRoundIcon, WalletIcon } from 'lucide-react'
+import { BadgeCheckIcon, ChartNoAxesColumnIcon, ChevronDownIcon, CrownIcon, LogOutIcon, PanelRightIcon, UsersRoundIcon, WalletIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
 import { BILLING_PATH } from '@/components/billing/SubscriptionCard'
@@ -22,6 +22,7 @@ import AccountSwitcher from '@/components/accounts/AccountSwitcher'
 import { requestLogout } from './logoutBridge'
 import ThemeModeSelector from './ThemeModeSelector'
 import { strategyLinks, useStrategyAccess } from '@/pages/Estrategia/feature'
+import { planConMisDirectoras } from '@/pages/MyDirectors/useAreaDirectors'
 
 /**
  * Cómo se reparte el menú de siempre en la barra. NO inventa entradas: agrupa las que ya
@@ -57,6 +58,11 @@ const UNIT_EXTRAS = [
     { key: 'my-unit', label: 'Mi unidad', hint: 'Lo que logró cada consultora y lo que falta compartirle', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
 ]
 
+/** Sólo el plan Nacional: el seguimiento de las Directoras de su Área. */
+const NATIONAL_EXTRAS = [
+    { key: 'my-directors', label: 'Mis Directoras', hint: 'Cómo va el seguimiento de cada Directora de tu Área', path: APP_ROUTES.MY_DIRECTORS, Icon: CrownIcon },
+]
+
 const NAV_BUTTON = 'relative flex h-[38px] cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground data-[state=open]:bg-foreground/5 data-[state=open]:text-foreground'
 
 const ActiveBar = () => <span className="shell-grad absolute inset-x-3 bottom-[3px] h-[2.5px] rounded-full" />
@@ -74,6 +80,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
     const hasNewsletter = useAuthStore(state => state.utilData.newsletters.length > 0)
     const hasUnit = useAuthStore(state => state.permissions.includes(PermissionKeys.POSTS_UNITY))
     const strategy = useStrategyAccess()
+    const nationalPlan = planConMisDirectoras(user)
     /* Su plan y su cobro, en el menú de la cuenta. A las cuentas que se cobran por fuera no se les pide ni se les pinta */
     const { overview, canSeeBilling } = useBilling()
     const billing = canSeeBilling && overview ? billingStatusFrom(overview) : null
@@ -114,7 +121,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
 
                 {GROUPS.map(group => {
                     const items = pick(group.keys)
-                    const extras = group.label !== 'Mi negocio' ? [] : [...(hasUnit ? UNIT_EXTRAS : []), ...(strategy.show ? strategyLinks(strategy.locked) : [])]
+                    const extras = group.label !== 'Mi negocio' ? [] : [...(hasUnit ? UNIT_EXTRAS : []), ...(nationalPlan ? NATIONAL_EXTRAS : []), ...(strategy.show ? strategyLinks(strategy.locked) : [])]
                     if (!items.length && !extras.length) return null
                     if (items.length === 1 && !extras.length) return direct(items[0])
 

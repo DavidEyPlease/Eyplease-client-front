@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { BadgeCheckIcon, ChartNoAxesColumnIcon, NewspaperIcon, SearchIcon, SparklesIcon, UsersRoundIcon } from 'lucide-react'
+import { BadgeCheckIcon, ChartNoAxesColumnIcon, CrownIcon, NewspaperIcon, SearchIcon, SparklesIcon, UsersRoundIcon } from 'lucide-react'
 import { strategyLinks, useStrategyAccess } from '@/pages/Estrategia/feature'
+import { planConMisDirectoras } from '@/pages/MyDirectors/useAreaDirectors'
 
 import { ICONS } from '@/components/sidebar/icons'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -20,6 +21,7 @@ const QUESTIONS: Array<{ text: string, needs: PermissionKeys }> = [
     { text: '¿Qué activas no han pedido este mes?', needs: PermissionKeys.POSTS_UNITY },
     { text: '¿Qué piezas me faltan por compartir?', needs: PermissionKeys.POSTS_UNITY },
     { text: '¿Cómo van mis pedidos?', needs: PermissionKeys.SERVICES },
+    { text: '¿Cómo van mis Directoras con su seguimiento?', needs: PermissionKeys.POSTS_DIRECTORS },
 ]
 
 interface Props {
@@ -38,6 +40,7 @@ const CommandBar = ({ labelOf }: Props) => {
     const permissions = useAuthStore(state => state.permissions)
     const hasUnit = permissions.includes(PermissionKeys.POSTS_UNITY)
     const strategy = useStrategyAccess()
+    const nationalPlan = useAuthStore(state => planConMisDirectoras(state.user))
     const [open, setOpen] = useState(false)
     const [query, setQuery] = useState('')
 
@@ -64,6 +67,7 @@ const CommandBar = ({ labelOf }: Props) => {
             { key: 'indicators', label: 'Indicadores', path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon },
             { key: 'my-unit', label: 'Mi unidad', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
         ] : []),
+        ...(nationalPlan ? [{ key: 'my-directors', label: 'Mis Directoras', path: APP_ROUTES.MY_DIRECTORS, Icon: CrownIcon }] : []),
         ...(strategy.show ? strategyLinks(strategy.locked) : []),
         { key: 'profile', label: 'Perfil', path: APP_ROUTES.HOME.PROFILE, Icon: BadgeCheckIcon },
     ]

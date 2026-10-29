@@ -40,6 +40,8 @@ export const APP_ROUTES = {
     REPORTS: '/reports',
     INDICATORS: '/indicators',
     MY_UNIT: '/my-unit',
+    /** Mis Directoras (plan Nacional): cómo va el seguimiento de cada Directora de su Área */
+    MY_DIRECTORS: '/my-directors',
     /** «Tu estrategia» de la consultora (plan Standard) y su inventario */
     STRATEGY: '/tu-estrategia',
     INVENTORY: '/tu-inventario',

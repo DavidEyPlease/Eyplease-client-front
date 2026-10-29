@@ -12,6 +12,7 @@ import { askAssistant } from '@/layouts/TopShell/assistantBridge'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
 import useUnitFollowUp, { ESCALONES } from '@/pages/Dashboard/components/useUnitFollowUp'
+import AreaDirectorsCard from '@/pages/MyDirectors/AreaDirectorsCard'
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import '@/pages/Hoy/hoy.css'
 import ChallengeCard from './components/ChallengeCard'
@@ -179,6 +180,9 @@ const IndicatorsPage = () => {
                     </ul>
                 </section>
             </div>
+
+            {/* Plan Nacional: el seguimiento de las Directoras de su Área (no se pinta en los demás planes) */}
+            <AreaDirectorsCard style={rise(7)} />
 
             <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
                 <section className={CARD} style={rise(7)}>

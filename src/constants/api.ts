@@ -73,6 +73,10 @@ export const API_ROUTES = {
     INDICATORS: {
         BUSINESS: '/indicators/business',
     },
+    /** Mis Directoras (plan Nacional): el seguimiento de cada Directora de su Área */
+    AREA: {
+        DIRECTORS: '/area/directors',
+    },
     CHALLENGES: {
         LIST: '/challenges',
         SUGGESTIONS: '/challenges/suggestions',

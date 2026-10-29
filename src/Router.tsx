@@ -17,6 +17,7 @@ import PlanUpgradePage from "./pages/PlanUpgrade"
 import PlanStandardPage from "./pages/PlanStandard"
 import IndicatorsPage from "./pages/Indicators"
 import MyUnitPage from "./pages/MyUnit"
+import MyDirectorsPage from "./pages/MyDirectors"
 import GalleryPage from "./pages/Gallery"
 import MyClientsPage from "./pages/MyClients"
 import ToolsPage from "./pages/Tools"
@@ -62,6 +63,7 @@ const Router = () => {
                 <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />
                 <Route path={APP_ROUTES.INDICATORS} element={<IndicatorsPage />} />
                 <Route path={APP_ROUTES.MY_UNIT} element={<MyUnitPage />} />
+                <Route path={APP_ROUTES.MY_DIRECTORS} element={<MyDirectorsPage />} />
                 <Route path={APP_ROUTES.HOME.GALLERY} element={<GalleryPage />} />
                 <Route path={APP_ROUTES.HOME.MY_CLIENTS} element={<MyClientsPage />} />
                 {/* «Tu estrategia» de la consultora (plan Standard); la entrada va detrás de su interruptor */}
