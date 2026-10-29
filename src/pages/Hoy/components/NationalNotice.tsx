@@ -11,10 +11,11 @@ const yaLoVio = (account?: string) => {
 }
 
 /**
- * «Tu Nacional te acompaña»: su Directora Nacional ve este seguimiento en «Mis Directoras». Se le dice una vez, en su
- * tarjeta de seguimiento, para que no se entere por su Nacional (privacidad, opción A de David, 29-oct-2026).
+ * «Tu Directora Nacional te acompaña»: quien la tiene en su Área (plan Área) ve este seguimiento en «Mis Directoras». Se
+ * le dice una vez, en su tarjeta de seguimiento, para que no se entere por ella (privacidad, opción A de David,
+ * 29-oct-2026). `title` es cómo se le dice («Directora Nacional», «Directora Élite»…).
  */
-const NationalNotice = ({ nationalName }: { nationalName: string }) => {
+const NationalNotice = ({ nationalName, title = 'Directora Nacional' }: { nationalName: string, title?: string }) => {
     const account = useAuthStore(state => state.user?.account)
     const [visto, setVisto] = useState(() => yaLoVio(account))
 
@@ -28,10 +29,10 @@ const NationalNotice = ({ nationalName }: { nationalName: string }) => {
     return (
         <div className="hoy-soft mt-3.5 rounded-2xl p-3">
             <p className="flex items-center gap-2 text-[12.5px] font-extrabold">
-                <HeartHandshakeIcon className="size-4 shrink-0 text-[#6C47FF] dark:text-[#BBAAFF]" /> Tu Nacional te acompaña
+                <HeartHandshakeIcon className="size-4 shrink-0 text-[#6C47FF] dark:text-[#BBAAFF]" /> Tu {title} te acompaña
             </p>
             <p className="mt-1 text-[11.5px] leading-snug text-muted-foreground">
-                <b className="text-foreground">{titleCaseName(nationalName)}</b>, tu Directora Nacional, ve cómo va este seguimiento:
+                <b className="text-foreground">{titleCaseName(nationalName)}</b>, tu {title}, ve cómo va este seguimiento:
                 el porcentaje de tu unidad al que le llegó algo tuyo y cuántas piezas te faltan por enviar. No ve tus piezas ni los datos de tus consultoras.
             </p>
             <button type="button" onClick={entendido} className="mt-2 h-[30px] cursor-pointer rounded-[10px] bg-card px-3 text-[12px] font-bold text-[#6C47FF] shadow-sm transition-colors hover:bg-card/80 dark:text-[#C4B5FF]">

@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router'
-import { MessageCircleIcon, SearchIcon } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { GiftIcon, MessageCircleIcon, SearchIcon } from 'lucide-react'
 
+import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
 import { askAssistant } from '@/layouts/TopShell/assistantBridge'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
+import HttpService from '@/services/http'
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import '@/pages/Hoy/hoy.css'
 import { DirectorCard, InviteRow } from './components'
 import { nombreDelMes } from './lib'
-import useAreaDirectors from './useAreaDirectors'
+import useAreaDirectors, { type AreaDirector } from './useAreaDirectors'
 
 type Filter = 'all' | 'app' | 'invite'
 
@@ -20,15 +23,26 @@ const normal = (text: string) => text.toLocaleLowerCase('es-MX').normalize('NFD'
 
 /**
  * Mis Directoras (plan Nacional): cómo va el seguimiento del mes de cada Directora de su Área que usa Eyplease+, y
- * las que todavía no están, para invitarlas. La lista del Área sale de su Reconocimiento del Área (como su boletín
+ * las que todavía no están, para invitarlas. La lista del Área sale de sus reportes del Área (como su boletín
  * nacional). Cada Directora sabe que su Nacional ve esto (se le avisa en su tarjeta de seguimiento).
  */
 const MyDirectorsPage = () => {
     const { enabled, loading, error, data } = useAreaDirectors()
+    const queryClient = useQueryClient()
     const [filter, setFilter] = useState<Filter>('all')
     const [search, setSearch] = useState('')
 
-    /* La página nace con el marco nuevo y es del plan Nacional */
+    /*
+     * «Invítala»: WhatsApp ya se abrió con el mensaje (en el mismo toque); aquí sólo se anota a su nombre para que
+     * su premio y Ventas la reconozcan, y la lista la marca como invitada.
+     */
+    const invite = (director: AreaDirector) => {
+        HttpService.post(API_ROUTES.AREA.INVITE.replace('{id}', director.id), {})
+            .then(() => queryClient.invalidateQueries({ queryKey: ['area', 'directors'] }))
+            .catch(() => { /* el mensaje ya salió; anotarla se reintenta la próxima vez que la invite */ })
+    }
+
+    /* La página nace con el marco nuevo y es del plan Área */
     if (!isNewShell() || !enabled) return <Navigate to={APP_ROUTES.INDICATORS} replace />
 
     const directors = data?.directors ?? []
@@ -68,9 +82,9 @@ const MyDirectorsPage = () => {
                 <p className="rounded-2xl border border-dashed px-4 py-5 text-center text-[12.5px] text-muted-foreground">No se pudo cargar ahora. Intenta de nuevo en un momento.</p>
             ) : !data?.area_month ? (
                 <section className={CARD}>
-                    <h2 className="text-[15px] font-extrabold tracking-tight">Falta tu Reconocimiento del Área</h2>
+                    <h2 className="text-[15px] font-extrabold tracking-tight">Faltan tus reportes del Área</h2>
                     <p className="mt-1.5 max-w-[62ch] text-[13px] text-muted-foreground">
-                        Tus Directoras salen de tu reporte de Reconocimiento del Área. En cuanto lo cargues, aquí verás a cada una y cómo va su seguimiento.
+                        Tus Directoras salen de tus reportes del Área (el Reconocimiento o el Análisis de Área). En cuanto los cargues, aquí verás a cada una y cómo va su seguimiento.
                     </p>
                     <Link to={APP_ROUTES.REPORTS} className="hoy-cta mt-3 inline-flex h-[38px] items-center rounded-[13px] px-4 text-[13px] font-bold text-white">Ir a mis reportes</Link>
                 </section>
@@ -92,7 +106,7 @@ const MyDirectorsPage = () => {
                                     : 'Invítalas: con Eyplease+ cada una reconoce a su unidad, y aquí verás cómo va su seguimiento.'}
                                 {summary && summary.without_app > 0 && <> Por invitar: <b className="text-foreground">{summary.without_app}</b>{summary.without_app_people > 0 ? `, con ${summary.without_app_people.toLocaleString('es-MX')} consultoras en sus unidades` : ''}.</>}
                             </p>
-                            <p className="mt-1.5 text-[11px] text-muted-foreground/80">Tu Área según tu Reconocimiento del Área de {nombreDelMes(data.area_month)}.</p>
+                            <p className="mt-1.5 text-[11px] text-muted-foreground/80">Tu Área según tus reportes del Área de {nombreDelMes(data.area_month)}.</p>
                         </div>
                     </section>
 
@@ -128,8 +142,15 @@ const MyDirectorsPage = () => {
                                 <h2 className="text-[15px] font-extrabold tracking-tight">Todavía no están en Eyplease+</h2>
                                 <small className="text-[11.5px] text-muted-foreground">Las unidades más grandes primero</small>
                             </div>
+                            <p className="hoy-soft mt-3 flex items-start gap-2.5 rounded-2xl px-3.5 py-2.5 text-[12px] leading-snug">
+                                <GiftIcon className="mt-0.5 size-4 shrink-0 text-[#6C47FF] dark:text-[#BBAAFF]" />
+                                <span>
+                                    Con tu invitación llegan con <b className="font-extrabold">su primer mes del Plan Ejecutivo de regalo</b>.
+                                    Cuando una pague su primer mes, a ti se te descuenta lo mismo en tu siguiente pago.
+                                </span>
+                            </p>
                             <ul className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-                                {toInvite.map(director => <InviteRow key={director.id} director={director} link={data.invite_link} />)}
+                                {toInvite.map(director => <InviteRow key={director.id} director={director} link={data.invite_link} onInvite={invite} />)}
                             </ul>
                         </section>
                     )}

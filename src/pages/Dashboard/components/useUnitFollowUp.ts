@@ -19,8 +19,8 @@ export interface Cobertura {
 	people_count: number
 	people_reached: number
 	percent: number
-	/** Su Directora Nacional, si tiene el plan Nacional: ve este seguimiento en «Mis Directoras» */
-	followed_by?: { name: string } | null
+	/** Quien la acompaña (la dueña del plan Área que la tiene en su Área): ve este seguimiento en «Mis Directoras» */
+	followed_by?: { name: string, title?: string } | null
 }
 
 /**

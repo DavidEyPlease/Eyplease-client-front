@@ -76,6 +76,10 @@ export const API_ROUTES = {
     /** Mis Directoras (plan Nacional): el seguimiento de cada Directora de su Área */
     AREA: {
         DIRECTORS: '/area/directors',
+        /** «Invítala»: la anota como su invitación (POST) */
+        INVITE: '/area/directors/{id}/invite',
+        /** Pública: quién invita con un código (la página de invitación y el registro) */
+        INVITER: '/invite/{code}',
     },
     CHALLENGES: {
         LIST: '/challenges',

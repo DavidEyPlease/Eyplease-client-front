@@ -87,7 +87,7 @@ const HoyRail = ({ onPickSection }: Props) => {
                         <p className="mt-1 text-[12.5px] text-muted-foreground">Te preparé el contenido. Sólo falta enviarlo.</p>
                     )}
 
-                    {cobertura?.followed_by?.name && <NationalNotice nationalName={cobertura.followed_by.name} />}
+                    {cobertura?.followed_by?.name && <NationalNotice nationalName={cobertura.followed_by.name} title={cobertura.followed_by.title} />}
 
                     {pendientes.length > 0 && (
                         <>

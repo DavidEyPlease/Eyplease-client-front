@@ -38,14 +38,20 @@ const STEPS_OTHER: StepKey[] = ['name', 'email', 'phone', 'userType', 'otherCont
  * Directora invitando a su unidad. El landing las conserva y las pasa hasta aquí.
  * `?origen=instagram` es la etiqueta de la liga por la que llegó (bio, post, anuncio): el panel la usa para saber qué
  * red trae clientas. Sólo letras, números, guion y guion bajo, como la valida la API.
+ * `?plan=executive` es el plan de regalo de la invitación (la de «Mis Directoras» regala el primer mes del Ejecutivo,
+ * que es la prueba de 30 días del registro): se elige ése en vez del que se le recomendaría por su unidad.
  */
+const PLANES_DE_INVITACION: string[] = [PlanKeys.BASIC, PlanKeys.EXECUTIVE, PlanKeys.ELITE]
+
 const inviteParams = () => {
     const query = new URLSearchParams(window.location.search)
     const source = query.get('origen')?.trim().toLowerCase() ?? ''
+    const plan = query.get('plan')?.trim().toLowerCase() ?? ''
     return {
         inviteCode: query.get('invita')?.trim() || null,
         unitAccount: query.get('unidad')?.trim() || null,
         source: /^[a-z0-9_-]{1,40}$/.test(source) ? source : null,
+        plan: PLANES_DE_INVITACION.includes(plan) ? plan as PlanKeys : null,
     }
 }
 
@@ -269,11 +275,11 @@ const useSignUpWizard = () => {
                 toast.error('Cuéntame el tamaño de tu unidad y tu tiempo como Directora')
                 return
             }
-            const calc = recommendPlan(userType, unitSize, directorYears)
+            const calc = (userType === 'director' && invite.plan) || recommendPlan(userType, unitSize, directorYears)
             setValue('recommendedPlan', calc)
         }
         if (currentKey === 'userType' && !getValues('recommendedPlan')) {
-            const calc = recommendPlan(userType, unitSize, directorYears)
+            const calc = (userType === 'director' && invite.plan) || recommendPlan(userType, unitSize, directorYears)
             setValue('recommendedPlan', calc)
         }
         if (currentKey === 'mk') {

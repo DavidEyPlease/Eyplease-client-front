@@ -78,6 +78,7 @@ const AreaDirectorsCard = ({ style }: { style?: React.CSSProperties }) => {
                                 </span>
                                 <p className="min-w-0 flex-1 text-[12px] leading-snug">
                                     <b className="font-extrabold">{toInvite.length} {toInvite.length === 1 ? 'Directora' : 'Directoras'}</b> de tu Área todavía no {toInvite.length === 1 ? 'está' : 'están'} en Eyplease+.
+                                    {summary?.invited ? ` Ya invitaste a ${summary.invited}.` : ' Invítalas con su primer mes de regalo.'}
                                 </p>
                             </div>
                         )}

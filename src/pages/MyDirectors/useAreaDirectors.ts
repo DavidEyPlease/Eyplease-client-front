@@ -31,12 +31,18 @@ export interface AreaDirector {
     unit_size: number | null
     /** null = todavía no usa Eyplease+ */
     app: AreaDirectorApp | null
+    /** Cuándo la invitó (y la última vez que le volvió a mandar la invitación); null si no la ha invitado */
+    invited_at: string | null
+    last_invited_at: string | null
 }
 
 export interface AreaDirectors {
     month: string
-    /** De qué Reconocimiento del Área sale la lista (AAAA-MM); null si nunca ha cargado uno */
+    /** De qué mes son sus reportes del Área, de donde sale la lista (AAAA-MM); null si no ha cargado ninguno */
     area_month: string | null
+    /** Cómo se le dice a ella: «Directora Nacional», «Directora Élite»… */
+    title: string
+    /** Su página de invitación con su código: en WhatsApp se ve con la imagen de la invitación */
     invite_link: string | null
     summary: {
         directors: number
@@ -46,12 +52,14 @@ export interface AreaDirectors {
         percent: number
         without_app: number
         without_app_people: number
+        /** De las que no están, a cuántas ya invitó */
+        invited: number
     }
     /** Primero las que usan Eyplease+ (de la que más le falta a la que menos), luego las demás por tamaño de unidad */
     directors: AreaDirector[]
 }
 
-/** «Mis Directoras» viene en el plan Nacional (David, 29-oct-2026). La API pide lo mismo. */
+/** «Mis Directoras» viene en el plan Área (clave `national`; antes «Plan Nacional»). La API pide lo mismo. */
 export const planConMisDirectoras = (user?: IUser | null): boolean => user?.plan?.plan_key === 'national'
 
 /** Las Directoras del Área de la Nacional y cómo va el seguimiento de cada una. Comparten caché la tarjeta y la página. */

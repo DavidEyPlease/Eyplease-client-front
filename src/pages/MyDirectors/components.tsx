@@ -97,16 +97,24 @@ export const DirectorCard = ({ director, style }: { director: AreaDirector, styl
     )
 }
 
-/** Una Directora del Área que todavía no está en Eyplease+: el tamaño de su unidad e «Invítala». */
-export const InviteRow = ({ director, link }: { director: AreaDirector, link: string | null }) => (
+/**
+ * Una Directora del Área que todavía no está en Eyplease+: el tamaño de su unidad e «Invítala». El enlace abre WhatsApp
+ * en el mismo toque (si se esperara a la API el navegador lo bloquea) y `onInvite` la anota como su invitación.
+ */
+export const InviteRow = ({ director, link, onInvite }: { director: AreaDirector, link: string | null, onInvite: (director: AreaDirector) => void }) => (
     <li className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-card/50 px-3 py-2.5">
         <Avatar director={director} size={38} />
         <span className="min-w-0 flex-1 leading-tight">
             <b className="line-clamp-2 block text-[13px] font-bold">{director.name}</b>
             <small className="text-[11.5px] text-muted-foreground">{director.unit_size ? `Unidad de ${director.unit_size} consultoras` : 'Directora de tu Área'}</small>
+            {director.invited_at && (
+                <span className={cn(TAG, 'mt-1 bg-emerald-500/12 text-emerald-700 dark:text-emerald-400')}>
+                    Invitada {haceCuanto(director.last_invited_at ?? director.invited_at)}
+                </span>
+            )}
         </span>
-        <a href={ligaWhatsApp(director.phone, mensajeDeInvitacion(director, link))} target="_blank" rel="noreferrer" className={BOTON}>
-            <SendIcon className="size-[13px]" /> Invítala
+        <a href={ligaWhatsApp(director.phone, mensajeDeInvitacion(director, link))} target="_blank" rel="noreferrer" onClick={() => onInvite(director)} className={BOTON}>
+            <SendIcon className="size-[13px]" /> {director.invited_at ? 'Otra vez' : 'Invítala'}
         </a>
     </li>
 )

@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { Gift } from "lucide-react"
 
 import SignUpWizardLayout from "@/layouts/SignUpWizardLayout"
+import { API_ROUTES } from "@/constants/api"
 import { APP_ROUTES } from "@/constants/app"
+import { PlanKeys } from "@/interfaces/plans"
+import HttpService from "@/services/http"
 
 import AccountPreview from "./components/AccountPreview"
 import WizardProgress from "./components/WizardProgress"
@@ -17,6 +21,21 @@ import StepMKConnect from "./steps/StepMKConnect"
 import StepPassword from "./steps/StepPassword"
 import StepOtherContext from "./steps/StepOtherContext"
 import useSignUpWizard from "./hooks/useSignUpWizard"
+
+
+/** Quién invita con ese código (pública): su nombre de pila y cómo se le dice. Null mientras carga o si no se encuentra. */
+const useInviter = (code: string | null) => {
+    const [inviter, setInviter] = useState<{ first_name: string, title: string } | null>(null)
+
+    useEffect(() => {
+        if (!code) return
+        HttpService.get<{ data: { first_name: string, title: string } }>(API_ROUTES.AREA.INVITER.replace('{code}', code), { auth: false, responseType: 'json' })
+            .then(response => setInviter(response?.data ?? null))
+            .catch(() => setInviter(null))
+    }, [code])
+
+    return inviter
+}
 
 const SignUpPage = () => {
     const navigate = useNavigate()
@@ -51,8 +70,13 @@ const SignUpPage = () => {
     // Llegó por una liga de invitación de la app (la misma que muestra la franja de eyplease.com.mx)
     // Las ligas de recomendación de una Directora son «D» + 6; las de consultora invitando a su Directora, 8 letras
     const fromDirector = /^d[a-z0-9]{6}$/i.test(invite.inviteCode ?? '')
+    const inviter = useInviter(fromDirector ? invite.inviteCode : null)
+    // La invitación de «Mis Directoras» dice quién la invita y el regalo (su primer mes del Ejecutivo)
+    const gift = invite.plan === PlanKeys.EXECUTIVE ? ' · tu primer mes del Plan Ejecutivo es de regalo' : ''
     const inviteLabel = invite.inviteCode
-        ? (fromDirector ? 'Te recomendó una Directora que ya usa Eyplease+' : 'Te invitó una consultora de tu unidad')
+        ? (fromDirector
+            ? (inviter ? `Te invita ${inviter.first_name}, tu ${inviter.title}${gift}` : `Te recomendó una Directora que ya usa Eyplease+${gift}`)
+            : 'Te invitó una consultora de tu unidad')
         : (invite.unitAccount ? 'Te invitó tu Directora' : null)
 
     return (

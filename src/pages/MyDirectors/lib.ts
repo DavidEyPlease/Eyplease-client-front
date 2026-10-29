@@ -75,8 +75,11 @@ export const mensajeParaDirectora = (director: AreaDirector) => {
     return `¡Hola, ${nombre}! Vi cómo va tu seguimiento en Eyplease+: este mes le has llegado a ${llego} de tus ${total} consultoras.${falta} ¿Te ayudo a que les llegue a todas esta semana?`
 }
 
-/** La invitación a una Directora que todavía no usa Eyplease+, con la liga de recomendación de la Nacional. */
+/**
+ * La invitación a una Directora que todavía no usa Eyplease+, con la liga de la página de invitación: WhatsApp la enseña
+ * con la imagen «Te invita tu Directora…». Con esa liga entra con su primer mes del Plan Ejecutivo de regalo.
+ */
 export const mensajeDeInvitacion = (director: AreaDirector, link: string | null) => {
     const nombre = pila(director.name)
-    return `¡Hola, ${nombre}! Yo uso Eyplease+ para reconocer a mi Área y a mi unidad: me prepara las piezas de cumpleaños, Cuadro de Honor, Estrellas y Círculo Rosa con la foto y el nombre de cada una, listas para enviar. Creo que a tu unidad le encantaría.${link ? ` Aquí lo puedes conocer: ${link}` : ''}`
+    return `¡Hola, ${nombre}! Te invito a Eyplease+. Yo lo uso para reconocer a mi Área: prepara solas las piezas de cumpleaños, Cuadro de Honor, Estrellas y Círculo Rosa con la foto y el nombre de cada consultora, listas para enviar. Con mi invitación tu primer mes del Plan Ejecutivo es de regalo.${link ? ` Aquí lo ves: ${link}` : ''}`
 }
