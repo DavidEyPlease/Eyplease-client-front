@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { API_ROUTES } from '@/constants/api'
 import { ApiResponse, PaginationResponse } from '@/interfaces/common'
 import { CustomerOfClient } from '@/interfaces/customerOfClients'
-import { InventoryItem, NewSalePayload } from '@/interfaces/inventory'
+import { CustomerSale, InventoryItem, NewSalePayload } from '@/interfaces/inventory'
 import useInventory, { useSaleActions } from '@/hooks/useInventory'
 import { cn } from '@/lib/utils'
 import HttpService from '@/services/http'
@@ -14,6 +14,7 @@ import useAuthStore from '@/store/auth'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { friendlyError, lineProfit, money, parseAmount, pieces } from '../format'
 import Field from './Field'
+import HowToDialog from './HowToDialog'
 import Panel from './Panel'
 import ProductShape from './ProductShape'
 import Stepper from './Stepper'
@@ -77,6 +78,8 @@ const SaleDialog = ({ open, onClose, customer = null, preset = null }: Props) =>
     const [lines, setLines] = useState<Line[]>([])
     const [search, setSearch] = useState('')
     const [presetApplied, setPresetApplied] = useState(false)
+    // Anotada una venta con productos que tienen su «cómo usarlo»: la confirmación ofrece mandárselo a la clienta
+    const [howto, setHowto] = useState<{ sale: CustomerSale, notice: string } | null>(null)
 
     // Sus clientas de una vez (no la lista paginada de Mis Clientas): para elegir hacen falta todas
     const clientsQuery = useQuery({
@@ -151,16 +154,18 @@ const SaleDialog = ({ open, onClose, customer = null, preset = null }: Props) =>
             ...(preset?.note ? { note: preset.note } : {}),
         }
         const fromInventory = lines.some(line => line.sku)
-        const done = (inFile: boolean) => {
-            toast.success(inFile
+        const done = (inFile: boolean, sale?: CustomerSale | null, text?: string) => {
+            const notice = text ?? (inFile
                 ? `Listo: anotado en la ficha de ${firstName(buyerName)}${fromInventory ? ' y descontado de tu inventario' : ''}.`
                 : `Listo: anotado${fromInventory ? ' y descontado de tu inventario' : ''}.`)
+            if (sale?.howto?.slides.length) setHowto({ sale, notice })
+            else toast.success(notice)
             onClose()
         }
         const failed = (error: unknown) => toast.error(friendlyError(error, 'No se pudo anotar. Intenta de nuevo.'))
         try {
-            await record.mutateAsync(payload)
-            done(who.kind === 'client' || !!payload.save_customer)
+            const sale = await record.mutateAsync(payload)
+            done(who.kind === 'client' || !!payload.save_customer, sale)
         } catch (error) {
             // Se llenó su cupo de clientas: la venta se anota igual, sin guardarla en Mis Clientas
             if (!payload.save_customer || (error as { message?: string } | null)?.message !== LIMIT_CODE) {
@@ -168,9 +173,8 @@ const SaleDialog = ({ open, onClose, customer = null, preset = null }: Props) =>
                 return
             }
             try {
-                await record.mutateAsync({ ...payload, save_customer: false })
-                toast.success('Quedó anotada. No la guardé en Mis Clientas: llegaste al tope de clientas de tu plan.')
-                onClose()
+                const sale = await record.mutateAsync({ ...payload, save_customer: false })
+                done(false, sale, 'Quedó anotada. No la guardé en Mis Clientas: llegaste al tope de clientas de tu plan.')
             } catch (retryError) {
                 failed(retryError)
             }
@@ -204,6 +208,7 @@ const SaleDialog = ({ open, onClose, customer = null, preset = null }: Props) =>
     )
 
     return (
+        <>
         <Panel open={open} onClose={onClose} title="Ya me compró" description="Lo descuento de tu inventario y lo anoto en su ficha, para que sepas qué te ha comprado." footer={footer}>
             <div className="grid grid-cols-1 gap-5">
                 {/* ---------- ¿Quién? ---------- */}
@@ -313,6 +318,8 @@ const SaleDialog = ({ open, onClose, customer = null, preset = null }: Props) =>
                 </section>
             </div>
         </Panel>
+        <HowToDialog sale={howto?.sale ?? null} notice={howto?.notice} onClose={() => setHowto(null)} />
+        </>
     )
 }
 

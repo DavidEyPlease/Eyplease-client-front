@@ -270,6 +270,33 @@ const buildStrategy = (inventory: ConsultantInventory, sales: CustomerSale[], le
     }
 }
 
+// ---------- «Mándale cómo usarlo» (StrategyLibraryService::howToFor) ----------
+
+/** 3 de las 9 piezas «Cómo usarlo» de Astra (lote 2, v2): sus láminas de prueba están en ./laminas */
+const HOWTO_LIBRARY = [
+    { key: 'u02_como_usar_desmaquillante', match: 'locion desmaquillante de ojos', title: 'Loción Desmaquillante de Ojos' },
+    { key: 'u04_como_usar_base_timewise_3d', match: 'base de maquillaje timewise 3d', title: 'Base TimeWise 3D' },
+    { key: 'u07_como_usar_joy_emotion', match: 'joy emotion', title: 'Joy Emotion' },
+]
+const plainText = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[®™]/g, '').toLowerCase()
+
+/** Las láminas de cómo usar lo que se llevó y el mensaje para la clienta, o null si ninguno tiene pieza */
+const howToFor = (names: string[], customerName: string) => {
+    // En el orden de la venta y sin repetir, como la API
+    const found = names
+        .map(name => HOWTO_LIBRARY.find(item => plainText(name).includes(item.match)))
+        .filter((item, index, all): item is typeof HOWTO_LIBRARY[number] => !!item && all.findIndex(other => other?.key === item.key) === index)
+    if (!found.length) return null
+    const titles = found.map(item => `tu ${item.title}`)
+    const list = titles.length > 1 ? `${titles.slice(0, -1).join(', ')} y ${titles[titles.length - 1]}` : titles[0]
+    const first = customerName.trim().split(/\s+/)[0] ?? ''
+    return {
+        slides: found.map(item => ({ key: item.key, url: `/consultant/strategy/images/${item.key}` })),
+        message: `${first ? `¡Hola, ${first}!` : '¡Hola!'} Te mando cómo usar ${list} para que le saques todo el provecho. Cualquier duda, escríbeme.`,
+    }
+}
+const withHowTo = (sale: CustomerSale): CustomerSale => ({ ...sale, howto: howToFor(sale.items.map(item => item.name), sale.customer_name) })
+
 // ---------- La API de mentira ----------
 
 type Reply = { status: number, data: unknown, message?: string }
@@ -353,7 +380,7 @@ export const createStrategyDemo = (options: {
             const customer = query.get('client_customer_id')
             const perPage = Number(query.get('perPage') ?? 20)
             const mine = sales.filter(sale => !customer || sale.client_customer_id === customer).sort((a, b) => String(b.sold_at).localeCompare(String(a.sold_at)))
-            return ok({ current_page: 1, items: mine.slice(0, perPage), per_page: perPage, total_items: mine.length, last_page: Math.max(1, Math.ceil(mine.length / perPage)), is_last_page: mine.length <= perPage })
+            return ok({ current_page: 1, items: mine.slice(0, perPage).map(withHowTo), per_page: perPage, total_items: mine.length, last_page: Math.max(1, Math.ceil(mine.length / perPage)), is_last_page: mine.length <= perPage })
         }
         if (path === '/consultant/sales' && method === 'POST') {
             let customerId = (body.client_customer_id as string | undefined) ?? null
@@ -374,7 +401,7 @@ export const createStrategyDemo = (options: {
                 sold_at: new Date().toISOString(), source: String(body.source ?? 'app'), note: (body.note as string | undefined) ?? null, items,
             }
             sales = [sale, ...sales]
-            return ok(sale)
+            return ok(withHowTo(sale))
         }
         const saleMatch = path.match(/^\/consultant\/sales\/([^/]+)$/)
         if (saleMatch && method === 'DELETE') {

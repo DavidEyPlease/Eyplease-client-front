@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Loader2Icon, Trash2Icon } from 'lucide-react'
+import { Loader2Icon, SendIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { CustomerSale } from '@/interfaces/inventory'
@@ -9,8 +9,18 @@ import { friendlyError, money, pieces, saleDayLabel } from '../format'
 
 const itemsLine = (sale: CustomerSale) => sale.items.map(item => `${pieces(item.quantity)} × ${item.name}`).join(' · ')
 
-/** Ventas anotadas con «Ya me compró». Una mal anotada se borra (se confirma ahí mismo) y lo que bajó regresa. */
-const SalesList = ({ sales, showCustomer = false }: { sales: CustomerSale[], showCustomer?: boolean }) => {
+interface Props {
+    sales: CustomerSale[]
+    showCustomer?: boolean
+    /** «Mándale cómo usarlo» en las ventas que lo tienen (sin él, no se enseña) */
+    onHowTo?: (sale: CustomerSale) => void
+}
+
+/**
+ * Ventas anotadas con «Ya me compró». Una mal anotada se borra (se confirma ahí mismo) y lo que bajó regresa. Las que
+ * tienen su «cómo usarlo» traen el acceso para mandárselo a la clienta después.
+ */
+const SalesList = ({ sales, showCustomer = false, onHowTo }: Props) => {
     const { remove } = useSaleActions()
     const [asking, setAsking] = useState<string | null>(null)
 
@@ -29,6 +39,11 @@ const SalesList = ({ sales, showCustomer = false }: { sales: CustomerSale[], sho
                             {showCustomer && <small className="shrink-0 text-[11.5px] font-semibold text-muted-foreground">{saleDayLabel(sale.sold_at)}</small>}
                         </span>
                         <span className="block text-[12px] leading-snug text-muted-foreground">{itemsLine(sale)}</span>
+                        {onHowTo && !!sale.howto?.slides.length && asking !== sale.id && (
+                            <button type="button" onClick={() => onHowTo(sale)} className="mt-1.5 inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-[#6C47FF]/10 px-3 text-[12px] font-bold text-[#4E31C0] hover:bg-[#6C47FF]/15 dark:text-[#BBAAFF]">
+                                <SendIcon className="size-3.5" /> Mándale cómo usarlo
+                            </button>
+                        )}
                     </span>
                     {asking === sale.id ? (
                         <span className="flex shrink-0 items-center gap-1.5">

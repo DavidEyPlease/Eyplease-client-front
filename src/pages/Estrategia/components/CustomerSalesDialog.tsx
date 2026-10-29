@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
 import { CustomerOfClient } from '@/interfaces/customerOfClients'
+import { CustomerSale } from '@/interfaces/inventory'
 import { useSales } from '@/hooks/useInventory'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { money, saleDayLabel } from '../format'
+import HowToDialog from './HowToDialog'
 import Panel from './Panel'
 import SaleDialog from './SaleDialog'
 import SalesList from './SalesList'
@@ -21,6 +23,7 @@ const Tile = ({ value, label }: { value: string, label: string }) => (
  */
 const CustomerSalesDialog = ({ customer, onClose }: { customer: CustomerOfClient | null, onClose: () => void }) => {
     const [selling, setSelling] = useState(false)
+    const [howto, setHowto] = useState<CustomerSale | null>(null)
     const sales = useSales({ clientCustomerId: customer?.id ?? null, perPage: 50, enabled: !!customer })
     const items = sales.data?.items ?? []
     const spent = items.reduce((sum, sale) => sum + sale.total, 0)
@@ -28,7 +31,7 @@ const CustomerSalesDialog = ({ customer, onClose }: { customer: CustomerOfClient
     return (
         <>
             <Panel
-                open={!!customer && !selling}
+                open={!!customer && !selling && !howto}
                 onClose={onClose}
                 title={customer ? titleCaseName(customer.name) : ''}
                 description="Sus compras, anotadas con «Ya me compró»."
@@ -48,13 +51,14 @@ const CustomerSalesDialog = ({ customer, onClose }: { customer: CustomerOfClient
                 {sales.isLoading ? (
                     <div className="hoy-skel h-20 rounded-2xl" />
                 ) : items.length ? (
-                    <SalesList sales={items} />
+                    <SalesList sales={items} onHowTo={setHowto} />
                 ) : (
                     <p className="rounded-2xl border border-dashed border-border px-4 py-5 text-center text-[13px] leading-snug text-muted-foreground">
                         Todavía no le anotas compras. Cuando te compre, anótalo aquí: lo bajo de tu inventario y te aviso cuándo volver a ofrecerle.
                     </p>
                 )}
             </Panel>
+            <HowToDialog sale={customer ? howto : null} onClose={() => setHowto(null)} />
             <SaleDialog open={!!customer && selling} onClose={() => setSelling(false)} customer={customer ? { id: customer.id, name: customer.name } : null} />
         </>
     )

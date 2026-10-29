@@ -1,3 +1,5 @@
+import { StrategySlide } from './strategy'
+
 /**
  * «Tu estrategia» (plan Standard de consultora), parte 1: su inventario y lo que vende a sus clientas.
  * El inventario sale solo de sus órdenes de Mary Kay (últimos `lookback_months` meses) y baja cuando anota una venta.
@@ -70,6 +72,15 @@ export interface CustomerSale {
     source: 'app' | 'assistant' | 'manual' | string
     note: string | null
     items: CustomerSaleItem[]
+    /** «Mándale cómo usarlo»: las láminas de cómo usar lo que se llevó (con su logo) y el mensaje; nulo si ninguno tiene */
+    howto?: SaleHowTo | null
+}
+
+export interface SaleHowTo {
+    /** `url` = consultant/strategy/images/{key}: se baja como las piezas de la estrategia */
+    slides: StrategySlide[]
+    /** Ya escrito para la clienta: «¡Hola, Ana! Te mando cómo usar tu…» */
+    message: string
 }
 
 export interface NewSalePayload {

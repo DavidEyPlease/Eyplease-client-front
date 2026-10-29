@@ -4,7 +4,7 @@ import { CheckIcon, Loader2Icon, SparklesIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { APP_ROUTES } from '@/constants/app'
-import { InventoryItem } from '@/interfaces/inventory'
+import { CustomerSale, InventoryItem } from '@/interfaces/inventory'
 import useInventory, { useSales } from '@/hooks/useInventory'
 import PageHead from '@/layouts/TopShell/PageHead'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,7 @@ import StrategyLock from './components/StrategyLock'
 import AddItemDialog from './components/AddItemDialog'
 import { Card } from './components/Chips'
 import ItemRow, { ItemGroup } from './components/ItemRow'
+import HowToDialog from './components/HowToDialog'
 import SaleDialog from './components/SaleDialog'
 import SalesList from './components/SalesList'
 
@@ -47,6 +48,7 @@ const InventarioPage = () => {
     const [adding, setAdding] = useState(false)
     const [selling, setSelling] = useState(false)
     const [showOut, setShowOut] = useState(false)
+    const [howto, setHowto] = useState<CustomerSale | null>(null)
 
     /*
      * La revisión de una sola vez. Para la API ya está «revisado» en cuanto corrige UN producto (o agrega uno a mano):
@@ -160,7 +162,7 @@ const InventarioPage = () => {
 
                         <Card title="Lo último que vendiste" aside={sales.data?.total_items ? <small className="text-[11.5px] font-semibold text-muted-foreground">{sales.data.total_items} {sales.data.total_items === 1 ? 'venta' : 'ventas'}</small> : undefined}>
                             {sales.data?.items.length ? (
-                                <div className="mt-1"><SalesList sales={sales.data.items} showCustomer /></div>
+                                <div className="mt-1"><SalesList sales={sales.data.items} showCustomer onHowTo={setHowto} /></div>
                             ) : (
                                 <p className="mt-2 text-[13px] text-muted-foreground">Todavía no anotas ventas. Cada vez que vendas, tócale «Ya me compró»: baja de tu inventario y queda en la ficha de tu clienta.</p>
                             )}
@@ -172,6 +174,7 @@ const InventarioPage = () => {
 
             <AddItemDialog open={adding} onClose={() => setAdding(false)} onSave={payload => addItem.mutateAsync(payload)} saving={addItem.isPending} />
             <SaleDialog open={selling} onClose={() => setSelling(false)} />
+            <HowToDialog sale={howto} onClose={() => setHowto(null)} />
         </div>
     )
 }
