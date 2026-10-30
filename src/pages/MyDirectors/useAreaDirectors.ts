@@ -26,6 +26,8 @@ export interface AreaDirector {
     id: string
     name: string
     photo: string | null
+    /** Si tiene la foto con que sale en sus piezas (la de Galería → Directoras) */
+    has_photo: boolean
     /** Sólo dígitos, con lada de país; null si no hay uno que sirva para WhatsApp */
     phone: string | null
     unit_size: number | null
@@ -54,6 +56,8 @@ export interface AreaDirectors {
         without_app_people: number
         /** De las que no están, a cuántas ya invitó */
         invited: number
+        /** Cuántas no tienen la foto con que salen en sus piezas */
+        without_photo: number
     }
     /** Primero las que usan Eyplease+ (de la que más le falta a la que menos), luego las demás por tamaño de unidad */
     directors: AreaDirector[]

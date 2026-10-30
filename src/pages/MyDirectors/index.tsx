@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { GiftIcon, MessageCircleIcon, SearchIcon } from 'lucide-react'
+import { CameraIcon, ChevronRightIcon, GiftIcon, MessageCircleIcon, SearchIcon } from 'lucide-react'
 
 import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
@@ -9,6 +9,7 @@ import { askAssistant } from '@/layouts/TopShell/assistantBridge'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
 import HttpService from '@/services/http'
+import { useGalleryStore } from '@/store/gallery'
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import '@/pages/Hoy/hoy.css'
 import { DirectorCard, InviteRow } from './components'
@@ -29,6 +30,8 @@ const normal = (text: string) => text.toLocaleLowerCase('es-MX').normalize('NFD'
 const MyDirectorsPage = () => {
     const { enabled, loading, error, data } = useAreaDirectors()
     const queryClient = useQueryClient()
+    const navigate = useNavigate()
+    const setGalleryFilters = useGalleryStore(state => state.setFilters)
     const [filter, setFilter] = useState<Filter>('all')
     const [search, setSearch] = useState('')
 
@@ -134,6 +137,26 @@ const MyDirectorsPage = () => {
                                 {term ? 'Ninguna con ese nombre.' : 'Todavía ninguna Directora de tu Área usa Eyplease+.'}
                             </p>
                         )
+                    )}
+
+                    {/* Después de los indicadores, sus fotos: se suben donde siempre (Galería → Directoras) */}
+                    {filter === 'all' && !term && (
+                        <button
+                            type="button"
+                            onClick={() => { setGalleryFilters({ vendorRole: 'directors', letter: '', search: '' }); navigate(APP_ROUTES.HOME.GALLERY) }}
+                            className={cn(CARD, 'flex cursor-pointer items-center gap-3 p-4 text-left transition-colors hover:border-[#6C47FF]/40')}
+                        >
+                            <span className="hoy-soft grid size-11 shrink-0 place-items-center rounded-[14px] text-[#6C47FF] dark:text-[#BBAAFF]"><CameraIcon className="size-5" /></span>
+                            <span className="min-w-0 flex-1 leading-tight">
+                                <b className="block text-[14px] font-extrabold">Fotos de tus Directoras</b>
+                                <small className="text-[12px] text-muted-foreground">
+                                    {summary?.without_photo
+                                        ? `${summary.without_photo} ${summary.without_photo === 1 ? 'todavía no tiene foto' : 'todavía no tienen foto'} para sus reconocimientos. Súbelas aquí.`
+                                        : 'Todas tienen foto. Aquí las cambias cuando quieras.'}
+                                </small>
+                            </span>
+                            <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />
+                        </button>
                     )}
 
                     {filter !== 'app' && toInvite.length > 0 && (
