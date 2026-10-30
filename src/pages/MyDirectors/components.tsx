@@ -5,6 +5,7 @@ import { ESCALONES } from '@/pages/Dashboard/components/useUnitFollowUp'
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import { haceCuanto, iniciales, ligaWhatsApp, mensajeDeInvitacion, mensajeParaDirectora, sinEnviarHaceMucho } from './lib'
 import type { AreaDirector } from './useAreaDirectors'
+import { puedeCompartirImagen } from './useInvitationImage'
 
 export const TAG = 'inline-flex h-[22px] items-center rounded-full px-2.5 text-[10.5px] font-bold tracking-wide whitespace-nowrap'
 
@@ -101,7 +102,7 @@ export const DirectorCard = ({ director, style }: { director: AreaDirector, styl
  * Una Directora del Área que todavía no está en Eyplease+: el tamaño de su unidad e «Invítala». El enlace abre WhatsApp
  * en el mismo toque (si se esperara a la API el navegador lo bloquea) y `onInvite` la anota como su invitación.
  */
-export const InviteRow = ({ director, link, onInvite }: { director: AreaDirector, link: string | null, onInvite: (director: AreaDirector) => void }) => (
+export const InviteRow = ({ director, link, onInvite, image }: { director: AreaDirector, link: string | null, onInvite: (director: AreaDirector) => void, image?: File | null }) => (
     <li className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-card/50 px-3 py-2.5">
         <Avatar director={director} size={38} />
         <span className="min-w-0 flex-1 leading-tight">
@@ -113,7 +114,20 @@ export const InviteRow = ({ director, link, onInvite }: { director: AreaDirector
                 </span>
             )}
         </span>
-        <a href={ligaWhatsApp(director.phone, mensajeDeInvitacion(director, link))} target="_blank" rel="noreferrer" onClick={() => onInvite(director)} className={BOTON}>
+        <a
+            href={ligaWhatsApp(director.phone, mensajeDeInvitacion(director, link))}
+            target="_blank"
+            rel="noreferrer"
+            onClick={event => {
+                /* En el teléfono va con su invitación personalizada: el menú de compartir manda la imagen y el mensaje */
+                if (puedeCompartirImagen(image)) {
+                    event.preventDefault()
+                    navigator.share({ files: [image], text: mensajeDeInvitacion(director, link) }).catch(() => { })
+                }
+                onInvite(director)
+            }}
+            className={BOTON}
+        >
             <SendIcon className="size-[13px]" /> {director.invited_at ? 'Otra vez' : 'Invítala'}
         </a>
     </li>

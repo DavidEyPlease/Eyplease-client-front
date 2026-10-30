@@ -679,6 +679,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         // Mis Directoras: sólo el plan Nacional (como la API)
         else if (path === '/area/directors') response = PLAN_KEYS[actual.id] === 'national' ? respond(misDirectorasDemo()) : respond(null, 403)
         else if (/^\/area\/directors\/[^/]+\/invite$/.test(path) && method === 'POST') response = PLAN_KEYS[actual.id] === 'national' ? respond(invitarEnDemo(path.split('/')[3])) : respond(null, 403)
+        else if (path.startsWith('/area/invitation-image/')) response = PLAN_KEYS[actual.id] === 'national' ? await realFetch('/src/dev/cuentas/invitacion-ejemplo.jpg') : respond(null, 403)
         else if (path.startsWith('/invite/')) response = respond({ name: 'Patricia Lozano Garza', first_name: 'Patricia', title: 'Directora Nacional' })
         else if (path === '/posts/stats/month') response = respond((q.get('sections') ?? q.get('section') ?? '').split(',').filter(Boolean).map(section_key => ({ section_key, posts_count: 3, posts_sent_count: section_key === 'pink_circle' ? 0 : 1, posts_live_today_count: section_key.includes('birthdays') ? 2 : 0 })))
         else if (path === '/posts/my-birthday') response = respond(null)

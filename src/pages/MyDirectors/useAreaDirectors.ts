@@ -46,6 +46,8 @@ export interface AreaDirectors {
     title: string
     /** Su página de invitación con su código: en WhatsApp se ve con la imagen de la invitación */
     invite_link: string | null
+    /** Si tiene su invitación con foto y nombre (GET area/invitation-image/{formato}); sólo Nacionales */
+    invitation_image?: boolean
     summary: {
         directors: number
         with_app: number

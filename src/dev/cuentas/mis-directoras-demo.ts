@@ -44,6 +44,7 @@ export const misDirectorasDemo = () => ({
     month: new Date().toISOString().slice(0, 7),
     area_month: '2026-09',
     title: 'Directora Nacional',
+    invitation_image: true,
     invite_link: 'https://eyplease.com.mx/invitacion/?invita=DK7M2QX',
     summary: { directors: 17, with_app: 4, people_count: 67, people_reached: 29, percent: 43, without_app: 13, without_app_people: 552, invited: invitadas.size, without_photo: 9 },
     directors: [

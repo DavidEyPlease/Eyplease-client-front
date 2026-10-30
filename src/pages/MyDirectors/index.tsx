@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { CameraIcon, ChevronRightIcon, GiftIcon, MessageCircleIcon, SearchIcon } from 'lucide-react'
+import { CameraIcon, ChevronRightIcon, DownloadIcon, GiftIcon, MessageCircleIcon, SearchIcon } from 'lucide-react'
 
 import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
@@ -15,6 +15,7 @@ import '@/pages/Hoy/hoy.css'
 import { DirectorCard, InviteRow } from './components'
 import { nombreDelMes } from './lib'
 import useAreaDirectors, { type AreaDirector } from './useAreaDirectors'
+import useInvitationImage, { puedeCompartirImagen } from './useInvitationImage'
 
 type Filter = 'all' | 'app' | 'invite'
 
@@ -32,6 +33,8 @@ const MyDirectorsPage = () => {
     const queryClient = useQueryClient()
     const navigate = useNavigate()
     const setGalleryFilters = useGalleryStore(state => state.setFilters)
+    // Su invitación con su foto y su nombre: se descarga desde que entra para que «Invítala» la mande en el mismo toque
+    const invitacion = useInvitationImage(!!data?.invitation_image)
     const [filter, setFilter] = useState<Filter>('all')
     const [search, setSearch] = useState('')
 
@@ -172,8 +175,24 @@ const MyDirectorsPage = () => {
                                     Cuando una pague su primer mes, a ti se te descuenta lo mismo en tu siguiente pago.
                                 </span>
                             </p>
+                            {invitacion && (
+                                <div className="mt-3 flex items-center gap-3.5 rounded-2xl border border-border bg-card/60 p-3">
+                                    <img src={invitacion.url} alt="Tu invitación" className="h-[118px] w-auto shrink-0 rounded-[10px] shadow-[0_10px_22px_-12px_rgba(30,20,90,.6)]" />
+                                    <span className="min-w-0 flex-1 leading-snug">
+                                        <b className="block text-[13px] font-extrabold">Tu invitación, con tu foto</b>
+                                        <small className="block text-[11.5px] text-muted-foreground">
+                                            {puedeCompartirImagen(invitacion.file)
+                                                ? 'Al tocar «Invítala» se manda esta imagen con el mensaje y su liga.'
+                                                : 'Desde tu teléfono se manda sola con «Invítala». Aquí la puedes descargar para mandarla tú.'}
+                                        </small>
+                                        <a href={invitacion.url} download="invitacion-eyplease.jpg" className="mt-2 inline-flex h-[28px] items-center gap-1.5 rounded-[9px] bg-[#6C47FF]/10 px-2.5 text-[11.5px] font-bold text-[#6C47FF] dark:text-[#C4B5FF]">
+                                            <DownloadIcon className="size-3.5" /> Descargar
+                                        </a>
+                                    </span>
+                                </div>
+                            )}
                             <ul className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-                                {toInvite.map(director => <InviteRow key={director.id} director={director} link={data.invite_link} onInvite={invite} />)}
+                                {toInvite.map(director => <InviteRow key={director.id} director={director} link={data.invite_link} onInvite={invite} image={invitacion?.file} />)}
                             </ul>
                         </section>
                     )}

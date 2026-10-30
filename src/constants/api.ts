@@ -78,6 +78,8 @@ export const API_ROUTES = {
         DIRECTORS: '/area/directors',
         /** «Invítala»: la anota como su invitación (POST) */
         INVITE: '/area/directors/{id}/invite',
+        /** Su invitación con foto y nombre, en JPEG (1080x1920 o 1200x630) */
+        INVITATION_IMAGE: '/area/invitation-image/{format}',
         /** Pública: quién invita con un código (la página de invitación y el registro) */
         INVITER: '/invite/{code}',
     },
