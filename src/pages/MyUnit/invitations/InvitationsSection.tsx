@@ -78,7 +78,7 @@ const InvitationsSection = () => {
                         <p className="flex items-center gap-2 text-[11px] font-extrabold tracking-[.16em] uppercase opacity-90"><GiftIcon className="size-4" /> Invitar con regalo</p>
                         <h2 className="mt-1.5 text-[22px] leading-tight font-extrabold tracking-tight">Regálale a cada consultora un mes de «{data.gift.name}»</h2>
                         <p className="mt-1.5 text-[13.5px] leading-snug text-white/85">
-                            Vale ${data.gift.value.toLocaleString('es-MX')} y va a tu nombre; a ti no te cuesta. Le llega una imagen con su nombre y tu foto, y una liga a su estrategia del mes.
+                            Vale ${data.gift.value.toLocaleString('es-MX')} y va a tu nombre; a ti no te cuesta. Le llega una imagen con su nombre y su foto, y una liga a su estrategia del mes.
                         </p>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center">

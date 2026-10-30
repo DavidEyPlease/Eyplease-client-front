@@ -1,6 +1,7 @@
 // SÓLO DEV: «Invitar con regalo» en el simulador. La página del regalo (sin sesión, por token) y las invitaciones de la
-// Directora en Mi unidad, con gente inventada. La imagen de la invitación se arma aquí en un canvas sobre la base
-// provisional (la API la arma con Imagick, ver InvitationImageService).
+// Directora en Mi unidad, con gente inventada. La imagen de la invitación se arma aquí en un canvas sobre la base de
+// Astra (la API la arma con Imagick, ver InvitationImageService); en el círculo va la cara de la CONSULTORA (sin foto,
+// sus iniciales).
 //
 //   cuentas.html?registro=regalo&ir=/regalo/demo          con pedidos: su estrategia ya está lista
 //   cuentas.html?registro=regalo&ir=/regalo/demo-sin      sin pedidos todavía
@@ -85,6 +86,7 @@ const UNIDAD: DemoRow[] = [
 
 const ago = (days?: number) => (days === undefined ? null : new Date(Date.now() - days * 86400000).toISOString())
 const first = (name: string) => name.split(' ')[0]
+const initialsOf = (name: string) => { const w = name.split(' '); return ((w[0]?.[0] ?? '') + (w.length >= 3 ? w[w.length - 2][0] : w[1]?.[0] ?? '')).toUpperCase() }
 const given = (name: string) => { const w = name.split(' '); return w.length <= 2 ? w[0] : w.slice(0, w.length - 2).join(' ') }
 
 export const createUnitInvitationsDemo = () => {
@@ -158,7 +160,8 @@ export const createUnitInvitationsDemo = () => {
         },
         image: async (id: string) => {
             const row = rows.find(r => r.id === id)
-            return row ? composeInvitation(given(row.name).length > 20 ? first(row.name) : given(row.name), DIRECTORA.name, DIRECTORA.initials) : null
+            // En el círculo, la cara de la consultora; en la demo no hay fotos: sus iniciales
+            return row ? composeInvitation(given(row.name).length > 20 ? first(row.name) : given(row.name), DIRECTORA.name, initialsOf(row.name)) : null
         },
     }
 }
@@ -184,7 +187,7 @@ const composeInvitation = async (name: string, director: string, initials: strin
     do { ctx.font = `800 ${size}px ${sans}`; size -= 2 } while (ctx.measureText(name).width > 620 && size > 24)
     ctx.fillText(name, 130, 380 + 45)
 
-    // La foto (aquí, sus iniciales) en el círculo
+    // La foto de la consultora (aquí, sus iniciales) en el círculo
     ctx.beginPath()
     ctx.arc(300, 1065, 130, 0, Math.PI * 2)
     ctx.fillStyle = '#5315CC'
