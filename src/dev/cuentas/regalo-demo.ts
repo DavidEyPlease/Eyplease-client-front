@@ -175,12 +175,13 @@ const composeInvitation = async (name: string, director: string, initials: strin
     ctx.drawImage(base, 0, 0)
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
-    const sans = 'Poppins, "Helvetica Neue", Arial, sans-serif'
+    // Astra usó Arial Black y Arial; la API, Inter 800 e Inter 400 (aquí, la que tenga el navegador)
+    const sans = 'Inter, "Arial Black", Arial, sans-serif'
 
     // Su nombre: a la izquierda, arriba de «Tu estrategia»
     ctx.fillStyle = '#5315CC'
-    let size = 66
-    do { ctx.font = `700 ${size}px ${sans}`; size -= 2 } while (ctx.measureText(name).width > 620 && size > 44)
+    let size = 64
+    do { ctx.font = `800 ${size}px ${sans}`; size -= 2 } while (ctx.measureText(name).width > 620 && size > 24)
     ctx.fillText(name, 130, 380 + 45)
 
     // La foto (aquí, sus iniciales) en el círculo
@@ -188,22 +189,19 @@ const composeInvitation = async (name: string, director: string, initials: strin
     ctx.arc(300, 1065, 130, 0, Math.PI * 2)
     ctx.fillStyle = '#5315CC'
     ctx.fill()
-    ctx.lineWidth = 6
-    ctx.strokeStyle = '#FFFFFF'
-    ctx.stroke()
     ctx.fillStyle = '#FFFFFF'
     ctx.textAlign = 'center'
-    ctx.font = `700 96px ${sans}`
+    ctx.font = `800 96px ${sans}`
     ctx.fillText(initials, 300, 1068)
 
     // «De parte de tu Directora» y su nombre, a la derecha de la foto
     ctx.textAlign = 'left'
     ctx.fillStyle = '#1A1830'
-    ctx.font = `400 30px ${sans}`
-    ctx.fillText('De parte de tu Directora', 455, 1045)
+    ctx.font = `400 37px ${sans}`
+    ctx.fillText('De parte de tu Directora', 455, 1024)
     ctx.fillStyle = '#5315CC'
-    ctx.font = `700 46px ${sans}`
-    ctx.fillText(director, 455, 1098)
+    ctx.font = `800 52px ${sans}`
+    ctx.fillText(director, 455, 1079)
 
     return new Promise(resolve => canvas.toBlob(blob => resolve(blob!), 'image/jpeg', 0.88))
 }
