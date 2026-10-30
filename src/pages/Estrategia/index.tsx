@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { BoxIcon, CheckIcon, CopyIcon, MessageCircleIcon } from 'lucide-react'
+import { BoxIcon, CheckIcon, CopyIcon, GiftIcon, MessageCircleIcon, XIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { APP_ROUTES } from '@/constants/app'
+import { APP_ROUTES, GIFT_WELCOME_KEY } from '@/constants/app'
 import { StrategyLevel, StrategyPiece } from '@/interfaces/strategy'
 import useStrategy from '@/hooks/useStrategy'
 import PageHead from '@/layouts/TopShell/PageHead'
@@ -88,6 +88,34 @@ const PieceCard = ({ piece, price, onShare, example = false }: { piece: Strategy
  * el enfoque y lo que más le urge mover, el plan de la semana, tres piezas con su precio (y lo que gana) y a qué
  * clientas volver a ofrecerles. Las piezas traen las láminas de Astra con su logo; sin imagen todavía, va el boceto.
  */
+/**
+ * Acaba de activar el regalo de su Directora («Invitar con regalo»): una sola vez, de quién es y hasta cuándo le dura.
+ * Lo deja la página del regalo al registrarse o al activarlo con su sesión.
+ */
+const GiftWelcome = () => {
+    const [regalo, setRegalo] = useState<{ hasta: string | null, de: string | null } | null>(() => {
+        try {
+            const raw = sessionStorage.getItem(GIFT_WELCOME_KEY)
+            sessionStorage.removeItem(GIFT_WELCOME_KEY)
+            return raw ? JSON.parse(raw) : null
+        } catch {
+            return null
+        }
+    })
+    if (!regalo) return null
+
+    return (
+        <div role="status" className="flex items-start gap-3 rounded-[22px] bg-[linear-gradient(135deg,#4E31C0,#6C47FF_55%,#2CD4D9)] p-4 text-white shadow-[0_18px_40px_-24px_rgba(78,49,192,.9)]">
+            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white/15"><GiftIcon className="size-5" /></span>
+            <p className="min-w-0 flex-1 text-[14px] leading-snug">
+                <strong className="block text-[15.5px] font-extrabold">¡Tu regalo está activo!</strong>
+                {regalo.de ? `Te lo regaló ${regalo.de}. ` : ''}Tienes «Tu estrategia» {regalo.hasta ? `hasta el ${regalo.hasta}` : 'por un mes'}: empieza por la primera pieza de abajo.
+            </p>
+            <button type="button" onClick={() => setRegalo(null)} aria-label="Cerrar" className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full hover:bg-white/15"><XIcon className="size-4" /></button>
+        </div>
+    )
+}
+
 const EstrategiaPage = () => {
     const access = useStrategyAccess()
     // Con plan gratis no se pide nada a la API (respondería 403): se enseña el ejemplo con candado
@@ -138,6 +166,7 @@ const EstrategiaPage = () => {
             </PageHead>
 
             {locked && <StrategyLock />}
+            {!locked && <GiftWelcome />}
 
             {isLoading ? (
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">

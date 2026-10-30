@@ -8,6 +8,7 @@ import { boletinDinamicoDemo } from './boletin-dinamico-demo'
 import boletinNacionalDemo from './boletin-nacional-demo.json'
 import { invitarEnDemo, misDirectorasDemo } from './mis-directoras-demo'
 import { createStrategyDemo } from './estrategia-demo'
+import { createUnitInvitationsDemo, giftTrialEnds, giftView } from './regalo-demo'
 
 export type DemoPlan = typeof plans[number]
 export const PLANS: DemoPlan[] = plans
@@ -333,7 +334,7 @@ const cashError = (message: string) => new Response(JSON.stringify({ success: fa
  * a $99: al crear la cuenta entra a la Gratis Consultora y va a contratarlo) y `?registro=prueba` el de antes (un mes
  * gratis a $99). Los planes de Directora traen su mes gratis. Nada se guarda: al recargar, vuelve a empezar.
  */
-const REGISTRO = (['lanzamiento', 'prueba'] as const).find(m => m === new URLSearchParams(location.search).get('registro')) ?? null
+const REGISTRO = (['lanzamiento', 'prueba', 'regalo'] as const).find(m => m === new URLSearchParams(location.search).get('registro')) ?? null
 const FREE_CONSULTANT_ID = 'a2cab71b-ed42-4bc3-937e-65549f51938b'
 const STANDARD_FEATURES_LANZAMIENTO = [
     'Tu estrategia del mes: qué ofrecer y a qué precio', 'Tu inventario y tus ventas, desde tus órdenes',
@@ -503,6 +504,10 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
     let actual = plan
     // Con `?registro=` no hay sesión hasta crear la cuenta en el registro
     let registrada = !REGISTRO
+    // «Invitar con regalo» (regalo-demo.ts): las invitaciones de la Directora y el mes que se activa la consultora
+    const invitationsDemo = role === 'director' ? createUnitInvitationsDemo() : null
+    let giftTrial: string | null = null
+    const notFound = (message: string, status = 404) => new Response(JSON.stringify({ success: false, data: null, message }), { status, headers: { 'Content-Type': 'application/json' } })
 
     // Mis Clientas de la consultora (las de «+ Otra» guardadas se suman) y «Tu estrategia» con su inventario y ventas
     const customers = role !== 'consultant' ? [] : PEOPLE.slice(0, 4).map((name, index) => ({
@@ -538,6 +543,36 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         const strategyRoute = path === '/consultant/strategy' || path.startsWith('/consultant/strategy/') || path.startsWith('/consultant/inventory') || path.startsWith('/consultant/sales')
         if (strategyRoute && (PLAN_KEYS[actual.id] ?? '').startsWith('free')) {
             response = new Response(JSON.stringify({ success: false, message: 'PLAN_REQUIRED_STRATEGY', errors: [] }), { status: 403, headers: { 'Content-Type': 'application/json' } })
+        }
+        // «Invitar con regalo»: la página del regalo (sin sesión) y activarlo con su cuenta
+        else if (/^\/gifts\/[^/]+$/.test(path) && method === 'GET') {
+            const view = giftView(path.split('/')[2], { loggedIn: registrada, claimed: !!giftTrial && !REGISTRO, registered: !!giftTrial && !!REGISTRO })
+            response = view ? respond(view) : notFound('Esta liga de regalo no existe. Pídele a tu Directora que te la mande otra vez.')
+        }
+        else if (/^\/gifts\/[^/]+\/open$/.test(path)) response = respond({ opened: true })
+        else if (/^\/gifts\/[^/]+\/claim$/.test(path)) {
+            if (!registrada) response = notFound('Unauthenticated.', 401)
+            else {
+                actual = PLANS.find(p => p.id === STANDARD_ID) ?? actual
+                giftTrial = giftTrialEnds()
+                response = respond({ applied: true, message: null, ends_at: giftTrial, ends_label: new Date(giftTrial).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' }) })
+            }
+        }
+        // La Directora: su unidad con las invitaciones, la de una consultora, «ya la mandé» y su imagen
+        else if (path === '/unit/invitations' && method === 'GET') response = invitationsDemo && !(PLAN_KEYS[actual.id] ?? '').startsWith('free')
+            ? respond(invitationsDemo.list())
+            : respond({ available: false, reason: invitationsDemo ? 'gratis' : 'plan', message: invitationsDemo ? 'Invitar con regalo viene en los planes de paga.' : 'Invitar con regalo es para Directoras.', gift: { months: 1, name: 'Tu estrategia', value: 139, currency: 'MXN' }, totals: { unit: 0, with_app: 0, to_invite: 0, invited: 0, opened: 0, activated: 0, gifts: 0 }, next_person_id: null, people: [] })
+        else if (path === '/unit/invitations' && method === 'POST') {
+            const found = invitationsDemo?.ensure(typeof init?.body === 'string' && init.body ? JSON.parse(init.body).person_id : '')
+            response = found ? respond(found) : notFound('Esa consultora no está en tu unidad.', 422)
+        }
+        else if (/^\/unit\/invitations\/[^/]+\/sent$/.test(path)) {
+            const found = invitationsDemo?.sent(path.split('/')[3], !!(typeof init?.body === 'string' && init.body ? JSON.parse(init.body).reminder : false))
+            response = found ? respond(found) : notFound('No encontramos esa invitación.')
+        }
+        else if (/^\/unit\/invitations\/[^/]+\/image$/.test(path)) {
+            const blob = await invitationsDemo?.image(path.split('/')[3])
+            response = blob ? new Response(blob, { status: 200, headers: { 'Content-Type': 'image/jpeg' } }) : notFound('No encontramos esa invitación.')
         }
         else if (path === '/billing/standard' && method === 'GET') response = respond(standardQuote(actual, role))
         else if (path === '/billing/standard' && method === 'POST') {
@@ -621,7 +656,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         }
         else if (path === '/customers/client' && method === 'GET' && role === 'consultant') response = respond(page(customers))
         else if (path === '/me') response = registrada
-            ? respond(userFor(actual, role, rank))
+            ? respond({ ...userFor(actual, role, rank), ...(giftTrial ? { trial_ends_at: giftTrial, on_trial: true } : {}) })
             : new Response(JSON.stringify({ success: false, data: null, message: 'Unauthenticated.' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
         else if (path === '/sign-up/validate-email' || path === '/sign-up/validate-username') response = respond(null)
         else if (path.startsWith('/sign-up/recommended-plan/')) {
@@ -633,6 +668,12 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             const elegido = recommendedPlan(body.planKey ?? 'standard')
             // Sin prueba gratis, la cuenta nace en la Gratis Consultora (como la API) y contrata el Standard después
             actual = (elegido?.offer ? PLANS.find(p => p.id === FREE_CONSULTANT_ID) : PLANS.find(p => p.id === elegido?.id)) ?? actual
+            // Con la liga del regalo (y si le toca): el Standard por un mes
+            const regalo = body.giftToken ? giftView(body.giftToken, { loggedIn: false, claimed: false, registered: false }) : null
+            if (regalo) {
+                actual = regalo.gift.available ? PLANS.find(p => p.id === STANDARD_ID) ?? actual : PLANS.find(p => p.id === FREE_CONSULTANT_ID) ?? actual
+                if (regalo.gift.available) giftTrial = giftTrialEnds()
+            }
             registrada = true
             response = respond({ token: 'simulador', user: userFor(actual, role, rank) })
         }

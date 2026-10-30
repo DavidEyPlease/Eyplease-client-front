@@ -151,6 +151,19 @@ export const API_ROUTES = {
         SALES: '/consultant/sales',
         SALE: '/consultant/sales/{id}',
     },
+    /** «Invitar con regalo», lado de la Directora: su unidad con cada invitación, la de una consultora y «ya la mandé» */
+    UNIT: {
+        INVITATIONS: '/unit/invitations',
+        INVITATION_SENT: '/unit/invitations/{id}/sent',
+        /** La imagen de la invitación (JPEG 1080×1350; pide sesión) */
+        INVITATION_IMAGE: '/unit/invitations/{id}/image',
+    },
+    /** La página del regalo de la consultora (sin sesión, por el token de su liga) y activarlo con su cuenta */
+    GIFTS: {
+        SHOW: '/gifts/{token}',
+        OPEN: '/gifts/{token}/open',
+        CLAIM: '/gifts/{token}/claim',
+    },
     VERIFICATION_TEMPORARY_CODE: '/verification-temporary-code',
     DASHBOARD: '/dashboard',
     CANVA: {

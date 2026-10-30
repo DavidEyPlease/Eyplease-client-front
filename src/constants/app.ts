@@ -42,6 +42,8 @@ export const APP_ROUTES = {
     MY_UNIT: '/my-unit',
     /** Mis Directoras (plan Nacional): cómo va el seguimiento de cada Directora de su Área */
     MY_DIRECTORS: '/my-directors',
+    /** La página del regalo de una consultora («Invitar con regalo»): pública, la abre con la liga que le mandó su Directora */
+    GIFT: '/regalo/:token',
     /** «Tu estrategia» de la consultora (plan Standard) y su inventario */
     STRATEGY: '/tu-estrategia',
     INVENTORY: '/tu-inventario',
@@ -64,6 +66,13 @@ export const APP_ROUTES = {
 }
 
 export const SESSION_KEY = 'eyWebPleaseToken'
+/** Páginas que se abren sin sesión (fuera de /auth): sin cuenta, no se manda al acceso */
+export const PUBLIC_PREFIXES = ['/regalo/']
+export const isPublicPath = (pathname: string) => PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix))
+/** El regalo que quería activar quien ya tenía cuenta: al entrar, se le regresa a su página */
+export const PENDING_GIFT_KEY = 'eyplease:regalo'
+/** Lo que se acaba de activar, para el aviso de bienvenida en «Tu estrategia» (una sola vez) */
+export const GIFT_WELCOME_KEY = 'eyplease:regalo-activo'
 /** Nombre de quien acaba de cerrar sesión: el acceso lo lee una vez para despedirla */
 export const FAREWELL_KEY = 'eyplease:farewell'
 

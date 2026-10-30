@@ -4,7 +4,7 @@ import HttpService from '@/services/http'
 import { ApiResponse, GlobalUtilData } from "@/interfaces/common"
 import { useLocation, useNavigate } from "react-router"
 import useAuthStore from "@/store/auth"
-import { APP_ROUTES, FAREWELL_KEY, SESSION_KEY } from "@/constants/app"
+import { APP_ROUTES, FAREWELL_KEY, isPublicPath, SESSION_KEY } from "@/constants/app"
 import { API_ROUTES } from "@/constants/api"
 import { IChangePasswordData, IUser, IUserUpdate } from "@/interfaces/users"
 import { toast } from "sonner"
@@ -79,11 +79,12 @@ const useAuth = () => {
                     navigate(APP_ROUTES.HOME.INITIAL)
                 }
                 await getAuthUtilData(response.data)
-            } else {
+            } else if (!isPublicPath(location.pathname)) {
                 navigate(APP_ROUTES.AUTH.SIGN_IN)
             }
         }).catch(() => {
-            if (!Object.values(APP_ROUTES.AUTH).includes(location.pathname)) {
+            // Sin sesión: el acceso, salvo en el registro y las páginas públicas (la del regalo)
+            if (!Object.values(APP_ROUTES.AUTH).includes(location.pathname) && !isPublicPath(location.pathname)) {
                 navigate(APP_ROUTES.AUTH.SIGN_IN)
             }
         }).finally(() => {

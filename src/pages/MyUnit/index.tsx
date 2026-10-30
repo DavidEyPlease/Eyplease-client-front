@@ -13,6 +13,7 @@ import useSectionPosts from '@/pages/Hoy/hooks/useSectionPosts'
 import { buildUnitGroups, dayKey } from '@/pages/Hoy/hooks/useUnitToday'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { groupPostVersions } from '@/pages/Posts/lib'
+import InvitationsSection from './invitations/InvitationsSection'
 
 const TAG = 'inline-flex h-[22px] items-center rounded-full px-2.5 text-[10.5px] font-bold tracking-wide whitespace-nowrap'
 
@@ -119,6 +120,9 @@ const MyUnitPage = () => {
                     </div>
                 </div>
             </header>
+
+            {/* «Invitar con regalo»: sólo Directoras de paga (la API dice si aplica) */}
+            <InvitationsSection />
 
             {loading && !people.length ? (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">

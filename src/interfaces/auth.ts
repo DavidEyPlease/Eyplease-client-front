@@ -23,6 +23,8 @@ export interface IAuthUser {
     plan: IPlan
     canva_connected: boolean
     template_id: string | null
+    /** Hasta cuándo dura su prueba o su regalo (el de «Invitar con regalo»); null si no tiene */
+    trial_ends_at?: string | null
     /**
      * Las otras cuentas de la MISMA persona (su unidad de otro país). Vacío para casi todas:
      * el selector sólo se pinta cuando hay más de una. El `id` es OPACO — no es el id de la

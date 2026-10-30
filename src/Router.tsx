@@ -32,6 +32,7 @@ import useAuth from "./hooks/useAuth"
 import MainLayout from "./layouts/MainLayout"
 import EstrategiaPage from "./pages/Estrategia"
 import InventarioPage from "./pages/Estrategia/Inventario"
+import RegaloPage from "./pages/Regalo"
 
 const Router = () => {
     const { isLogged, getMe } = useAuth()
@@ -58,6 +59,8 @@ const Router = () => {
             <Route path={APP_ROUTES.HOME.PLAN_UPGRADE} element={<PlanUpgradePage />} />
             {/* Contratar el Plan Standard de consultora con tarjeta (también es adonde regresa Stripe) */}
             <Route path={APP_ROUTES.HOME.PLAN_STANDARD} element={<PlanStandardPage />} />
+            {/* La página del regalo de una consultora: pública (la abre sin cuenta con la liga de su Directora) */}
+            <Route path={APP_ROUTES.GIFT} element={<RegaloPage />} />
             <Route element={<MainLayout />}>
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
                 <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />
