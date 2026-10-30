@@ -163,7 +163,7 @@ export const createUnitInvitationsDemo = () => {
     }
 }
 
-/** La imagen de la invitación, como la arma la API (mismas zonas que config/invitations.php), en un canvas. */
+/** La imagen de la invitación, como la arma la API (mismas zonas que config/invitations.php: la base de Astra), en un canvas. */
 const composeInvitation = async (name: string, director: string, initials: string): Promise<Blob> => {
     const base = new Image()
     base.src = '/src/dev/cuentas/regalo/invitacion_base.jpg'
@@ -173,27 +173,37 @@ const composeInvitation = async (name: string, director: string, initials: strin
     canvas.height = 1350
     const ctx = canvas.getContext('2d')!
     ctx.drawImage(base, 0, 0)
-    ctx.fillStyle = '#FFFFFF'
-    ctx.textAlign = 'center'
+    ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
+    const sans = 'Poppins, "Helvetica Neue", Arial, sans-serif'
 
-    let size = 82
-    do { ctx.font = `700 ${size}px "Playfair Display", Georgia, serif`; size -= 2 } while (ctx.measureText(name).width > 900 && size > 52)
-    ctx.fillText(name, 540, 262 + 48)
+    // Su nombre: a la izquierda, arriba de «Tu estrategia»
+    ctx.fillStyle = '#5315CC'
+    let size = 66
+    do { ctx.font = `700 ${size}px ${sans}`; size -= 2 } while (ctx.measureText(name).width > 620 && size > 44)
+    ctx.fillText(name, 130, 380 + 45)
 
-    ctx.font = '600 36px Poppins, "Helvetica Neue", Arial, sans-serif'
-    ctx.fillText(`De parte de tu Directora ${director}`, 540, 1124 + 46)
-
+    // La foto (aquí, sus iniciales) en el círculo
     ctx.beginPath()
-    ctx.arc(540, 974, 130, 0, Math.PI * 2)
-    ctx.fillStyle = '#4E31C0'
+    ctx.arc(300, 1065, 130, 0, Math.PI * 2)
+    ctx.fillStyle = '#5315CC'
     ctx.fill()
-    ctx.lineWidth = 8
+    ctx.lineWidth = 6
     ctx.strokeStyle = '#FFFFFF'
     ctx.stroke()
     ctx.fillStyle = '#FFFFFF'
-    ctx.font = '700 104px "Playfair Display", Georgia, serif'
-    ctx.fillText(initials, 540, 978)
+    ctx.textAlign = 'center'
+    ctx.font = `700 96px ${sans}`
+    ctx.fillText(initials, 300, 1068)
+
+    // «De parte de tu Directora» y su nombre, a la derecha de la foto
+    ctx.textAlign = 'left'
+    ctx.fillStyle = '#1A1830'
+    ctx.font = `400 30px ${sans}`
+    ctx.fillText('De parte de tu Directora', 455, 1045)
+    ctx.fillStyle = '#5315CC'
+    ctx.font = `700 46px ${sans}`
+    ctx.fillText(director, 455, 1098)
 
     return new Promise(resolve => canvas.toBlob(blob => resolve(blob!), 'image/jpeg', 0.88))
 }
