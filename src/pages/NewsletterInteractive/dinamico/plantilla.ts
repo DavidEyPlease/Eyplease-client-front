@@ -16,7 +16,7 @@ export const plantilla = (base: string, piel: Piel): string => {
     <header class="barra">
         <button type="button" class="volver" data-volver aria-label="Cerrar el boletín"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <span class="marca">eyplease<b>+</b></span>
-        <span class="quien"><small>Boletín de septiembre</small><b class="unidad"></b></span>
+        <span class="quien"><small>Boletín de <span class="mes"></span></small><b class="unidad"></b></span>
         <nav class="secciones" aria-label="Secciones">
             <a href="#carrera">Carrera</a><a href="#podio">Podio</a><a href="#estrellas">Estrellas</a><a href="#descuento">Descuento</a><a href="#circulo-rosa">Círculo Rosa</a><a href="#dia-por-dia">Día por día</a><a href="#tempraneras" data-tem-link hidden>Tempraneras</a><a href="#iniciadoras">Iniciadoras</a><a href="#camino">Camino</a><a href="#productos">Productos</a><a href="#cumpleanos">Cumpleaños</a><a href="#aniversarios">Aniversarios</a>
         </nav>
