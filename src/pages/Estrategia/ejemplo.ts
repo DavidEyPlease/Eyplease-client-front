@@ -18,7 +18,7 @@ export const estrategiaDeEjemplo = (): ConsultantStrategy => {
         segment: 'big',
         headline: 'Enfócate en maquillaje',
         focus: { key: 'maquillaje', label: 'maquillaje' },
-        diagnosis: 'Lo primero: If You Believe Eau de Toilette lleva 42 días guardado. Tienes 60 piezas, $25,650 a precio de clienta: si lo vendes todo, ganas $15,293.',
+        diagnosis: 'Lo primero: If You Believe Eau de Toilette lleva 42 días guardado. En todo tu inventario tienes 60 piezas, $25,650 a precio de clienta: si lo vendes todo, ganas $15,293.',
         level: { month: `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`, accumulated: 15855, earned: 50, kept: 0, kept_from: null, level: 50, next: null, keeps_next_month: false },
         moment: null,
         plan: [

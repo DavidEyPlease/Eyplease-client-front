@@ -210,7 +210,7 @@ const buildStrategy = (inventory: ConsultantInventory, sales: CustomerSale[], le
         ? 'Todavía no veo productos en tu inventario. Cuando llegue tu próximo pedido, aquí te digo cómo venderlo; si tienes producto guardado, agrégalo en «Tu inventario».'
         : [
             priority?.stale ? `Lo primero: ${short(priority.name)}${priority.shade ? ` (${priority.shade})` : ''} lleva ${priority.days_stored} días guardado.` : null,
-            `Tienes ${count(summary.units, 'pieza', 'piezas')}, ${money(summary.catalog_value)} a precio de clienta${summary.profit > 0 ? `: si lo vendes todo, ganas ${money(summary.profit)}.` : '.'}`,
+            `En todo tu inventario tienes ${count(summary.units, 'pieza', 'piezas')}, ${money(summary.catalog_value)} a precio de clienta${summary.profit > 0 ? `: si lo vendes todo, ganas ${money(summary.profit)}.` : '.'}`,
             segment === 'start' ? 'Tu meta #1 es recuperar lo que invertiste antes de pensar en el siguiente pedido.' : null,
         ].filter(Boolean).join(' ')
 
