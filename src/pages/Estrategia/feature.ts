@@ -19,13 +19,21 @@ export const STRATEGY_LOCKED_CODE = 'PLAN_REQUIRED_STRATEGY'
 export const isStrategyLockedError = (error: unknown) => (error as { message?: string } | null)?.message === STRATEGY_LOCKED_CODE
 
 /**
- * ¿Se le enseña y con candado? A las consultoras (su plan no trae unidad) con el interruptor encendido: con plan de
- * paga, abierta; con un plan gratis (la Gratis Consultora), con candado: ve el ejemplo y «Contratar el Plan Standard».
+ * Las Directoras de Básico y Ejecutivo también ven la suya, armada con sus órdenes PROPIAS («Mis órdenes» de InTouch,
+ * que el robot les baja desde el 4-nov-2026). Elite y Área no: sus órdenes vienen dentro de la lista de su unidad.
+ */
+const PLANES_DE_DIRECTORA_CON_ESTRATEGIA = ['basic', 'executive']
+
+/**
+ * ¿Se le enseña y con candado? A las consultoras (su plan no trae unidad) y a las Directoras de Básico y Ejecutivo, con
+ * el interruptor encendido: con plan de paga, abierta; con un plan gratis (la Gratis Consultora), con candado: ve el
+ * ejemplo y «Contratar el Plan Standard».
  */
 export const useStrategyAccess = (): { show: boolean, locked: boolean } => {
     const consultant = useAuthStore(state => !!state.user && (state.user.plan?.audience === 'clients' || !state.permissions.includes(PermissionKeys.POSTS_UNITY)))
+    const director = useAuthStore(state => PLANES_DE_DIRECTORA_CON_ESTRATEGIA.includes(state.user?.plan?.plan_key ?? ''))
     const free = useAuthStore(state => (state.user?.plan?.plan_key ?? '').startsWith('free'))
-    const show = consultant && (TU_ESTRATEGIA_EN_LA_WEB || import.meta.env.DEV)
+    const show = (consultant || director) && (TU_ESTRATEGIA_EN_LA_WEB || import.meta.env.DEV)
     return { show, locked: show && free }
 }
 
