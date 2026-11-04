@@ -772,6 +772,23 @@ img { -webkit-user-drag: none; user-select: none; }
 .joya ul { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; text-align: left; width: 100%; }
 .joya li { position: relative; padding-left: 15px; font-size: 13px; line-height: 1.4; color: rgba(var(--marfil-rgb), .9); }
 .joya li::before { content: ''; position: absolute; left: 0; top: .5em; width: 7px; height: 7px; border-radius: 50%; background: var(--j); }
+/* los meses que no cierran trimestre: quién va por qué estrella, una franja por estrella */
+.grupo-c { width: min(1060px, 100%); margin: 0 auto 26px; padding: 30px 22px 22px; position: relative; border-radius: 26px; background: linear-gradient(180deg, color-mix(in srgb, var(--j) 16%, transparent), rgba(var(--hondo-rgb), .45)); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--j) 55%, transparent) inset; }
+.grupo-c h3 { margin: 0 0 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; }
+.grupo-c h3 .sello { position: static; translate: none; }
+.grupo-c h3 small { font: 500 12.5px/1.2 var(--cifra); color: rgba(var(--marfil-rgb), .7); }
+.fichas-c { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 330px)); justify-content: center; gap: 12px; }
+.ficha-c { display: grid; grid-template-columns: 54px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px 14px 10px 10px; border-radius: 16px; background: rgba(var(--marfil-rgb), .06); }
+.cara-c { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; --mf: 18px; background: radial-gradient(80% 70% at 50% 30%, var(--foto-1), var(--foto-3)); box-shadow: 0 0 0 2.5px var(--j); }
+.cara-c img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 10%; }
+.txt-c { display: grid; gap: 4px; min-width: 0; }
+.txt-c h4 { margin: 0; font: 600 15px/1.2 var(--nombre); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.txt-c p { margin: 0; font-size: 12.5px; color: rgba(var(--marfil-rgb), .75); }
+.txt-c p b { color: var(--oro); font-weight: 600; }
+.barra-c { height: 6px; border-radius: 6px; background: rgba(var(--marfil-rgb), .1); overflow: hidden; }
+.barra-c i { display: block; width: var(--w); height: 100%; border-radius: 6px; background: var(--j); transform-origin: left; transform: scaleX(0); transition: transform 1.2s var(--ease) .3s; }
+.grupo-c.ver .barra-c i { transform: none; }
+.txt-c em { font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--j); }
 
 /* ---------- 7b. Camino al Éxito ---------- */
 .camino-ex { padding: 110px max(16px, 4vw) 30px; }
@@ -829,6 +846,8 @@ img { -webkit-user-drag: none; user-select: none; }
     .joyero { margin-bottom: 56px; }
     .cero:last-child { display: none; }
     .joya { width: 100%; }
+    .grupo-c { padding: 26px 12px 14px; }
+    .fichas-c { grid-template-columns: 1fr; gap: 8px; }
     .ruta { height: 170px; width: calc(100% - 30px); }
     .cara-r { width: 34px; height: 34px; --mf: 11px; margin-top: -9px; }
     .parada small { font-size: 9px; white-space: normal; width: 80px; }

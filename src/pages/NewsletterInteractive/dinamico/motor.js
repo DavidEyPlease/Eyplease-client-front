@@ -198,8 +198,12 @@ export function crearBoletinDinamico(host, D, op = {}) {
     {
         // la portada resume el mes con lo que la página ya trae
         const nEst = D.estrellas ? D.estrellas.lista.length : 0
+        const nCam = !nEst && D.estrellasCamino ? D.estrellasCamino.lista.length : 0
+        const colE = (D.estrellas || D.estrellasCamino || {}).programa === 'Círculo del Éxito'
         const nCR = D.circulo ? D.circulo.total : 0
-        const partes = [COMPRAS ? `<b>${COMPRAS} órdenes</b>` : '', nEst ? `<b>${nEst} ${nEst === 1 ? 'Estrella' : 'Estrellas'}</b> del trimestre` : '', nCR ? `<b>${nCR} consultoras</b> en Círculo Rosa` : ''].filter(Boolean)
+        const est = nEst ? (colE ? `<b>${nEst} ${nEst === 1 ? 'consultora' : 'consultoras'}</b> en el Círculo del Éxito` : `<b>${nEst} ${nEst === 1 ? 'Estrella' : 'Estrellas'}</b> del trimestre`)
+            : nCam ? `<b>${nCam} ${nCam === 1 ? 'consultora' : 'consultoras'}</b> ${colE ? 'rumbo al Círculo del Éxito' : 'rumbo a Estrella'}` : ''
+        const partes = [COMPRAS ? `<b>${COMPRAS} órdenes</b>` : '', est, nCR ? `<b>${nCR} consultoras</b> en Círculo Rosa` : ''].filter(Boolean)
         $('.entrada .lead').innerHTML = partes.length
             ? `El cierre de ${MES} de la ${esc(D.unidad)}: ${partes.length > 1 ? `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}` : partes[0]}.`
             : `El cierre de ${MES} de la ${esc(D.unidad)}.`
@@ -996,34 +1000,62 @@ export function crearBoletinDinamico(host, D, op = {}) {
     /* ---------- 3b. Estrellas del trimestre ---------- */
     const JOYA = { perla: 'Perla', esmeralda: 'Esmeralda', diamante: 'Diamante', rubi: 'Rubí', zafiro: 'Zafiro' }
     const ESTRELLA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>'
-    function armarEstrellas() {
-        const E = D.estrellas
-        if (!E || !E.lista.length) { $('#estrellas').remove(); return }
-        $('.trimestre').textContent = E.trimestre
-        const orden = Object.keys(JOYA)
-        const cuenta = orden.map(k => [k, E.lista.filter(x => x.estrella === k).length]).filter(([, n]) => n)
-        const subieron = E.lista.filter(x => x.antes && x.antes !== x.estrella).length
-        const nuevas = E.lista.filter(x => !x.antes).length
-        const lista = cuenta.map(([k, n]) => `${n} ${JOYA[k]}`)
-        $('#estrellas .sub').innerHTML = `<b>${plural(E.lista.length, 'consultora', 'consultoras')}</b> cerraron el trimestre como Estrella: ${lista.length > 1 ? `${lista.slice(0, -1).join(', ')} y ${lista[lista.length - 1]}` : lista[0]}.`
-            + (subieron ? ` ${subieron === 1 ? 'Una subió' : `${subieron} subieron`} de estrella con sus órdenes de ${MES}` : '') + (nuevas ? `${subieron ? ' y' : ''} ${nuevas === 1 ? 'una se volvió' : `${nuevas} se volvieron`} Estrella en ${MES}` : '') + (subieron || nuevas ? '.' : '')
-        // el joyero: la escala del trimestre con cada quien en su lugar; al verla, cada cara viaja de agosto a septiembre
-        const tope = Math.max(E.cortes.perla, ...E.lista.map(x => x.total)) * 1.02
+    // los tres meses del trimestre: la API los manda; si no, salen del primero del rango («julio – septiembre»)
+    const mesesDe = E => E.meses || (i => [i, i + 1, i + 2].map(k => MESES[k]))(MESES.indexOf(E.trimestre.split(' – ')[0]))
+    const abrev = m => m[0].toUpperCase() + m.slice(1, 3)
+    const enLista = l => (l.length > 1 ? `${l.slice(0, -1).join(', ')} y ${l[l.length - 1]}` : l[0])
+    // Colombia no tiene Estrellas sino Círculo del Éxito, y sin Perla
+    const programaDe = E => (E.programa === 'Círculo del Éxito' ? 'Círculo del Éxito' : 'Estrella')
+    // la escala del joyero: el riel se pinta con los cortes que traiga (sin Perla, la Esmeralda queda al final)
+    function escalaJoyero(cortes, totales) {
+        const orden = Object.keys(JOYA).filter(k => cortes[k] != null)
+        const tope = Math.max(...orden.map(k => cortes[k]), ...totales) * 1.02
         const X = v => (v / tope * 100).toFixed(2)
-        const cortes = orden.slice().reverse().map(k => `<span class="corte-j j-${k}" style="left:${X(E.cortes[k])}%"><i>${ESTRELLA_SVG}</i><b>${JOYA[k]}</b><small>${miles(E.cortes[k])}</small></span>`).join('')
-        // cada cara en un carril: si dos quedan cerca (al inicio o al final del viaje) van en carriles distintos
+        const deMenor = orden.slice().reverse()
+        const riel = `linear-gradient(90deg, rgba(var(--marfil-rgb), .08) 0 ${(X(cortes[deMenor[0]]) - 2).toFixed(2)}%, ${deMenor.map(k => `var(--${k}) ${X(cortes[k])}%`).join(', ')})`
+        const marcas = deMenor.map(k => `<span class="corte-j j-${k}" style="left:${X(cortes[k])}%"><i>${ESTRELLA_SVG}</i><b>${JOYA[k]}</b><small>${miles(cortes[k])}</small></span>`).join('')
+        return { orden, X, html: `<div class="riel-j" style="background:${riel}"></div>${marcas}` }
+    }
+    // cada cara en un carril: si dos quedan cerca (al inicio o al final del viaje) van en carriles distintos
+    function carrilesDe(posiciones) {
         const carriles = []
-        const carril = E.lista.map(x => {
-            const xs = [x.meses[0] + x.meses[1], x.total].map(v => v / tope * 100)
-            let c = carriles.findIndex(ocup => ocup.every(o => Math.abs(o[0] - xs[0]) > 6 && Math.abs(o[1] - xs[1]) > 6))
+        const carril = posiciones.map(xs => {
+            let c = carriles.findIndex(ocup => ocup.every(o => xs.every((v, i) => Math.abs(o[i] - v) > 6)))
             if (c < 0) { carriles.push([]); c = carriles.length - 1 }
             carriles[c].push(xs)
             return c
         })
-        $('.joyero').style.setProperty('--carriles', carriles.length)
-        $('.joyero').innerHTML = `<div class="riel-j"></div>${cortes}`
+        return { carril, n: carriles.length }
+    }
+    function armarEstrellas() {
+        const E = D.estrellas
+        if (!E || !E.lista.length) {
+            const C = D.estrellasCamino
+            if (C && C.lista.length) armarEnCamino(C); else $('#estrellas').remove()
+            return
+        }
+        const M = mesesDe(E)
+        const prog = programaDe(E)
+        const col = prog !== 'Estrella'
+        if (col) {
+            $('#estrellas .kicker').innerHTML = `${prog} · <span class="trimestre"></span>`
+            $('#est-t').textContent = `Su ${prog}`
+        }
+        $('.trimestre').textContent = E.trimestre
+        const { orden, X, html } = escalaJoyero(E.cortes, E.lista.map(x => x.total))
+        const cuenta = orden.map(k => [k, E.lista.filter(x => x.estrella === k).length]).filter(([, n]) => n)
+        const subieron = E.lista.filter(x => x.antes && x.antes !== x.estrella).length
+        const nuevas = E.lista.filter(x => !x.antes).length
+        const lista = cuenta.map(([k, n]) => `${n} ${JOYA[k]}`)
+        $('#estrellas .sub').innerHTML = `<b>${plural(E.lista.length, 'consultora', 'consultoras')}</b> cerraron el trimestre ${col ? `en el ${prog}` : 'como Estrella'}: ${enLista(lista)}.`
+            + (subieron ? ` ${subieron === 1 ? 'Una subió' : `${subieron} subieron`} de ${col ? 'nivel' : 'estrella'} con sus órdenes de ${MES}` : '')
+            + (nuevas ? `${subieron ? ' y' : ''} ${col ? (nuevas === 1 ? 'una entró al Círculo' : `${nuevas} entraron al Círculo`) : nuevas === 1 ? 'una se volvió' : `${nuevas} se volvieron`}${col ? '' : ' Estrella'} en ${MES}` : '') + (subieron || nuevas ? '.' : '')
+        // el joyero: la escala del trimestre con cada quien en su lugar; al verla, cada cara viaja del segundo mes al tercero
+        const { carril, n } = carrilesDe(E.lista.map(x => [x.meses[0] + x.meses[1], x.total].map(v => +X(v))))
+        $('.joyero').style.setProperty('--carriles', n)
+        $('.joyero').innerHTML = html
             + E.lista.map((x, i) => `<span class="cara-j j-${x.estrella}" style="--de:${X(x.meses[0] + x.meses[1])}%;--a:${X(x.total)}%;--k:${i};--c:${carril[i]}" title="${esc(PER.get(x.p).nombre)} · ${miles(x.total)} puntos">${cara(PER.get(x.p))}</span>`).join('')
-            + `<p class="nota-j">Cada cara sale de donde iba al cerrar agosto y llega a donde cerró ${MES}.</p>`
+            + `<p class="nota-j">Cada cara sale de donde iba al cerrar ${M[1]} y llega a donde cerró ${MES}.</p>`
         // tarjetas, de la estrella más alta a la más baja
         $('.joyas').innerHTML = E.lista.map((x, i) => {
             const p = PER.get(x.p)
@@ -1031,13 +1063,49 @@ export function crearBoletinDinamico(host, D, op = {}) {
             const hechos = []
             if (x.dia) hechos.push(`Se aseguró ${JOYA[x.estrella]} el ${x.dia} de ${MES}${sobra < 100 ? `, ¡por ${plural(sobra, 'punto', 'puntos')}!` : '.'}`)
             if (x.antes && x.antes !== x.estrella) hechos.push(`Con ${MES} subió de ${JOYA[x.antes]} a ${JOYA[x.estrella]}.`)
-            else if (!x.antes) hechos.push(`${MES[0].toUpperCase() + MES.slice(1)} le dio su estrella.`)
+            else if (!x.antes) hechos.push(`${MES[0].toUpperCase() + MES.slice(1)} le dio ${col ? 'su lugar en el Círculo' : 'su estrella'}.`)
             const seg = x.meses.map((v, k) => `<i class="m${k}" style="--w:${(v / x.total * 100).toFixed(2)}%"></i>`).join('')
             return `<article class="joya j-${x.estrella} revela" style="--fd:${(i * .5).toFixed(1)}s"><span class="sello">${ESTRELLA_SVG}${JOYA[x.estrella]}</span>`
                 + `<div class="ovalo-n">${cara(p)}</div><h3>${esc(p.nombre)}</h3><b class="tot">${miles(x.total)} <small>puntos en el trimestre</small></b>`
-                + `<div class="meses-j">${seg}</div><div class="leyenda-j"><span>Jul ${miles(x.meses[0])}</span><span>Ago ${miles(x.meses[1])}</span><span>Sep ${miles(x.meses[2])}</span></div>`
+                + `<div class="meses-j">${seg}</div><div class="leyenda-j">${M.map((m, k) => `<span>${abrev(m)} ${miles(x.meses[k])}</span>`).join('')}</div>`
                 + `<ul>${hechos.map(h => `<li>${h}</li>`).join('')}</ul></article>`
         }).join('')
+    }
+
+    /* Los meses que no cierran trimestre: quién VA por qué estrella y cuánto le falta (las reglas del PDF). Sin el
+       joyero: con uno o dos meses de puntos nadie llega aún a las metas del cierre y las caras se amontonaban al
+       principio de la escala; cada quien lleva su barra hacia la meta de su estrella. */
+    function armarEnCamino(E) {
+        const sec = $('#estrellas')
+        sec.classList.add('en-camino')
+        const M = mesesDe(E)
+        const prog = programaDe(E)
+        const llevan = M.slice(0, E.lista[0].meses.length)
+        $('.kicker', sec).innerHTML = `${prog === 'Estrella' ? 'Rumbo a Estrella' : prog} · <span class="trimestre"></span>`
+        $('.trimestre').textContent = E.trimestre
+        $('#est-t').textContent = prog === 'Estrella' ? 'Van por su Estrella' : 'Van por su Círculo del Éxito'
+        const orden = Object.keys(JOYA).filter(k => E.metas[k] != null)
+        const cuenta = orden.map(k => [k, E.lista.filter(x => x.va === k).length]).filter(([, n]) => n)
+        const aseguradas = E.lista.filter(x => x.asegurada).length
+        $('.sub', sec).innerHTML = `Con sus puntos de ${enLista(llevan)}, <b>${plural(E.lista.length, 'consultora va', 'consultoras van')}</b> a ritmo de ${prog}: ${enLista(cuenta.map(([k, n]) => `${n} por ${JOYA[k]}`))}.`
+            + (aseguradas ? ` ${aseguradas === 1 ? 'Una ya' : `${aseguradas} ya`} ${prog === 'Estrella' ? (aseguradas === 1 ? 'tiene una Estrella asegurada' : 'tienen una Estrella asegurada') : (aseguradas === 1 ? 'tiene asegurado su lugar en el Círculo' : 'tienen asegurado su lugar en el Círculo')}.` : '')
+            + ` El trimestre cierra en ${M[2]}.`
+        // una franja por estrella, de la más alta a la más baja; cada franja es un paso del Modo junta
+        $('.joyero', sec).remove()
+        $('.joyas', sec).remove()
+        const grupos = cuenta.map(([k]) => {
+            const meta = E.metas[k]
+            const fichas = E.lista.filter(x => x.va === k).map(x => {
+                const p = PER.get(x.p)
+                const pct = Math.min(100, x.total / meta * 100).toFixed(1)
+                const falta = x.faltan > 0 ? `le faltan <b>${miles(x.faltan)}</b>` : '<b>¡ya la aseguró!</b>'
+                const ya = x.asegurada && x.asegurada !== k ? `<em>Ya aseguró ${JOYA[x.asegurada]}</em>` : ''
+                return `<article class="ficha-c"><div class="cara-c">${cara(p)}</div><div class="txt-c"><h4>${esc(p.nombre)}</h4>`
+                    + `<p>${miles(x.total)} puntos · ${falta}</p><div class="barra-c"><i style="--w:${pct}%"></i></div>${ya}</div></article>`
+            }).join('')
+            return `<div class="grupo-c j-${k} revela"><h3><span class="sello">${ESTRELLA_SVG}Van por ${JOYA[k]}</span><small>Meta al cerrar ${M[2]}: ${miles(meta)} puntos</small></h3><div class="fichas-c">${fichas}</div></div>`
+        }).join('')
+        $('.cab', sec).insertAdjacentHTML('afterend', grupos)
     }
 
     /* ---------- 7b. Camino al Éxito ---------- */
