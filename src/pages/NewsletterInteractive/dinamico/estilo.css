@@ -309,7 +309,9 @@ img { -webkit-user-drag: none; user-select: none; }
 .camino li b { color: var(--oro); font-weight: 600; }
 
 .cierre { padding: 50px 20px 90px; display: grid; justify-items: center; gap: 16px; text-align: center; }
-.cierre img { width: 200px; height: auto; opacity: .85; }
+/* sólo el logo (hijo directo): `.cierre img` también agarraba la foto de la Directora en .ovalo-f, la estiraba a 200 px
+   dentro de un óvalo de 120 y se veía sólo un pedazo de su cara */
+.cierre > img { width: 200px; height: auto; opacity: .85; }
 .cierre p { margin: 0; font: 500 clamp(19px, 2vw, 24px)/1.4 var(--nombre); }
 .cierre p b { color: var(--oro); font-weight: 600; }
 

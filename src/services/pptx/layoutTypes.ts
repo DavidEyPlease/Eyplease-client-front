@@ -13,7 +13,7 @@ export interface PhotoZone {
     x: number; y: number; w: number; h: number
     // 'silueta': la foto llega recortada del fondo (PNG con alfa) y con el pie
     // desvanecido; se coloca sin marco, encajada en la caja y apoyada abajo.
-    shape: 'circle' | 'rounded_rect' | 'rect' | 'silueta'; radius?: number; fit?: 'cover' | 'contain'
+    shape: 'circle' | 'ellipse' | 'rounded_rect' | 'rect' | 'silueta'; radius?: number; fit?: 'cover' | 'contain'
     border?: Border; shadow?: Shadow; opacity?: number
 }
 export interface TextZone {

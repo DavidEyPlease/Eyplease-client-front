@@ -285,8 +285,9 @@ class LayoutPptxRenderer {
             w: imgW,
             h: imgH,
             sizing: { type: z.fit === 'contain' ? 'contain' : 'cover', w: boxW, h: boxH },
-            // 'silueta' que llega aquí es una foto SIN recortar: círculo, como el PDF.
-            rounding: z.shape === 'circle' || z.shape === 'silueta', // único recorte nativo; rounded_rect → rectángulo
+            // 'silueta' que llega aquí es una foto SIN recortar: círculo, como el PDF. `rounding` recorta en óvalo
+            // a la medida de la caja, así que también es el 'ellipse' (marcos ovalados de la portada de la P10).
+            rounding: z.shape === 'circle' || z.shape === 'ellipse' || z.shape === 'silueta', // rounded_rect → rectángulo
             ...(z.opacity != null ? { transparency: Math.round((1 - z.opacity) * 100) } : {}),
         })
     }
