@@ -19,13 +19,14 @@ export const STRATEGY_LOCKED_CODE = 'PLAN_REQUIRED_STRATEGY'
 export const isStrategyLockedError = (error: unknown) => (error as { message?: string } | null)?.message === STRATEGY_LOCKED_CODE
 
 /**
- * Las Directoras de Básico y Ejecutivo también ven la suya, armada con sus órdenes PROPIAS («Mis órdenes» de InTouch,
- * que el robot les baja desde el 4-nov-2026). Elite y Área no: sus órdenes vienen dentro de la lista de su unidad.
+ * Las Directoras de todos los planes de paga también ven la suya (David, 4-nov-2026: «es para todos los planes»), armada
+ * con sus órdenes propias: Básico y Ejecutivo con «Mis órdenes» de InTouch (el robot se las baja desde el 4-nov-2026);
+ * Elite y Área con las suyas que ya vienen dentro de la lista de su unidad (no se bajan aparte: se duplicarían).
  */
-const PLANES_DE_DIRECTORA_CON_ESTRATEGIA = ['basic', 'executive']
+const PLANES_DE_DIRECTORA_CON_ESTRATEGIA = ['basic', 'executive', 'elite', 'national']
 
 /**
- * ¿Se le enseña y con candado? A las consultoras (su plan no trae unidad) y a las Directoras de Básico y Ejecutivo, con
+ * ¿Se le enseña y con candado? A las consultoras (su plan no trae unidad) y a las Directoras de los planes de paga, con
  * el interruptor encendido: con plan de paga, abierta; con un plan gratis (la Gratis Consultora), con candado: ve el
  * ejemplo y «Contratar el Plan Standard».
  */
