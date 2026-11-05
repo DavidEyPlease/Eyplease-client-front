@@ -18,6 +18,7 @@ const StepPlanRecommendation = ({ planKey, firstName }: Props) => {
 
     const planMetadata = PLANS_METADATA[planKey]
     const planWithMetadata = plan ? { ...plan, ...planMetadata } : null
+    const offer = plan?.offer ?? null
 
     const personalGreeting = firstName ? `${firstName}, este plan es para ti` : 'Este plan es para ti'
 
@@ -55,14 +56,26 @@ const StepPlanRecommendation = ({ planKey, firstName }: Props) => {
                             )}
                         </div>
 
-                        <div className="mt-4 flex items-baseline gap-1.5">
+                        {/* Con oferta (la del Standard o la del Buen Fin), el precio de la oferta y el normal tachado */}
+                        <div className="mt-4 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
                             <span className="text-[40px] leading-none font-extrabold tracking-[-.04em]">
-                                {formatPrice(planWithMetadata.price ?? 0)}
+                                {formatPrice(offer ? offer.amount : planWithMetadata.price ?? 0)}
                             </span>
                             <span className="text-sm font-semibold text-muted-foreground">
                                 MXN / mes
                             </span>
+                            {offer && (
+                                <span className="ml-1 text-[15px] font-semibold text-muted-foreground line-through decoration-2">
+                                    <span className="sr-only">Precio normal: </span>
+                                    {formatPrice(planWithMetadata.price ?? 0)}
+                                </span>
+                            )}
                         </div>
+                        {offer?.label && (
+                            <p className="mt-2 inline-flex rounded-full bg-[#E5077D]/10 px-2.5 py-0.5 text-[11px] font-extrabold text-[#C0066A] dark:text-[#FF7AC0]">
+                                {offer.label}
+                            </p>
+                        )}
 
                         <ul className="mt-5 flex flex-col gap-2.5">
                             {planWithMetadata.features.map((h, i) => (

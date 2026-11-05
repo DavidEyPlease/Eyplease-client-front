@@ -298,7 +298,7 @@ let standardSubscription: Record<string, unknown> | null = SUSCRIPCION_PARAMS.ge
  */
 const CASH_PARAMS = new URLSearchParams(location.search)
 // El lanzamiento (`?registro=lanzamiento`) los enciende junto con el Standard a $139 (`plans:standard-launch --oxxo --spei`)
-const SIN_TARJETA = CASH_PARAMS.get('sintarjeta') === '1' || CASH_PARAMS.get('registro') === 'lanzamiento'
+const SIN_TARJETA = CASH_PARAMS.get('sintarjeta') === '1' || ['lanzamiento', 'buenfin'].includes(CASH_PARAMS.get('registro') ?? '')
 const SIN_CORREO = CASH_PARAMS.get('sincorreo') === '1'
 const FICHA = (['oxxo', 'transfer'] as const).find(m => m === CASH_PARAMS.get('ficha')) ?? null
 const DEMO_CLABE = { clabe: '646180157000000004', bank: 'STP' }
@@ -333,8 +333,11 @@ const cashError = (message: string) => new Response(JSON.stringify({ success: fa
  * El registro (sin sesión): `?registro=lanzamiento` es el Standard ya lanzado (sin prueba, $139 con la oferta de 3 meses
  * a $99: al crear la cuenta entra a la Gratis Consultora y va a contratarlo) y `?registro=prueba` el de antes (un mes
  * gratis a $99). Los planes de Directora traen su mes gratis. Nada se guarda: al recargar, vuelve a empezar.
+ * `?registro=buenfin` es el Buen Fin (5 al 17-nov-2026, SignupPromotionService de la API): Elite y Área 6 meses a $659 sin
+ * prueba, y el Standard 6 meses a $99; las ofertas llevan `label: 'Buen Fin'`.
  */
-const REGISTRO = (['lanzamiento', 'prueba', 'regalo'] as const).find(m => m === new URLSearchParams(location.search).get('registro')) ?? null
+const REGISTRO = (['lanzamiento', 'prueba', 'regalo', 'buenfin'] as const).find(m => m === new URLSearchParams(location.search).get('registro')) ?? null
+const BUEN_FIN = REGISTRO === 'buenfin'
 const FREE_CONSULTANT_ID = 'a2cab71b-ed42-4bc3-937e-65549f51938b'
 const STANDARD_FEATURES_LANZAMIENTO = [
     'Tu estrategia del mes: qué ofrecer y a qué precio', 'Tu inventario y tus ventas, desde tus órdenes',
@@ -343,9 +346,11 @@ const STANDARD_FEATURES_LANZAMIENTO = [
 const recommendedPlan = (key: string) => {
     const found = PLANS.find(p => PLAN_KEYS[p.id] === key)
     if (!found) return null
-    const base = { ...found, plan_key: key, trial_days: 30, offer: null as { months: number, amount: number } | null }
-    if (key !== 'standard' || REGISTRO !== 'lanzamiento') return base
-    return { ...base, price: 139, trial_days: 0, offer: { months: 3, amount: 99 }, features: STANDARD_FEATURES_LANZAMIENTO }
+    const base = { ...found, plan_key: key, trial_days: 30, offer: null as { months: number, amount: number, label?: string } | null }
+    if (BUEN_FIN && (key === 'elite' || key === 'national')) return { ...base, trial_days: 0, offer: { months: 6, amount: 659, label: 'Buen Fin' } }
+    if (key !== 'standard' || (REGISTRO !== 'lanzamiento' && !BUEN_FIN)) return base
+    const offer = BUEN_FIN ? { months: 6, amount: 99, label: 'Buen Fin' } : { months: 3, amount: 99 }
+    return { ...base, price: 139, trial_days: 0, offer, features: STANDARD_FEATURES_LANZAMIENTO }
 }
 
 const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
@@ -369,7 +374,7 @@ const standardQuote = (actual: DemoPlan, role: 'director' | 'consultant') => {
     if (caso === 'prueba') return no('prueba', 'Tienes el Plan Standard de prueba hasta el 4 de noviembre. Desde ese día lo contratas aquí.')
     if (actual.id === STANDARD_ID) return no('ya_lo_tiene', 'Ya tienes el Plan Standard.')
     if (!actual.free) return no('plan', 'Tu plan ya incluye esto.')
-    const offer = caso === 'sin-oferta' ? null : { months: 3, amount: 99 }
+    const offer = caso === 'sin-oferta' ? null : BUEN_FIN ? { months: 6, amount: 99, label: 'Buen Fin' } : { months: 3, amount: 99 }
     const methods = SIN_TARJETA ? { card: true, oxxo: true, transfer: true, oxxo_needs_email: SIN_CORREO } : { card: true, oxxo: false, transfer: false, oxxo_needs_email: false }
     return { ...base, available: true, monthly: 139, due_now: offer?.amount ?? 139, offer, methods }
 }

@@ -33,8 +33,8 @@ export interface StandardQuote {
     monthly?: number
     /** Lo que paga hoy (con la oferta, el precio de la oferta) */
     due_now?: number
-    /** Oferta de lanzamiento: sus primeros `months` meses a `amount` */
-    offer?: { months: number, amount: number } | null
+    /** Oferta de lanzamiento: sus primeros `months` meses a `amount`. `label`: «Buen Fin» si es la del Buen Fin */
+    offer?: { months: number, amount: number, label?: string | null } | null
     /** Nula si no tiene un Standard que se cobre a su tarjeta */
     subscription?: StandardSubscription | null
     /** Cómo puede contratarlo (sólo con `available`): con OXXO necesita correo en su perfil */

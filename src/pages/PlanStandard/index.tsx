@@ -200,7 +200,7 @@ const PlanStandardPage = () => {
                                                 ? `Tus primeros ${cotizacion.offer.months} meses a ${pesos(cotizacion.offer.amount, cotizacion.currency)} y después ${pesos(cotizacion.monthly, cotizacion.currency)} al mes.`
                                                 : `Después, ${pesos(cotizacion.monthly, cotizacion.currency)} al mes.`}
                                         </p>
-                                        {cotizacion.offer && <p className="mt-2 inline-flex rounded-full bg-[#E5077D]/10 px-2.5 py-0.5 text-[11px] font-extrabold text-[#C0066A] dark:text-[#FF7AC0]">Precio de lanzamiento</p>}
+                                        {cotizacion.offer && <p className="mt-2 inline-flex rounded-full bg-[#E5077D]/10 px-2.5 py-0.5 text-[11px] font-extrabold text-[#C0066A] dark:text-[#FF7AC0]">{cotizacion.offer.label || 'Precio de lanzamiento'}</p>}
                                     </div>
                                     {/* Con OXXO y transferencia ella paga cada mes; con tarjeta se cobra sola */}
                                     {cotizacion.methods && (cotizacion.methods.oxxo || cotizacion.methods.transfer) && (

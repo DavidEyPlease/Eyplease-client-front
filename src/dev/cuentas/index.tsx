@@ -10,6 +10,7 @@
 //   plan=standard&tarjeta=si (o &cancelada=1)&ir=/profile?section=billing  (su Standard a tarjeta: cancelarlo o reanudarlo)
 //   …&sintarjeta=1 (y &ficha=oxxo|transfer, &sincorreo=1, &clabe=1)   (pagar en OXXO o por transferencia: ver mock-api.ts)
 //   ?registro=lanzamiento | prueba                         (el registro SIN sesión: el Standard con su oferta o con su mes gratis)
+//   ?registro=buenfin (&plan=elite|national en la liga real)  (el Buen Fin: Elite y Área a $659 sin prueba, Standard 6 meses a $99)
 //   ?registro=regalo&ir=/regalo/demo                       («Invitar con regalo»: la página del regalo; más casos en regalo-demo.ts)
 //   plan=elite&ir=/my-unit                                 (la Directora invita con regalo, una por una)
 // La API es de mentira (mock-api.ts): planes y catálogo copiados de producción, gente y piezas inventadas.

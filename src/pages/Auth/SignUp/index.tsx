@@ -152,8 +152,9 @@ const SignUpPage = () => {
                         ? deal.cta
                         : currentKey === 'otherContext'
                             ? 'Enviar solicitud'
-                            // Con la oferta de entrada, al crear la cuenta sigue contratar el plan: que no la sorprenda
-                            : step === totalSteps - 1 && deal.kind === 'offer'
+                            // Con la oferta de entrada del Standard, al crear la cuenta sigue contratarlo: que no la sorprenda.
+                            // (La del Buen Fin de Elite y Área no: su cuenta nace con su plan y paga su primer mes después.)
+                            : step === totalSteps - 1 && deal.kind === 'offer' && planToShow === PlanKeys.STANDARD
                                 ? 'Crear cuenta y contratar'
                                 : undefined
                 }

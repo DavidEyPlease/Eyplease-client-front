@@ -40,8 +40,9 @@ const STEPS_OTHER: StepKey[] = ['name', 'email', 'phone', 'userType', 'otherCont
  * red trae clientas. Sólo letras, números, guion y guion bajo, como la valida la API.
  * `?plan=executive` es el plan de regalo de la invitación (la de «Mis Directoras» regala el primer mes del Ejecutivo,
  * que es la prueba de 30 días del registro): se elige ése en vez del que se le recomendaría por su unidad.
+ * `?plan=national` (Plan Área) entra desde el Buen Fin de nov-2026: las ligas de la promoción llevan a Elite o a Área.
  */
-const PLANES_DE_INVITACION: string[] = [PlanKeys.BASIC, PlanKeys.EXECUTIVE, PlanKeys.ELITE]
+const PLANES_DE_INVITACION: string[] = [PlanKeys.BASIC, PlanKeys.EXECUTIVE, PlanKeys.ELITE, PlanKeys.NATIONAL]
 
 const inviteParams = () => {
     const query = new URLSearchParams(window.location.search)
