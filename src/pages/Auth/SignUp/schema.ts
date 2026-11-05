@@ -34,6 +34,8 @@ export const SignUpSchema = z.object({
     mkPassword: z.string().optional(),
     otherContext: z.string().optional(),
     acceptTerms: z.literal(true, { message: 'Acepta los términos para continuar' }),
+    // La permanencia de la oferta (Elite y Área en el Buen Fin). Sólo se exige si el plan la trae: lo revisa el wizard.
+    acceptPromoTerms: z.boolean().optional(),
 })
 
 export type ISignUp = z.infer<typeof SignUpSchema>

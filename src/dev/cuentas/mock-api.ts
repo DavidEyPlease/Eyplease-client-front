@@ -334,8 +334,11 @@ const cashError = (message: string) => new Response(JSON.stringify({ success: fa
  * a $99: al crear la cuenta entra a la Gratis Consultora y va a contratarlo) y `?registro=prueba` el de antes (un mes
  * gratis a $99). Los planes de Directora traen su mes gratis. Nada se guarda: al recargar, vuelve a empezar.
  * `?registro=buenfin` es el Buen Fin (5 al 17-nov-2026, SignupPromotionService de la API): Elite y Área 6 meses a $659 sin
- * prueba, y el Standard 6 meses a $99; las ofertas llevan `label: 'Buen Fin'`.
+ * prueba y con su permanencia de 6 meses (`commitment`: el último paso pide aceptar los términos), y el Standard 6 meses a
+ * $99, sin permanencia; las ofertas llevan `label: 'Buen Fin'`. Lo que manda el alta queda en sessionStorage
+ * (`cuentas:alta`) para revisarlo.
  */
+const BUEN_FIN_COMMITMENT = { months: 6, terms_url: 'https://eyplease.com.mx/terminos-buen-fin/', terms_version: 'buen-fin-2026-v1' }
 const REGISTRO = (['lanzamiento', 'prueba', 'regalo', 'buenfin'] as const).find(m => m === new URLSearchParams(location.search).get('registro')) ?? null
 const BUEN_FIN = REGISTRO === 'buenfin'
 const FREE_CONSULTANT_ID = 'a2cab71b-ed42-4bc3-937e-65549f51938b'
@@ -346,8 +349,8 @@ const STANDARD_FEATURES_LANZAMIENTO = [
 const recommendedPlan = (key: string) => {
     const found = PLANS.find(p => PLAN_KEYS[p.id] === key)
     if (!found) return null
-    const base = { ...found, plan_key: key, trial_days: 30, offer: null as { months: number, amount: number, label?: string } | null }
-    if (BUEN_FIN && (key === 'elite' || key === 'national')) return { ...base, trial_days: 0, offer: { months: 6, amount: 659, label: 'Buen Fin' } }
+    const base = { ...found, plan_key: key, trial_days: 30, offer: null as { months: number, amount: number, label?: string, commitment?: typeof BUEN_FIN_COMMITMENT } | null }
+    if (BUEN_FIN && (key === 'elite' || key === 'national')) return { ...base, trial_days: 0, offer: { months: 6, amount: 659, label: 'Buen Fin', commitment: BUEN_FIN_COMMITMENT } }
     if (key !== 'standard' || (REGISTRO !== 'lanzamiento' && !BUEN_FIN)) return base
     const offer = BUEN_FIN ? { months: 6, amount: 99, label: 'Buen Fin' } : { months: 3, amount: 99 }
     return { ...base, price: 139, trial_days: 0, offer, features: STANDARD_FEATURES_LANZAMIENTO }
@@ -671,8 +674,10 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/sign-up/register' && method === 'POST') {
             const body = typeof init?.body === 'string' && init.body ? JSON.parse(init.body) : {}
             const elegido = recommendedPlan(body.planKey ?? 'standard')
-            // Sin prueba gratis, la cuenta nace en la Gratis Consultora (como la API) y contrata el Standard después
-            actual = (elegido?.offer ? PLANS.find(p => p.id === FREE_CONSULTANT_ID) : PLANS.find(p => p.id === elegido?.id)) ?? actual
+            sessionStorage.setItem('cuentas:alta', JSON.stringify({ ...body, password: '•••', platformPassword: body.platformPassword ? '•••' : null }))
+            // Sin prueba gratis, la consultora nace en la Gratis Consultora (como la API) y contrata el Standard después. La
+            // Directora del Buen Fin nace con su plan (Elite o Área).
+            actual = (elegido?.offer && body.planKey === 'standard' ? PLANS.find(p => p.id === FREE_CONSULTANT_ID) : PLANS.find(p => p.id === elegido?.id)) ?? actual
             // Con la liga del regalo (y si le toca): el Standard por un mes
             const regalo = body.giftToken ? giftView(body.giftToken, { loggedIn: false, claimed: false, registered: false }) : null
             if (regalo) {

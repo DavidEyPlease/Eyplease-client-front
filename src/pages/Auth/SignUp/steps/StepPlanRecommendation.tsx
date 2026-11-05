@@ -97,6 +97,17 @@ const StepPlanRecommendation = ({ planKey, firstName }: Props) => {
                                 <div className="flex-1 text-left">
                                     <p className="text-[14px] font-bold">{deal.title}</p>
                                     <p className="text-[12.5px] text-muted-foreground">{deal.detail}</p>
+                                    {/* Con permanencia (Elite y Área en el Buen Fin): sus términos, en la web pública */}
+                                    {deal.commitment && (
+                                        <a
+                                            href={deal.commitment.terms_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="su-accent mt-1 inline-block text-[12.5px] font-bold underline underline-offset-2"
+                                        >
+                                            Ver términos
+                                        </a>
+                                    )}
                                 </div>
                             </div>
                         )}

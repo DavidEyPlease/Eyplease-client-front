@@ -23,6 +23,17 @@ export interface IPlanOffer {
     amount: number
     /** El nombre de la promoción, si es una con nombre: «Buen Fin» (5 al 17-nov-2026). Sin él, la oferta de lanzamiento */
     label?: string | null
+    /** Su permanencia, si la tiene (Elite y Área en el Buen Fin): el registro le enseña los términos y le pide aceptarlos */
+    commitment?: IPlanOfferCommitment | null
+}
+
+/** La permanencia de una oferta: si cancela antes de `months` meses, paga el descuento de los meses que usó */
+export interface IPlanOfferCommitment {
+    months: number
+    /** Los términos, en la web pública (eyplease.com.mx/terminos-buen-fin/) */
+    terms_url: string
+    /** La versión que acepta (`buen-fin-2026-v1`): se manda en el alta como `promo_terms_version` */
+    terms_version: string
 }
 
 export enum PlanKeys {

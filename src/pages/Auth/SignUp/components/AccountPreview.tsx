@@ -136,7 +136,8 @@ const AccountPreview = ({ values, steps, current, planKey }: Props) => {
                 {values.userType === 'other'
                     ? 'Revisamos tu caso y te escribimos por WhatsApp.'
                     : deal.kind === 'offer'
-                        ? `${deal.short} · Cancela cuando quieras`
+                        // Con permanencia (Elite y Área en el Buen Fin) ya no es «cuando quieras»
+                        ? `${deal.short} · ${deal.commitment ? `Permanencia de ${deal.commitment.months} meses` : 'Cancela cuando quieras'}`
                         : deal.kind === 'trial'
                             ? `${deal.short} · Sin cobro automático · Cancela cuando quieras`
                             : 'Cancela cuando quieras'}

@@ -91,6 +91,7 @@ const useSignUpWizard = () => {
         mkPassword: '',
         otherContext: '',
         acceptTerms: false as unknown as true,
+        acceptPromoTerms: false,
     })
 
     const { watch, setValue, trigger, getValues, setError, clearErrors } = form
@@ -106,6 +107,8 @@ const useSignUpWizard = () => {
         ?? recommendPlan(userType, unitSize, directorYears)
     // Con oferta de entrada (el Standard desde su lanzamiento) no hay prueba: al terminar se le lleva a contratarlo
     const { deal } = useRecommendedPlan(planToShow, userType !== 'other')
+    // La permanencia de su oferta (Elite y Área en el Buen Fin): el último paso le pide aceptarla y va en el alta
+    const commitment = deal.kind === 'offer' ? deal.commitment : null
 
     const { request, requestState } = useRequestQuery({ onError: () => { } })
 
@@ -209,6 +212,10 @@ const useSignUpWizard = () => {
             // guarda sólo dígitos y la lada sale del país.
             phone: data.phoneNumber || undefined,
             source: invite.source ?? undefined,
+            // La permanencia del Buen Fin y la versión de los términos que vio: la API la guarda como evidencia
+            ...(commitment && data.acceptPromoTerms
+                ? { accept_promo_terms: true, promo_terms_version: commitment.terms_version }
+                : {}),
         }
         try {
             const response = await request<typeof payload, AuthResponse>('POST', API_ROUTES.SIGN_UP.REGISTER, payload)
@@ -323,6 +330,10 @@ const useSignUpWizard = () => {
         }
         const isValid = await trigger(['password', 'acceptTerms'])
         if (!isValid) return
+        if (commitment && !getValues('acceptPromoTerms')) {
+            setError('acceptPromoTerms', { type: 'required', message: `Acepta la permanencia de ${commitment.months} meses para continuar` })
+            return
+        }
         setSubmitting(true)
         const ok = await registerUser()
         if (!ok) {

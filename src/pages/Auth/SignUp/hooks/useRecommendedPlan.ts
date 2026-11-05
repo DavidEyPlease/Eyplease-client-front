@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/constants/api"
 import useFetchQuery from "@/hooks/useFetchQuery"
-import { IPlan, PlanKeys } from "@/interfaces/plans"
+import { IPlan, IPlanOfferCommitment, PlanKeys } from "@/interfaces/plans"
 import { queryKeys } from "@/utils/cache"
 
 const money = (n: number) => `$${n.toLocaleString('es-MX')}`
@@ -9,17 +9,23 @@ const money = (n: number) => `$${n.toLocaleString('es-MX')}`
  * Cómo entra a su plan al registrarse, ya en palabras: con la oferta de entrada (el Standard desde su lanzamiento:
  * «Tus primeros 3 meses a $99», y luego el precio del plan), con su prueba gratis (los días que diga el plan) o
  * pagando sin más. Lo decide la API (`offer` y `trial_days`), no el registro.
+ * Si la oferta trae permanencia (`offer.commitment`: Elite y Área en el Buen Fin) ya no se cancela «cuando quieras»: lo
+ * dice, y el último paso le pide aceptar sus términos.
  */
 export interface PlanDeal {
     kind: 'offer' | 'trial' | 'none'
     /** «Tus primeros 3 meses a $99» · «Pruébalo un mes gratis» */
     title: string | null
-    /** «Después, $139 al mes. Lo cancelas cuando quieras.» */
+    /** «Después, $139 al mes. Lo cancelas cuando quieras.» (con permanencia, lo que pasa si cancela antes) */
     detail: string | null
     /** Corto, para la columna de «Tu cuenta»: «3 meses a $99» · «1 mes gratis» */
     short: string | null
     /** El botón del paso del plan: «Activar mi mes gratis» sólo si hay prueba */
     cta: string
+    /** El nombre de la promoción («Buen Fin»), si lo tiene */
+    label: string | null
+    /** Su permanencia (meses, términos y versión), si la tiene */
+    commitment: IPlanOfferCommitment | null
 }
 
 const trialSpan = (days: number) => days === 30 ? 'un mes' : days === 1 ? 'un día' : `${days} días`
@@ -27,12 +33,17 @@ const trialSpan = (days: number) => days === 30 ? 'un mes' : days === 1 ? 'un d�
 export const planDeal = (plan: IPlan | null | undefined): PlanDeal => {
     if (plan?.offer) {
         const { months, amount } = plan.offer
+        const commitment = plan.offer.commitment ?? null
         return {
             kind: 'offer',
             title: `Tus primeros ${months} ${months === 1 ? 'mes' : 'meses'} a ${money(amount)}`,
-            detail: `Después, ${money(plan.price ?? 0)} al mes. Lo cancelas cuando quieras.`,
+            detail: commitment
+                ? `Después, ${money(plan.price ?? 0)} al mes. Con permanencia de ${commitment.months} meses: si cancelas antes, pagas el descuento de los meses que usaste.`
+                : `Después, ${money(plan.price ?? 0)} al mes. Lo cancelas cuando quieras.`,
             short: `${months} ${months === 1 ? 'mes' : 'meses'} a ${money(amount)}`,
             cta: 'Me quedo con este plan',
+            label: plan.offer.label ?? null,
+            commitment,
         }
     }
     const days = Number(plan?.trial_days ?? 0)
@@ -43,9 +54,11 @@ export const planDeal = (plan: IPlan | null | undefined): PlanDeal => {
             detail: 'Sin cobro automático. Cancela cuando quieras.',
             short: days === 30 ? '1 mes gratis' : `${days} ${days === 1 ? 'día' : 'días'} gratis`,
             cta: days === 30 ? 'Activar mi mes gratis' : `Activar mi${days === 1 ? '' : 's'} ${days} ${days === 1 ? 'día' : 'días'} gratis`,
+            label: null,
+            commitment: null,
         }
     }
-    return { kind: 'none', title: null, detail: null, short: null, cta: 'Me quedo con este plan' }
+    return { kind: 'none', title: null, detail: null, short: null, cta: 'Me quedo con este plan', label: null, commitment: null }
 }
 
 /** El plan que se le recomienda en el registro (misma petición para el paso del plan, «Tu cuenta» y el botón) */

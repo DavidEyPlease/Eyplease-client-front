@@ -135,6 +135,8 @@ const SignUpPage = () => {
                         watch={watch}
                         setValue={setValue}
                         onEnter={goNext}
+                        commitment={deal.kind === 'offer' ? deal.commitment : null}
+                        promoLabel={deal.label}
                     />
                 )}
                 {currentKey === 'otherContext' && (
