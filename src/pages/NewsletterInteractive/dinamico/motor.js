@@ -78,9 +78,13 @@ export function crearBoletinDinamico(host, D, op = {}) {
     const cara = p => (p && p.foto
         ? `<img src="${esc(url(p.foto))}" alt="" decoding="async" data-ini="${esc(iniciales(p.nombre || ''))}"${p.fotoOriginal ? ` data-orig="${esc(url(p.fotoOriginal))}"` : ''}>`
         : mono(p && p.nombre))
+    // un producto sin foto en el catálogo (un lanzamiento del mes, una edición limitada): un destello, no un cuadro vacío
+    const SIN_FOTO = '<svg class="sin-foto" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.94 15.5a2 2 0 0 0-1.44-1.44l-6.13-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.13a.5.5 0 0 1 .96 0l1.58 6.13a2 2 0 0 0 1.44 1.44l6.13 1.58a.5.5 0 0 1 0 .96l-6.13 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.13a.5.5 0 0 1-.96 0z"/></svg>'
+    const fotoProducto = (img, clase) => `<div class="${clase}${img ? '' : ' vacia'}">${img ? `<img src="${esc(img)}" alt="" decoding="async" loading="lazy" data-prod>` : SIN_FOTO}</div>`
     on(root, 'error', e => {
         const img = e.target
         if (!(img instanceof HTMLImageElement)) return
+        if (img.dataset.prod !== undefined) { img.parentElement.classList.add('vacia'); img.outerHTML = SIN_FOTO; return }
         if (img.dataset.orig) { const o = img.dataset.orig; delete img.dataset.orig; img.src = o; return }
         if (img.dataset.ini === undefined) { img.remove(); return }
         const s = document.createElement('span')
@@ -1285,7 +1289,7 @@ export function crearBoletinDinamico(host, D, op = {}) {
             const f = x.personas / ORDENARON
             const mitad = f > .55 ? 'La pidieron más de la mitad de las consultoras que ordenaron.' : f >= .45 ? 'La pidió la mitad de las consultoras que ordenaron.' : ''
             return `<article class="prod p${i + 1} revela" style="--fd:${(i * .7).toFixed(1)}s"><span class="rk">${i + 1}</span>`
-                + `<div class="foto-p">${x.img ? `<img src="${esc(x.img)}" alt="" decoding="async" loading="lazy">` : ''}</div>`
+                + fotoProducto(x.img, 'foto-p')
                 + `<div><h3>${esc(x.nombre)}</h3><p class="cuantas"><b>${x.personas}</b>consultoras la pidieron</p><small>${x.piezas} piezas en ${plural(x.ordenes, 'orden', 'órdenes')}</small>`
                 + (i === 0 && mitad ? `<p class="frase">${mitad}</p>` : '') + '</div></article>'
         }).join('')
@@ -1293,7 +1297,7 @@ export function crearBoletinDinamico(host, D, op = {}) {
         if (!oy || !oy.personas.length) { $('.ordena').remove(); return }
         $('.ordena').innerHTML = `<div><span class="kicker">Ordena Ya</span><h3><b>${plural(oy.personas.length, 'consultora', 'consultoras')}</b> ${oy.personas.length === 1 ? 'aprovechó' : 'aprovecharon'} Ordena Ya</h3>`
             + `<p>${oy.piezas} piezas con descuento en ${MES}.</p><div class="caritas">${oy.personas.map(id => `<span title="${esc(PER.get(id).nombre)}">${cara(PER.get(id))}</span>`).join('')}</div></div>`
-            + `<div class="oy-prods">${oy.productos.map(x => `<figure><div class="blanco">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : ''}</div><figcaption><b>${x.piezas} piezas</b>${esc(x.nombre)}</figcaption></figure>`).join('')}</div>`
+            + `<div class="oy-prods">${oy.productos.map(x => `<figure>${fotoProducto(x.img, 'blanco')}<figcaption><b>${x.piezas} piezas</b>${esc(x.nombre)}</figcaption></figure>`).join('')}</div>`
     }
 
     /* ---------- aparición, autoplay de la escalera y sección activa ---------- */
