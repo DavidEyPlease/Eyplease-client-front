@@ -9,11 +9,12 @@ import HttpService from '@/services/http'
 import useAuthStore from '@/store/auth'
 import { puedeVerBoletinNacional } from '@/pages/NewsletterInteractive/acceso'
 import { esMes, etiquetaMes, nombreMes, precargar, ultimosMeses } from '@/pages/NewsletterInteractive/meses'
-import { BoletinNacionalDatos, crearBoletinNacional } from '@/pages/NewsletterInteractive/nacional/motor'
+import { BoletinNacionalAjustes, BoletinNacionalDatos, crearBoletinNacional } from '@/pages/NewsletterInteractive/nacional/motor'
+import { opcionesAdoptivas } from './adoptivas'
 import PantallaDeCarga from '@/pages/NewsletterInteractive/PantallaDeCarga'
 import { useAvanceDeCarga } from '@/pages/NewsletterInteractive/useAvanceDeCarga'
 
-type Ajustes = NonNullable<BoletinNacionalDatos['ajustes']>
+type Ajustes = BoletinNacionalAjustes
 
 /** Lo primero que se ve: la portada (título, marco y silueta), el título del Cuadro de Honor y el fondo de satín. */
 const PIEZAS = ['kit-titulo', 'kit-honor', 'kit-joya', 'kit-marco', 'kit-silueta']
@@ -86,6 +87,8 @@ const NewsletterNationalPage = () => {
             // lo guardado se apunta también en los datos de la caché: si vuelve a abrir el mes, lo encuentra igual
             guardarMensaje: mensaje => HttpService.put<ApiResponse<Ajustes>>(API_ROUTES.REPORTS.BOLETIN_NACIONAL_AJUSTES, { year_month: web.current.yearMonth, mensaje })
                 .then(res => { if (res?.data) datos.ajustes = res.data }),
+            // sus directoras adoptivas: el motor rehace el boletín con lo que devuelve la API (y lo deja en los datos)
+            adoptivas: opcionesAdoptivas(() => web.current.yearMonth),
         })
         return () => boletin.destruir()
     }, [datos, months, mostrar, vacio])

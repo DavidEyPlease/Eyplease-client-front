@@ -26,6 +26,18 @@ const TRAMOS = {
     unidad: [['10mas', '10 o más inicios'], ['5a9', '5 a 9 inicios'], ['3a4', '3 a 4 inicios'], ['1a2', '1 a 2 inicios']],
 }
 
+// Tamaño de la letra y de las fotos: lo elige la Directora en Ajustes y se queda en ese aparato (en la pantalla de la
+// junta lo puede poner más grande que en su teléfono)
+const TAMANOS = [['Chico', .9, .85], ['Normal', 1, 1], ['Grande', 1.15, 1.25], ['Muy grande', 1.3, 1.5]]
+const TAM_CLAVE = 'eyp:boletin-nacional:tamano'
+const leerTamano = () => {
+    try {
+        const g = JSON.parse(localStorage.getItem(TAM_CLAVE) || 'null')
+        const ok = (v, i) => TAMANOS.some(x => x[i] === v)
+        return { l: ok(g?.l, 1) ? g.l : 1, f: ok(g?.f, 2) ? g.f : 1 }
+    } catch { return { l: 1, f: 1 } }
+}
+
 const PREMIOS = { automovil: 'auto rosa', bono: 'bono del auto rosa', efectivo: 'efectivo' }
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 const num = v => Number(v || 0).toLocaleString('es-MX')
@@ -33,7 +45,198 @@ const pts = v => `${num(v)} pts`
 const pesos = v => `$${num(v)}`
 const cap = s => (s ? s[0].toUpperCase() + s.slice(1) : '')
 
+// ---- directoras ADOPTIVAS: alguien que no viene en los reportes del Área y que la Directora Nacional quiere reconocer.
+// Ella la agrega en Ajustes con su foto y sus números (la API sólo los guarda: ajustes.adoptivas) y aquí se suma a cada
+// sección con las mismas reglas que las directoras del Área. Compite en todo (decisión de David, 5-nov-2026): si le
+// alcanza, entra al top 10 del Cuadro de Honor y puede llevarse la corona. Siempre lleva su marca «Adoptiva».
+export const SECCIONES_ADOPTIVA = [
+    ['carrera', 'Carrera de las unidades'], ['bonos', 'Bonos del mes'], ['honor', 'Cuadro de Honor'], ['cortes', 'Cortes'],
+    ['estrellas', 'Estrellas'], ['camino', 'Camino al Éxito'], ['tsr', 'Trofeo sobre ruedas'], ['celebraciones', 'Celebraciones'],
+]
+export const CATEGORIAS_HONOR = [
+    ['unit_production', 'Producción de unidad', 'pts'], ['unit_size', 'Tamaño de unidad', 'consultoras'], ['group_production', 'Producción de grupo', 'pts'],
+    ['personal_sales', 'Ventas personales', 'pts'], ['personal_initiation', 'Iniciación personal', 'inicios'], ['unit_initiation', 'Iniciación de unidad', 'inicios'],
+]
+const UC_METAS = [450000, 600000, 750000, 1100000]
+const META_VENTAS = 50000
+const TSR_META = { 1: 230000, 2: 350000 }
+const INI_TRAMOS = { personal: [[5, '5mas'], [3, '3a4'], [1, '1a2']], unidad: [[10, '10mas'], [5, '5a9'], [3, '3a4'], [1, '1a2']] }
+const nivelCamino = n => (n >= 8 ? 'executive_dir_elite' : n >= 5 ? 'executive_dir' : n >= 3 ? 'senior_dir_elite' : n >= 1 ? 'senior_dir' : null)
+const entero = v => { const n = Math.round(Number(String(v ?? '').replace(/[^\d.]/g, ''))); return Number.isFinite(n) && n > 0 ? n : 0 }
+const pad2 = n => String(n).padStart(2, '0')
+/** Un nombre sin acentos, mayúsculas ni espacios de más: para saber si ya viene en los reportes. */
+export const claveNombre = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+/** El lugar en un top: el mismo número para un empate y el siguiente para el valor que sigue (como el reporte). */
+const reacomodar = lista => {
+    const valores = [...new Set(lista.map(x => x.valor))].sort((a, b) => b - a)
+    return lista.map(x => ({ ...x, lugar: valores.indexOf(x.valor) + 1 })).filter(x => x.lugar <= 10).sort((a, b) => a.lugar - b.lugar)
+}
+
+/** Las fechas del boletín: su mes («AAAA-MM»), el mes que corre (el de las celebraciones) y dónde empieza la carrera. */
+const calendario = D => {
+    const m = NOMBRE_MES.indexOf(D.mes) + 1
+    const mesEnCurso = m % 12 + 1
+    return { mes: `${D.anio}-${pad2(m)}`, m, mesEnCurso, anioEnCurso: m === 12 ? D.anio + 1 : D.anio, desde: D.seminario?.desde ?? 6 }
+}
+
+/**
+ * Suma a los datos del boletín (sin tocar los originales) las adoptivas de la lista. Devuelve los datos nuevos; cada
+ * adoptiva entra como persona «adop:<id>» con adoptiva: true.
+ */
+export function conAdoptivas(D0, lista = D0.ajustes?.adoptivas || []) {
+    if (!lista?.length) return D0
+    const D = structuredClone(D0)
+    const c = calendario(D)
+    const hayTotales = (D.unidades || []).some(u => u.total)
+    const lst = k => (D[k] = D[k] || [])
+    D.reinas = D.reinas || {}
+    for (const a of lista) {
+        const p = `adop:${a.id}`
+        const d = a.datos || {}
+        const sec = new Set(d.secciones || [])
+        D.personas = [...(D.personas || []), { id: p, nombre: a.nombre, foto: a.foto || null, adoptiva: true }]
+        // su producción de unidad: cada mes de la carrera, o sólo la del mes para el bono
+        const prod = D.meses.map((m, i) => ((sec.has('carrera') && i >= c.desde) || ((sec.has('bonos') || sec.has('honor')) && m === c.mes) ? entero(d.prod?.[m]) : 0))
+        const delMes = entero(d.prod?.[c.mes])
+        const total = prod.slice(c.desde).reduce((s, v) => s + v, 0)
+        const honor = Object.fromEntries(CATEGORIAS_HONOR.map(([k]) => [k, entero(d.honor?.[k])]))
+        if (!honor.unit_production && delMes) honor.unit_production = delMes // la del mes, si la capturó para la carrera o el bono
+        if (sec.has('carrera') && total) lst('unidades').push({ p, prod, total: hayTotales ? total : null, tamano: honor.unit_size || null, adoptiva: true })
+        if (sec.has('bonos') && delMes) {
+            const b = BONOS.find(x => delMes >= x[3])
+            if (b) lst('bonos').push({ p, bono: b[0], valor: delMes })
+        }
+        if (sec.has('honor')) {
+            for (const [k] of CATEGORIAS_HONOR) {
+                if (!honor[k]) continue
+                D.reinas[k] = reacomodar([...(D.reinas[k] || []), { p, lugar: 0, valor: honor[k] }])
+            }
+            for (const [tramo, k] of [['personal', 'personal_initiation'], ['unidad', 'unit_initiation']]) {
+                const t = INI_TRAMOS[tramo].find(([min]) => honor[k] >= min)
+                if (!t) continue
+                D.iniciadoras = D.iniciadoras || {}
+                D.iniciadoras[tramo] = D.iniciadoras[tramo] || {}
+                ;(D.iniciadoras[tramo][t[1]] = D.iniciadoras[tramo][t[1]] || []).push({ p, valor: honor[k] })
+            }
+        }
+        if (sec.has('cortes')) {
+            const v = entero(d.ventasSem)
+            if (v) lst('corteVentas').push({ p, valor: v, falta: Math.max(0, META_VENTAS - v) })
+            const n = entero(d.inicios)
+            if (n) { const de1800 = Number(d.iniciosDe) === 1800; lst('corteIniciacion').push({ p, valor: n, meta: de1800 ? 24 : 36, camino: de1800 ? '24 de 1,800 pts' : '36 de 600 pts' }) }
+            // el Unit Club sale de su acumulado de la carrera
+            if (sec.has('carrera') && total) { const meta = UC_METAS.find(x => total < x) ?? UC_METAS[UC_METAS.length - 1]; lst('club').push({ p, meta, total, falta: Math.max(0, meta - total) }) }
+        }
+        if (sec.has('estrellas')) {
+            const v = entero(d.estrella)
+            const g = GEMAS.find(x => v >= x[3])
+            if (g) lst('estrellas').push({ p, estrella: g[0], puntos: v, meses: [] })
+        }
+        if (sec.has('camino')) {
+            const n = entero(d.primeraLinea)
+            const nv = nivelCamino(n)
+            if (nv) lst('cumbre').push({ p, nivel: nv, primeraLinea: n })
+        }
+        if (sec.has('tsr') && d.tsr?.estado) {
+            const nivel = Number(d.tsr.nivel) === 2 ? 2 : 1
+            if (d.tsr.estado === 'calificacion') {
+                const v = entero(d.tsr.valor)
+                const pos = (c.m - 1) % 3
+                const quedan = pos < 2 ? 3 - pos : 3
+                const falta = Math.max(0, TSR_META[nivel] - v)
+                if (v) lst('calificacion').push({ p, nivel, meta: TSR_META[nivel], valor: v, falta, porMes: Math.round(falta / quedan), mesesQuedan: quedan })
+            } else {
+                lst('tsr').push({ p, grupo: `winners_${nivel}`, nivel: `nivel-${nivel}`, premio: d.tsr.premio === 'bono' ? 'bono' : 'automovil', valor: 0, trimestres: [], falta: 0, conserva: d.tsr.estado === 'conserva' })
+            }
+        }
+        if (sec.has('celebraciones')) {
+            const [cm, cd] = String(d.cumple || '').split('-').map(Number)
+            if (cm === c.mesEnCurso && cd) lst('cumple').push({ p, fecha: `${c.anioEnCurso}-${pad2(cm)}-${pad2(cd)}` })
+            const [iy, im] = String(d.inicio || '').split('-').map(Number)
+            if (im === c.mesEnCurso && iy && c.anioEnCurso - iy >= 1) lst('aniversarios').push({ p, anios: c.anioEnCurso - iy, inicio: d.inicio })
+        }
+    }
+    return D
+}
+
+/** Dónde sale una adoptiva en el boletín (para revisarla antes de guardar), contando también a las demás del mes. */
+export function dondeSale(D0, lista, id) {
+    const D = conAdoptivas(D0, lista)
+    const p = `adop:${id}`
+    const c = calendario(D)
+    const out = []
+    const hayTotales = (D.unidades || []).some(u => u.total)
+    const corren = (D.unidades || []).filter(u => (hayTotales ? u.total : u.prod.some(Boolean)))
+        .map(u => ({ p: u.p, v: hayTotales ? u.total : u.prod.slice(c.desde).reduce((s, x) => s + (x || 0), 0) })).sort((a, b) => b.v - a.v)
+    const enCarrera = corren.findIndex(u => u.p === p)
+    if (enCarrera >= 0) out.push(['Carrera de las unidades', `${enCarrera + 1}.º de ${corren.length} · ${pts(corren[enCarrera].v)}`])
+    const bono = (D.bonos || []).find(b => b.p === p)
+    const a = lista.find(x => x.id === id)
+    const sec = new Set(a?.datos?.secciones || [])
+    if (bono) out.push(['Bonos del mes', `Bono de ${pesos(BONOS.find(x => x[0] === bono.bono)[1])}`])
+    else if (sec.has('bonos')) out.push(['Bonos del mes', `Sin bono: el primero es desde ${num(BONOS[BONOS.length - 1][3])} pts`, true])
+    if (sec.has('honor')) {
+        for (const [k, titulo] of CATEGORIAS_HONOR) {
+            const x = (D.reinas?.[k] || []).find(y => y.p === p)
+            if (x) out.push([`Cuadro de Honor · ${titulo}`, x.lugar === 1 ? '¡Reina! 1.er lugar' : `${x.lugar}.º lugar`])
+        }
+        if (!CATEGORIAS_HONOR.some(([k]) => (D.reinas?.[k] || []).some(y => y.p === p))) out.push(['Cuadro de Honor', 'No le alcanza para el top 10 este mes', true])
+    }
+    const v = (D.corteVentas || []).find(x => x.p === p)
+    if (v) out.push(['Corte de Ventas', `${Math.min(100, Math.round((v.valor / META_VENTAS) * 100))} % · ${num(v.valor)} de ${num(META_VENTAS)} pts`])
+    const ini = (D.corteIniciacion || []).find(x => x.p === p)
+    if (ini) out.push(['Corte de Iniciación', `${num(ini.valor)} de ${ini.meta} inicios calificados`])
+    const club = (D.club || []).find(x => x.p === p)
+    if (club) out.push(['Unit Club', `Rumbo a ${num(club.meta)} pts · lleva ${num(club.total)}`])
+    const est = (D.estrellas || []).find(x => x.p === p)
+    if (est) out.push(['Estrellas', `Estrella ${GEMAS.find(g => g[0] === est.estrella)[1]} · ${pts(est.puntos)}`])
+    else if (sec.has('estrellas')) out.push(['Estrellas', `Todavía no llega a Zafiro (${num(GEMAS[GEMAS.length - 1][3])} pts)`, true])
+    const cu = (D.cumbre || []).find(x => x.p === p)
+    if (cu) out.push(['Camino al Éxito', NIVELES.find(n => n[0] === cu.nivel)[1]])
+    const t = (D.tsr || []).find(x => x.p === p)
+    if (t) out.push(['Trofeo sobre ruedas', `${t.conserva ? 'Conserva' : 'Estrena'} su auto rosa${t.premio === 'bono' ? ' (como bono)' : ''} · ${t.nivel.includes('2') ? 'segundo' : 'primer'} nivel`])
+    const ca = (D.calificacion || []).find(x => x.p === p)
+    if (ca) out.push(['Trofeo sobre ruedas', `En calificación · le faltan ${pts(ca.falta)}`])
+    const mesFiesta = NOMBRE_MES[c.mesEnCurso - 1]
+    if ((D.cumple || []).some(x => x.p === p)) out.push(['Celebraciones', `Su cumpleaños, en ${mesFiesta}`])
+    if ((D.aniversarios || []).some(x => x.p === p)) out.push(['Celebraciones', `Su aniversario, en ${mesFiesta}`])
+    if (sec.has('celebraciones') && !(D.cumple || []).some(x => x.p === p) && !(D.aniversarios || []).some(x => x.p === p)) out.push(['Celebraciones', `No cae en ${mesFiesta}: no sale este mes`, true])
+    return out
+}
+
+/** Una foto de la adoptiva, a lo mucho de 720 px y en JPG: sube rápido aunque venga del teléfono. */
+const achicarFoto = archivo => new Promise((ok, mal) => {
+    const url = URL.createObjectURL(archivo)
+    const img = new Image()
+    img.onload = () => {
+        const r = Math.min(1, 720 / Math.max(img.naturalWidth, img.naturalHeight))
+        const lienzo = document.createElement('canvas')
+        lienzo.width = Math.max(1, Math.round(img.naturalWidth * r))
+        lienzo.height = Math.max(1, Math.round(img.naturalHeight * r))
+        lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height)
+        URL.revokeObjectURL(url)
+        lienzo.toBlob(b => (b ? ok(b) : mal(new Error('foto'))), 'image/jpeg', .88)
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); mal(new Error('foto')) }
+    img.src = url
+})
+
 export function crearBoletinNacional(host, D, op = {}) {
+    const titulo = document.title
+    let vivo = null
+    // al guardar o quitar una adoptiva el boletín se vuelve a armar con ella, en el mismo lugar y con Ajustes abierto
+    const rehacer = () => {
+        const y = window.scrollY
+        vivo?.destruir()
+        vivo = armarBoletin(host, D, op, rehacer, true)
+        window.scrollTo(0, y)
+    }
+    vivo = armarBoletin(host, D, op, rehacer, false)
+    return { destruir() { vivo?.destruir(); document.title = titulo } }
+}
+
+function armarBoletin(host, D0, op, rehacer, abrirAjustes) {
+    const D = conAdoptivas(D0)
     if (!document.getElementById('boletin-nacional-fuentes')) {
         const l = document.createElement('link')
         l.id = 'boletin-nacional-fuentes'
@@ -56,7 +259,10 @@ export function crearBoletinNacional(host, D, op = {}) {
     const corto = id => { const n = quien(id).nombre.split(' ').filter(Boolean); return n.length >= 3 ? n.slice(0, -1).join(' ') : n.join(' ') }
     const iniciales = id => quien(id).nombre.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
     const cara = (id, cls = '') => { const p = quien(id); return `<span class="cara ${cls}">${p.foto ? `<img src="${esc(p.foto)}" alt="" loading="lazy" data-ini="${esc(iniciales(id))}">` : esc(iniciales(id))}</span>` }
-    const chip = (id, extra = '', n = 0) => `<span class="chip" style="--n:${n}">${cara(id)}<span>${esc(corto(id))}${extra ? `<i class="sep"> · </i><b>${extra}</b>` : ''}</span></span>`
+    // la marca de una directora adoptiva, junto a su nombre en todo el boletín
+    const esAdop = id => !!PER.get(id)?.adoptiva
+    const marca = id => (esAdop(id) ? '<span class="marca-a">Adoptiva</span>' : '')
+    const chip = (id, extra = '', n = 0) => `<span class="chip" style="--n:${n}">${cara(id)}<span>${esc(corto(id))}${extra ? `<i class="sep"> · </i><b>${extra}</b>` : ''}</span>${marca(id)}</span>`
     const mes = D.mes
     const Mes = mes[0].toUpperCase() + mes.slice(1)
     const mNumero = NOMBRE_MES.indexOf(mes) + 1
@@ -81,6 +287,9 @@ export function crearBoletinNacional(host, D, op = {}) {
     const montoBonos = (D.bonos || []).reduce((s, b) => s + (BONOS.find(x => x[0] === b.bono)?.[1] || 0), 0)
     const nEstrellas = (D.estrellas || []).length
 
+    const tam = leerTamano()
+    const segmento = (que, i) => TAMANOS.map(x => `<button type="button" data-v="${x[i]}" aria-pressed="${x[i] === tam[que]}">${x[0]}</button>`).join('')
+
     // ---- la página ----
     root.innerHTML = `<style>${css}</style>
 <div class="pagina">
@@ -95,15 +304,30 @@ export function crearBoletinNacional(host, D, op = {}) {
         <button type="button" class="barra-b junta-b" data-junta aria-label="Modo junta" title="Modo junta: presentar en pantalla completa">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Modo junta</span>
         </button>
-        ${op.editar ? `<button type="button" class="barra-b" data-ajustes title="Ajustes: tu mensaje para el área" aria-expanded="false" aria-controls="ajustes">
+        ${op.editar ? `<button type="button" class="barra-b" data-ajustes title="Ajustes: el mes, el tamaño de la letra y las fotos, y tu mensaje" aria-expanded="false" aria-controls="ajustes">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Ajustes</span>
         </button>
         <div class="ajustes" id="ajustes" hidden>
             <p class="kicker">Ajustes de la Directora</p>
             <small>Sólo tú ves estos ajustes.</small>
             ${(op.meses || []).length ? `<label class="mes-t">Mes del boletín <select data-mes-sel>${op.meses.map(m => `<option value="${esc(m.valor)}"${m.valor === op.mes ? ' selected' : ''}>${esc(m.etiqueta)}</option>`).join('')}</select></label>` : ''}
+            <div class="tam-t">
+                <span id="tam-l">Tamaño de la letra</span>
+                <div class="seg" role="group" aria-labelledby="tam-l" data-tam="l">${segmento('l', 1)}</div>
+                <span id="tam-f">Tamaño de las fotos</span>
+                <div class="seg" role="group" aria-labelledby="tam-f" data-tam="f">${segmento('f', 2)}</div>
+                <small>Se queda en este aparato: en la pantalla de tu junta lo puedes poner más grande.</small>
+            </div>
             <label class="msg-t">Tu mensaje para el área <small>(opcional; sale al abrir el boletín, con tu foto y tu firma)</small><textarea data-msg rows="6" maxlength="400" placeholder="Escribe unas palabras para tu junta…"></textarea></label>
             <p class="guardado" aria-live="polite"></p>
+            ${op.adoptivas ? `<div class="adop-t" data-adop>
+                <div class="adop-cab"><b>Directoras adoptivas</b><small data-adop-n></small></div>
+                <small>Alguien que no viene en tus reportes y quieres reconocer. Sale sólo en este boletín, con su marca «Adoptiva».</small>
+                <ul class="adop-lista" data-adop-lista></ul>
+                <button type="button" class="adop-mas" data-adop-nueva>+ Agregar directora adoptiva</button>
+                <div class="adop-ant" data-adop-ant></div>
+                <small class="adop-pie">Son del boletín de ${esc(mes)}. Si pasan 3 meses sin volver a agregarla, se borra sola con su foto.</small>
+            </div>` : ''}
         </div>` : ''}
     </header>
     <main>
@@ -255,6 +479,62 @@ export function crearBoletinNacional(host, D, op = {}) {
             </div>
         </div>
     </div>
+    ${op.editar && op.adoptivas ? `<div class="adop-pop" hidden role="dialog" aria-modal="true" aria-labelledby="ad-t">
+        <div class="ad-fondo" data-ad-cerrar></div>
+        <form class="ad-caja" novalidate>
+            <header class="ad-cab"><div><p class="kicker">Directora adoptiva · boletín de ${esc(mes)}</p><h3 id="ad-t" data-ad-titulo></h3></div>
+                <button type="button" class="ad-x" data-ad-cerrar aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+            <ol class="ad-pasos"><li>Quién es</li><li>Dónde la reconoces</li><li>Revisa y guarda</li></ol>
+            <div class="ad-cuerpo">
+                <section data-paso="0">
+                    <label class="ad-campo">Nombre completo<input type="text" name="nombre" maxlength="120" autocomplete="off" placeholder="Como quieres que salga en el boletín"></label>
+                    <p class="ad-aviso" data-ad-dup hidden></p>
+                    <div class="ad-campo">Su foto
+                        <div class="ad-foto"><span class="ad-cara" data-ad-cara></span>
+                            <div class="ad-foto-b"><label class="ad-b sec">Subir foto<input type="file" accept="image/*" data-ad-archivo hidden></label>
+                                <button type="button" class="ad-link" data-ad-sinfoto hidden>Quitar foto</button>
+                                <small>Una foto de su cara, de frente. Si no tienes, salen sus iniciales.</small></div></div>
+                    </div>
+                </section>
+                <section data-paso="1" hidden>
+                    <p class="ad-nota">Marca dónde la quieres reconocer. Sólo se piden los números de lo que marques; lo demás (su bono, su estrella, su escalón) se calcula con las mismas reglas que a tu Área.</p>
+                    <label class="ad-check"><input type="checkbox" name="sec" value="carrera"> Carrera de las unidades</label>
+                    <label class="ad-check"><input type="checkbox" name="sec" value="bonos"> Bonos del mes</label>
+                    <div class="ad-campos" data-campos="prod"><small data-prod-t></small>
+                        <div class="ad-meses">${mesesC.map(m => `<label data-mes="${m}"><small>${esc(cap(NOMBRE_MES[Number(m.slice(5)) - 1]).slice(0, 3))}</small><input inputmode="numeric" name="prod:${m}" autocomplete="off"></label>`).join('')}</div></div>
+                    <label class="ad-check"><input type="checkbox" name="sec" value="honor"> Cuadro de Honor</label>
+                    <div class="ad-campos" data-campos="honor"><small>Sus cifras de ${esc(mes)}; deja en blanco lo que no tenga. Compite con las de tu Área: si le alcanza, entra al top 10 y puede llevarse la corona.</small>
+                        <div class="ad-rejilla">${CATEGORIAS_HONOR.map(([k, t, u]) => `<label>${t} <small>(${u})</small><input inputmode="numeric" name="honor:${k}" autocomplete="off"></label>`).join('')}</div></div>
+                    <label class="ad-check"><input type="checkbox" name="sec" value="cortes"> Cortes</label>
+                    <div class="ad-campos" data-campos="cortes"><div class="ad-rejilla">
+                        <label>Corte de Ventas: producción personal acumulada en el Año Seminario <small>(pts)</small><input inputmode="numeric" name="ventasSem" autocomplete="off"></label>
+                        <label>Corte de Iniciación: inicios calificados<span class="ad-junto"><input inputmode="numeric" name="inicios" autocomplete="off"><select name="iniciosDe"><option value="600">de 600 pts</option><option value="1800">de 1,800 pts</option></select></span></label></div>
+                        <small>El Unit Club sale solo, con su acumulado de la carrera.</small></div>
+                    <label class="ad-check"><input type="checkbox" name="sec" value="estrellas"> Estrellas</label>
+                    <div class="ad-campos" data-campos="estrellas"><label>Producción personal del trimestre (${triTexto(mNumero)}) <small>(pts)</small><input inputmode="numeric" name="estrella" autocomplete="off"></label></div>
+                    <label class="ad-check"><input type="checkbox" name="sec" value="camino"> Camino al Éxito</label>
+                    <div class="ad-campos" data-campos="camino"><label>Directoras en su primera línea<input inputmode="numeric" name="primeraLinea" autocomplete="off"></label></div>
+                    <label class="ad-check"><input type="checkbox" name="sec" value="tsr"> Trofeo sobre ruedas (auto rosa)</label>
+                    <div class="ad-campos" data-campos="tsr">
+                        <div class="ad-opciones"><label><input type="radio" name="tsrEstado" value="conserva"> Conserva su auto</label><label><input type="radio" name="tsrEstado" value="estrena"> Lo estrena</label><label><input type="radio" name="tsrEstado" value="calificacion"> En calificación</label></div>
+                        <div class="ad-rejilla"><label>Nivel<select name="tsrNivel"><option value="1">Primer nivel</option><option value="2">Segundo nivel</option></select></label>
+                            <label data-tsr="auto">Lo recibe como<select name="tsrPremio"><option value="automovil">Auto</option><option value="bono">Bono</option></select></label>
+                            <label data-tsr="calif">Producción de unidad de los dos trimestres <small>(meta 230,000 o 350,000)</small><input inputmode="numeric" name="tsrValor" autocomplete="off"></label></div></div>
+                    <label class="ad-check"><input type="checkbox" name="sec" value="celebraciones"> Celebraciones de ${esc(D.mesEnCurso)}</label>
+                    <div class="ad-campos" data-campos="celebraciones"><div class="ad-rejilla">
+                        <label>Su cumpleaños<span class="ad-junto"><select name="cumpleD"><option value="">Día</option>${Array.from({ length: 31 }, (_, i) => `<option>${i + 1}</option>`).join('')}</select><select name="cumpleM"><option value="">Mes</option>${NOMBRE_MES.map((n, i) => `<option value="${i + 1}">${n}</option>`).join('')}</select></span></label>
+                        <label>Su inicio en Mary Kay<input type="date" name="inicio"></label></div>
+                        <small>Sale si cae en ${esc(D.mesEnCurso)}.</small></div>
+                </section>
+                <section data-paso="2" hidden>
+                    <div class="ad-vista" data-ad-vista></div>
+                    <ul class="ad-donde" data-ad-donde></ul>
+                    <p class="ad-nota">Los números los pones tú: Eyplease no los revisa contra Mary Kay. Por eso siempre sale con su marca «Adoptiva».</p>
+                </section>
+            </div>
+            <footer class="ad-pie"><p class="ad-error" aria-live="polite"></p><button type="button" class="ad-b sec" data-ad-atras>Atrás</button><button type="submit" class="ad-b" data-ad-sig>Siguiente</button></footer>
+        </form>
+    </div>` : ''}
     <nav class="hud-junta" aria-label="Modo junta" hidden>
         <button type="button" data-j-ant aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
         <span class="j-txt"><b></b><small></small></span>
@@ -272,6 +552,16 @@ export function crearBoletinNacional(host, D, op = {}) {
     // la siguiente sección que sí se ve (el Trofeo o el mensaje pueden ir escondidos)
     const seccionTras = s => { let n = s?.nextElementSibling; while (n && (n.hidden || n.tagName !== 'SECTION')) n = n.nextElementSibling; return n }
     const on = (el, ev, fn, o) => { el.addEventListener(ev, fn, o); limpiar.push(() => el.removeEventListener(ev, fn, o)) }
+    // los marcos grandes (portada, reina, auto rosa) crecen menos que las fotos chicas para no salirse de la pantalla;
+    // las filas de la carrera crecen con lo que más crezca, la letra o la foto
+    const ponerTamano = () => {
+        const pg = $('.pagina')
+        pg.style.setProperty('--l', tam.l)
+        pg.style.setProperty('--f', tam.f)
+        pg.style.setProperty('--fm', (1 + (tam.f - 1) * .6).toFixed(3))
+        pg.style.setProperty('--k', Math.max(tam.l, tam.f))
+    }
+    ponerTamano()
 
     // una foto que no carga se vuelve sus iniciales
     on(root, 'error', e => {
@@ -309,6 +599,7 @@ export function crearBoletinNacional(host, D, op = {}) {
     const ant = iMes - 1
     // las pistas de una finalista, sin decir su número: la unidad adivina quién es
     const pistas = (k, p, v) => {
+        if (esAdop(p)) return ['Es una directora adoptiva', 'Viene con todo este mes']
         const out = []
         if (ant >= 0 && reinasDe(k, ant).includes(p)) out.push(`Es la reina de ${mesDe(ant)}`)
         const c = coronas(k, p)
@@ -343,6 +634,7 @@ export function crearBoletinNacional(host, D, op = {}) {
         const c = coronas(k, p) + 1
         const rAnt = reinasDe(k, ant)
         if (gente.length > 1) return '¡Empate en el primer lugar!'
+        if (esAdop(p)) return `¡Reina adoptiva de ${mes}!`
         if (rAnt.length && !rAnt.includes(p) && c > 1) return `¡Recupera la corona! Es su ${c}.ª del año`
         if (rAnt.includes(p)) return c >= 3 ? `¡Repite! Su ${c}.ª corona del año` : '¡Repite corona!'
         if (c === 1) return '¡Su primera corona del año!'
@@ -350,7 +642,7 @@ export function crearBoletinNacional(host, D, op = {}) {
     }
     const ordinal = n => `${n}.º`
     const grupos = lista => { const g = new Map(); lista.forEach(x => { if (!g.has(x.lugar)) g.set(x.lugar, []); g.get(x.lugar).push(x) }); return g }
-    const nombres = g => g.map(x => esc(corto(x.p))).join(' y ')
+    const nombres = g => g.map(x => esc(corto(x.p)) + marca(x.p)).join(' y ')
     // tres o más empatadas: cuántas son y sus nombres en chico, para que no se encadene un renglón eterno
     const grupoNombres = g => (g.length > 2 ? `${g.length} directoras<small>${g.map(x => esc(corto(x.p))).join(' · ')}</small>` : nombres(g))
     const lugarTxt = l => (l === 1 ? '¡Reina!' : `${l === 2 ? '2.º' : l === 3 ? '3.er' : `${l}.º`} lugar`)
@@ -404,7 +696,7 @@ export function crearBoletinNacional(host, D, op = {}) {
     }
     const carta = (x, pos) => `<div class="carta" data-p="${esc(x.p)}" data-lugar="${x.lugar}" style="--n:${pos}"><div class="carta-in">`
         + `<div class="cara-a"><span class="incognita grande">?</span><small>Finalista</small><ul class="pistas">${pistas(k(), x.p, x.valor).map(t => `<li>${t}</li>`).join('')}</ul></div>`
-        + `<div class="cara-b">${cara(x.p)}<b>${esc(corto(x.p))}</b><span class="val cifra">${fmtDe()(x.valor)}</span><span class="puesto">${lugarTxt(x.lugar)}</span></div>`
+        + `<div class="cara-b">${cara(x.p)}<b>${esc(corto(x.p))}</b>${marca(x.p)}<span class="val cifra">${fmtDe()(x.valor)}</span><span class="puesto">${lugarTxt(x.lugar)}</span></div>`
         + `</div><div class="tension" hidden><i></i><span class="cifra">0</span></div></div>`
 
     const etiqueta = () => {
@@ -434,12 +726,14 @@ export function crearBoletinNacional(host, D, op = {}) {
         const titulo = CATS[cat][1]
         const out = []
         const c = coronas(kk, p) + 1
-        out.push({ big: String(c), txt: c === 1 ? `Su primera corona de ${titulo.toLowerCase()} en ${D.anio}` : `Coronas de ${titulo.toLowerCase()} en ${D.anio}` })
+        if (esAdop(p)) out.push({ big: 'Adoptiva', txt: `La reconoce ${esc(D.directora.nombre)}` })
+        else out.push({ big: String(c), txt: c === 1 ? `Su primera corona de ${titulo.toLowerCase()} en ${D.anio}` : `Coronas de ${titulo.toLowerCase()} en ${D.anio}` })
         if (segunda && valor > segunda.valor) out.push({ big: fmt(valor - segunda.valor), txt: `De ventaja sobre ${esc(corto(segunda.p))}` })
-        const sv = serie(kk, p).slice(0, Math.max(0, iMes))
+        const sv = esAdop(p) ? [] : serie(kk, p).slice(0, Math.max(0, iMes))
         const previos = sv.map((v, i) => ({ v: v || 0, i })).filter(x => x.v)
         const mejor = previos.sort((a, b) => b.v - a.v)[0]
-        if (!mejor || valor >= mejor.v) out.push({ big: cap(mes), txt: 'Su mejor mes del año' })
+        if (esAdop(p)) { /* sin historial en el Área: no se dice si es su mejor mes */ }
+        else if (!mejor || valor >= mejor.v) out.push({ big: cap(mes), txt: 'Su mejor mes del año' })
         else out.push({ big: fmt(mejor.v), txt: `Su mejor mes del año fue ${mesDe(mejor.i)}` })
         const va = ant >= 0 ? sv[ant] : null
         if (va) { const pct = Math.round((valor / va - 1) * 100); if (pct) out.push({ big: `${pct > 0 ? '+' : ''}${pct} %`, txt: `Contra ${mesDe(ant)}` }) }
@@ -468,10 +762,10 @@ export function crearBoletinNacional(host, D, op = {}) {
             + `<img src="${base}/kit-marco.webp" alt="" aria-hidden="true"><i class="corona"></i></div>`).join('')
         pop.classList.toggle('doble', reinas.length > 1)
         $('[data-rp-k]').textContent = `Reina de ${titulo} · ${cap(mes)} ${D.anio}`
-        $('[data-rp-n]').innerHTML = reinas.map(x => esc(corto(x.p))).join(' y ')
+        $('[data-rp-n]').innerHTML = reinas.map(x => esc(corto(x.p)) + marca(x.p)).join(' y ')
         $('[data-rp-v]').textContent = fmt(reinas[0].valor)
         $('[data-rp-i]').textContent = insignia(kk, reinas.map(x => x.p))
-        $('[data-rp-d]').innerHTML = reinas.length > 1 ? reinas.map(x => `<div class="rp-dato"><b>${coronas(kk, x.p) + 1}</b><span>Coronas de ${esc(corto(x.p))} en ${D.anio}</span></div>`).join('')
+        $('[data-rp-d]').innerHTML = reinas.length > 1 ? reinas.map(x => `<div class="rp-dato"><b>${esAdop(x.p) ? 'Adoptiva' : coronas(kk, x.p) + 1}</b><span>${esAdop(x.p) ? `${esc(corto(x.p))}, la reconoce ${esc(D.directora.nombre)}` : `Coronas de ${esc(corto(x.p))} en ${D.anio}`}</span></div>`).join('')
             : datosReina(kk, reinas[0].p, reinas[0].valor, segunda).map((d, i) => `<div class="rp-dato" style="--n:${i}"><b>${d.big}</b><span>${d.txt}</span></div>`).join('')
         pop.hidden = false
         void pop.offsetWidth
@@ -605,7 +899,7 @@ export function crearBoletinNacional(host, D, op = {}) {
     let cerVista = false
     on(document, 'keydown', e => {
         if (cerrarReina && ['ArrowRight', 'PageDown', 'Escape', 'Enter', ' '].includes(e.key)) { e.preventDefault(); cerrarReina(); return }
-        if (enJunta || !cerVista || e.target.closest?.('input, textarea, select')) return
+        if (enJunta || !cerVista || e.target.closest?.('input, textarea, select') || root.activeElement?.closest?.('input, textarea, select, .adop-pop')) return
         if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); avanzar() }
         if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); mostrarCat(cat) }
     })
@@ -637,7 +931,7 @@ export function crearBoletinNacional(host, D, op = {}) {
         const falta = Math.max(0, meta - valor)
         const porMes = Math.ceil(falta / quedan)
         return `<div class="cont" style="--v:${(pct / 100).toFixed(3)};--n:${n}"><div class="cont-foto">${cara(p, 'grande')}<span class="pct">${pct} %</span></div>`
-            + `<b>${esc(quien(p).nombre)}</b><span class="lleva cifra">${num(valor)} de ${num(meta)} ${unidad}</span>`
+            + `<b>${esc(quien(p).nombre)}</b>${marca(p)}<span class="lleva cifra">${num(valor)} de ${num(meta)} ${unidad}</span>`
             + `<div class="tubo"><i style="--v:${(pct / 100).toFixed(3)}"></i></div>`
             + `<small>${falta ? `Le ${falta === 1 ? 'falta' : 'faltan'} <b>${num(falta)}</b> · unos ${num(porMes)} por mes` : '<b>¡Ya llegó!</b>'}</small></div>`
     }
@@ -710,7 +1004,7 @@ export function crearBoletinNacional(host, D, op = {}) {
         $('#trofeo').hidden = false
         // quien ya lo traía y este mes lo sostiene con su producción lo CONSERVA; sólo quien lo estrena «se gana un auto»
         const mesActual = `${D.anio}-${String(NOMBRE_MES.indexOf(mes) + 1).padStart(2, '0')}`
-        const conserva = x => !!x.historia?.desde && x.historia.desde < mesActual
+        const conserva = x => x.conserva ?? (!!x.historia?.desde && x.historia.desde < mesActual)
         const auto = ganaTsr.some(x => x.premio === 'automovil')
         const nuevas = ganaTsr.filter(x => !conserva(x))
         const desdeTxt = x => {
@@ -728,13 +1022,14 @@ export function crearBoletinNacional(host, D, op = {}) {
         const siguen = ganaTsr.length - nuevas.length
         $('[data-tsr-s]').innerHTML = !ganaTsr.length ? 'Las directoras que van en calificación al auto rosa con la producción de su unidad.'
             : ganaTsr.length === 1 ? (conserva(ganaTsr[0])
-                ? `<b>${esc(corto(ganaTsr[0].p))}</b> mantiene su auto rosa: lo ha conservado ${desdeTxt(ganaTsr[0])}, trimestre a trimestre, con la producción de su unidad.`
+                ? (desdeTxt(ganaTsr[0]) ? `<b>${esc(corto(ganaTsr[0].p))}</b> mantiene su auto rosa: lo ha conservado ${desdeTxt(ganaTsr[0])}, trimestre a trimestre, con la producción de su unidad.`
+                    : `<b>${esc(corto(ganaTsr[0].p))}</b> mantiene su auto rosa, trimestre a trimestre, con la producción de su unidad.`)
                 : `<b>${esc(corto(ganaTsr[0].p))}</b> calificó al auto rosa con la producción de su unidad.`)
             : nuevas.length ? `${nombres(nuevas)} ${nuevas.length === 1 ? 'calificó' : 'calificaron'} al auto rosa${siguen ? ` y <b>${siguen === 1 ? '1 directora más' : `${siguen} directoras más`}</b> ${siguen === 1 ? 'lo conserva' : 'lo conservan'}` : ''}, con la producción de su unidad.`
             : `<b>${ganaTsr.length} directoras</b> de tu área conservan su auto rosa, trimestre a trimestre, con la producción de su unidad.`
         $('.tsr-gente').innerHTML = (ganaTsr.length ? ganaTsr : calif.length ? [] : rutaTsr).map((x, n) => `<article class="tsr-ganadora" style="--n:${n}">`
             + `<div class="tsr-marco" style="--silueta:url(${base}/kit-silueta.webp)"><div class="foto-d">${quien(x.p).foto ? `<img src="${esc(quien(x.p).foto)}" alt="">` : `<span class="cara">${esc(iniciales(x.p))}</span>`}</div><img src="${base}/kit-marco.webp" alt="" aria-hidden="true"></div>`
-            + `<div class="tsr-datos"><small>${nivelTsr(x)}${x.grupo?.startsWith('target') ? ' · en ruta' : ''}</small><b>${esc(quien(x.p).nombre)}</b>`
+            + `<div class="tsr-datos"><small>${nivelTsr(x)}${x.grupo?.startsWith('target') ? ' · en ruta' : ''}</small><b>${esc(quien(x.p).nombre)}</b>${marca(x.p)}`
             + `${x.premio ? `<span class="tsr-premio">${x.premio === 'bono' ? (conserva(x) ? 'Conserva su auto rosa · lo recibe como bono' : 'Recibe su auto rosa como bono') : (conserva(x) ? 'Conserva su auto rosa' : '¡Estrena su auto rosa!')}</span>` : ''}`
             + (x.historia?.trimestres?.length ? trimestres(x) : `<div class="chips">${(x.trimestres || []).map((v, t) => (v ? `<span class="chip"><span>${t === 0 ? '1.er' : '2.º'} trimestre · <b>${pts(v)}</b></span></span>` : '')).join('')}</div>`)
             + `${x.falta ? `<small class="tsr-falta">Le faltan ${pts(x.falta)}</small>` : ''}</div></article>`).join('')
@@ -746,7 +1041,7 @@ export function crearBoletinNacional(host, D, op = {}) {
             const sig = n => NOMBRE_MES[(mNum - 1 + n) % 12]
             const cuando = x => (x.mesesQuedan === 3 && mNum % 3 === 0 ? `en ${sig(1)}, ${sig(2)} y ${sig(3)}` : 'en lo que queda del trimestre')
             c.innerHTML = `<p class="kicker">En calificación al auto rosa</p><div class="calif-lista">${calif.map((x, n) => `<div class="avance calif" style="--n:${n}">${cara(x.p)}<div class="datos">`
-                + `<span><b>${esc(quien(x.p).nombre)}</b><span class="cifra">${num(x.valor)} de ${num(x.meta)}</span></span>`
+                + `<span><b>${esc(quien(x.p).nombre)}${marca(x.p)}</b><span class="cifra">${num(x.valor)} de ${num(x.meta)}</span></span>`
                 + `<div class="tubo"><i style="--v:${Math.min(1, x.valor / x.meta).toFixed(3)}"></i></div>`
                 + `<small>${x.nivel === 2 ? 'Segundo' : 'Primer'} nivel · le faltan <b>${pts(x.falta)}</b> ${cuando(x)}: unos ${pts(x.porMes)} por mes de producción de unidad.</small></div></div>`).join('')}</div>`
         }
@@ -771,10 +1066,10 @@ export function crearBoletinNacional(host, D, op = {}) {
     $('[data-fiestas-s]').innerHTML = `En ${esc(D.mesEnCurso)}, tu área celebra <b>${nC === 1 ? '1 cumpleaños' : `${nC} cumpleaños`}</b> y <b>${nA === 1 ? '1 aniversario' : `${nA} aniversarios`}</b>.`
     $('.fiestas').innerHTML = fiestas.length ? fiestas.map((f, n) => f.tipo === 'cumple'
         ? `<article class="festejo cumple-f" style="--n:${n}"><span class="globos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>${cara(f.p, 'grande')}`
-            + `<span class="cinta-f">¡Feliz cumpleaños!</span><b class="nombre-f">${esc(quien(f.p).nombre)}</b>`
+            + `<span class="cinta-f">¡Feliz cumpleaños!</span><b class="nombre-f">${esc(quien(f.p).nombre)}</b>${marca(f.p)}`
             + `<div class="fecha-f"><b>${f.d}</b><span>${esc(NOMBRE_MES[Number(String(f.fecha).slice(5, 7)) - 1])}<small>${esc(semana(f.fecha))}</small></span></div></article>`
         : `<article class="festejo aniv-f" style="--n:${n}">${cara(f.p, 'grande')}<span class="cinta-f">¡Feliz aniversario!</span>`
-            + `<b class="nombre-f">${esc(quien(f.p).nombre)}</b><div class="anios-f"><b>${f.anios}</b><span>${f.anios === 1 ? 'año' : 'años'} de ser<br>Mary Kay</span></div>`
+            + `<b class="nombre-f">${esc(quien(f.p).nombre)}</b>${marca(f.p)}<div class="anios-f"><b>${f.anios}</b><span>${f.anios === 1 ? 'año' : 'años'} de ser<br>Mary Kay</span></div>`
             + `<small class="desde-f">Desde el ${esc(dia(f.inicio))} de ${String(f.inicio).slice(0, 4)}</small></article>`).join('')
         : '<p class="vacio">Este mes no hay cumpleaños ni aniversarios en tu área.</p>'
     // un estallido de confeti la primera vez que se ven
@@ -784,14 +1079,14 @@ export function crearBoletinNacional(host, D, op = {}) {
 
     // ---- la carrera de las unidades ----
     const filas = $('.filas')
-    const alto = () => (matchMedia('(max-width: 760px)').matches ? 40 : 44)
+    const alto = () => Math.round((matchMedia('(max-width: 760px)').matches ? 40 : 44) * Math.max(tam.l, tam.f))
     filas.style.height = `${unidades.length * alto()}px`
     const FILA = new Map()
     for (const u of unidades) {
         const el = document.createElement('div')
         el.className = 'fila'
         el.setAttribute('role', 'listitem')
-        el.innerHTML = `<span class="pos"></span><span class="av">${cara(u.p)}</span><span class="nom">${esc(corto(u.p))}</span><span class="barra-f"><i></i></span><span class="pts cifra">0</span>`
+        el.innerHTML = `<span class="pos"></span><span class="av">${cara(u.p)}</span><span class="nom"><span>${esc(corto(u.p))}</span>${marca(u.p)}</span><span class="barra-f"><i></i></span><span class="pts cifra">0</span>`
         filas.appendChild(el)
         FILA.set(u.p, { el, pos: $('.pos', el), barra: $('.barra-f i', el), pts: $('.pts', el), av: $('.av', el), rk: -1 })
     }
@@ -860,7 +1155,7 @@ export function crearBoletinNacional(host, D, op = {}) {
             lid.hidden = false
             if (lid.dataset.p !== top.u.p) {
                 lid.dataset.p = top.u.p
-                lid.innerHTML = `${cara(top.u.p)}<div><small>Va al frente</small><b>${esc(corto(top.u.p))}</b><span class="cifra" data-lider-pts></span></div>`
+                lid.innerHTML = `${cara(top.u.p)}<div><small>Va al frente</small><b>${esc(corto(top.u.p))}${marca(top.u.p)}</b><span class="cifra" data-lider-pts></span></div>`
             }
             $('[data-lider-pts]').textContent = pts(Math.round(top.v))
         }
@@ -891,6 +1186,8 @@ export function crearBoletinNacional(host, D, op = {}) {
     on(boton, 'click', () => (corriendo ? detener() : correr()))
     on($('[data-otra]'), 'click', () => { detener(); reiniciar(); correr() })
     pintar(0)
+    // al cambiar el tamaño, las filas se vuelven a acomodar donde iban
+    const reacomodarCarrera = () => { filas.style.height = `${unidades.length * alto()}px`; FILA.forEach(f => { f.rk = -1 }); pintar(t) }
 
     // ---- las unidades del área en el mes: su gente (Análisis de Área). Sólo se celebra lo que subió: una unidad que
     // bajó no se señala frente a toda el área. ----
@@ -953,6 +1250,15 @@ export function crearBoletinNacional(host, D, op = {}) {
         const msg = $('[data-msg]')
         const guardado = $('.guardado')
         msg.value = D.ajustes?.mensaje || ''
+        $$('[data-tam]').forEach(g => on(g, 'click', e => {
+            const btn = e.target.closest('button[data-v]')
+            if (!btn) return
+            tam[g.dataset.tam] = Number(btn.dataset.v)
+            $$('button', g).forEach(x => x.setAttribute('aria-pressed', String(x === btn)))
+            ponerTamano()
+            reacomodarCarrera()
+            try { localStorage.setItem(TAM_CLAVE, JSON.stringify(tam)) } catch { /* sin almacenamiento: dura mientras esté abierto */ }
+        }))
         const mesSel = $('[data-mes-sel]')
         if (mesSel) on(mesSel, 'change', () => op.cambiarMes?.(mesSel.value))
         on(b, 'click', () => { panel.hidden = !panel.hidden; b.setAttribute('aria-expanded', String(!panel.hidden)) })
@@ -971,6 +1277,250 @@ export function crearBoletinNacional(host, D, op = {}) {
             }, 900)
         })
         limpiar.push(() => clearTimeout(tMsg))
+        if (op.adoptivas) adoptivasEnAjustes(panel, b)
+        // tras guardar o quitar una adoptiva el boletín se vuelve a armar: Ajustes sigue abierto donde estaba
+        if (abrirAjustes) { panel.hidden = false; b.setAttribute('aria-expanded', 'true'); const ad = $('[data-adop]'); if (ad) panel.scrollTop = ad.offsetTop - 12 }
+    }
+
+    // ---- directoras adoptivas en Ajustes: la lista del mes, «volver a agregar» y el formulario de tres pasos ----
+    function adoptivasEnAjustes(panel, botonAjustes) {
+        const aj = () => D0.ajustes || {}
+        const delMes = () => aj().adoptivas || []
+        const maximo = () => aj().maxAdoptivas || 10
+        const resumen = a => {
+            const l = (a.datos?.secciones || []).map(k => SECCIONES_ADOPTIVA.find(x => x[0] === k)?.[1]).filter(Boolean)
+            return l.length > 2 ? `${l.slice(0, 2).join(' · ')} y ${l.length - 2} más` : l.join(' · ')
+        }
+        const iniDe = n => String(n || '').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
+        const caraDe = (foto, nombre) => `<span class="cara">${foto ? `<img src="${esc(foto)}" alt="" data-ini="${esc(iniDe(nombre))}">` : esc(iniDe(nombre))}</span>`
+        const ABR_M = m => cap(NOMBRE_MES[Number(String(m).slice(5)) - 1] || '')
+        const lista = $('[data-adop-lista]')
+        const pintarLista = () => {
+            const l = delMes()
+            $('[data-adop-n]').textContent = `${l.length} de ${maximo()}`
+            lista.innerHTML = l.map(a => `<li data-id="${esc(a.id)}">${caraDe(a.foto, a.nombre)}<div><b>${esc(a.nombre)}</b><span>${esc(resumen(a))}</span></div>`
+                + '<button type="button" class="ad-link" data-adop-editar>Editar</button><button type="button" class="ad-link" data-adop-quitar>Quitar</button></li>').join('')
+            $('[data-adop-nueva]').hidden = l.length >= maximo()
+            const yaEstan = new Set(l.map(a => claveNombre(a.nombre)))
+            const ant = (aj().anteriores || []).filter(a => !yaEstan.has(claveNombre(a.nombre)))
+            $('[data-adop-ant]').innerHTML = ant.length && l.length < maximo()
+                ? `<small>Antes reconociste a estas directoras. ¿Las vuelves a agregar? Su nombre, su foto y sus números ya están; sólo actualizas lo del mes.</small>`
+                    + ant.map(a => `<button type="button" class="adop-otra" data-adop-otra="${esc(a.id)}">${caraDe(a.foto, a.nombre)}<span><b>${esc(a.nombre)}</b><small>${esc(ABR_M(a.mes))} · volver a agregar</small></span></button>`).join('')
+                : ''
+        }
+        pintarLista()
+
+        const pop = $('.adop-pop')
+        const form = $('.ad-caja', pop)
+        const campo = n => form.elements.namedItem(n)
+        const err = $('.ad-error', pop)
+        let paso = 0
+        let editando = null // id de la que se edita; null = nueva
+        let foto = null     // { blob } nueva, { url, de } la de otro mes, { url } la que ya tenía, o null
+        let quitarFoto = false
+        let previa = null
+        const verFoto = () => {
+            if (previa) { URL.revokeObjectURL(previa); previa = null }
+            const url = foto?.blob ? (previa = URL.createObjectURL(foto.blob)) : foto?.url
+            $('[data-ad-cara]', pop).innerHTML = url ? `<img src="${esc(url)}" alt="">` : esc(iniDe(campo('nombre').value) || '?')
+            $('[data-ad-sinfoto]', pop).hidden = !url
+        }
+        const ponerPaso = n => {
+            paso = n
+            $$('section[data-paso]', pop).forEach(sec => { sec.hidden = Number(sec.dataset.paso) !== n })
+            $$('.ad-pasos li', pop).forEach((li, i) => { li.classList.toggle('activo', i === n); li.classList.toggle('hecho', i < n) })
+            $('[data-ad-atras]', pop).hidden = n === 0
+            $('[data-ad-sig]', pop).textContent = n < 2 ? 'Siguiente' : `Guardar para el boletín de ${mes}`
+            err.textContent = ''
+            $('.ad-cuerpo', pop).scrollTop = 0
+            if (n === 2) pintarRevision()
+        }
+        // lo que se ve de cada sección según lo marcado
+        const secciones = () => $$('input[name="sec"]:checked', form).map(x => x.value)
+        const ajustarCampos = () => {
+            const sec = new Set(secciones())
+            $$('[data-campos]', form).forEach(c => { c.hidden = c.dataset.campos === 'prod' ? !(sec.has('carrera') || sec.has('bonos')) : !sec.has(c.dataset.campos) })
+            const mesB = D.meses[D.meses.length - 1]
+            $$('[data-mes]', form).forEach(l => { l.hidden = !sec.has('carrera') && l.dataset.mes !== mesB })
+            $('[data-prod-t]', form).textContent = sec.has('carrera') ? 'Su producción de unidad de cada mes del Año Seminario (pts)' : `Su producción de unidad de ${mes} (pts)`
+            const est = form.querySelector('input[name="tsrEstado"]:checked')?.value
+            $('[data-tsr="auto"]', form).hidden = est === 'calificacion'
+            $('[data-tsr="calif"]', form).hidden = est !== 'calificacion'
+        }
+        on(form, 'change', ajustarCampos)
+        on(form, 'input', () => { err.textContent = '' })
+
+        const llenar = (a, delMesPasado) => {
+            form.reset()
+            const d = a?.datos || {}
+            campo('nombre').value = a?.nombre || ''
+            const sec = new Set(d.secciones || [])
+            $$('input[name="sec"]', form).forEach(x => { x.checked = sec.has(x.value) })
+            mesesC.forEach(m => { campo(`prod:${m}`).value = d.prod?.[m] ? num(d.prod[m]) : '' })
+            // al volver a agregarla, lo que depende del mes se captura de nuevo
+            const delMesNuevo = n => (delMesPasado ? '' : n ? num(n) : '')
+            CATEGORIAS_HONOR.forEach(([k]) => { campo(`honor:${k}`).value = delMesNuevo(d.honor?.[k]) })
+            campo('ventasSem').value = d.ventasSem ? num(d.ventasSem) : ''
+            campo('inicios').value = d.inicios ? num(d.inicios) : ''
+            campo('iniciosDe').value = String(d.iniciosDe || 600)
+            campo('estrella').value = delMesNuevo(d.estrella)
+            campo('primeraLinea').value = d.primeraLinea || ''
+            $$('input[name="tsrEstado"]', form).forEach(x => { x.checked = x.value === d.tsr?.estado })
+            campo('tsrNivel').value = String(d.tsr?.nivel || 1)
+            campo('tsrPremio').value = d.tsr?.premio || 'automovil'
+            campo('tsrValor').value = delMesNuevo(d.tsr?.valor)
+            const [cm, cd] = String(d.cumple || '').split('-').map(Number)
+            campo('cumpleD').value = cd ? String(cd) : ''
+            campo('cumpleM').value = cm ? String(cm) : ''
+            campo('inicio').value = d.inicio || ''
+            ajustarCampos()
+        }
+        const datos = () => {
+            const n = nm => entero(campo(nm).value) || null
+            const prod = Object.fromEntries(mesesC.map(m => [m, entero(campo(`prod:${m}`).value)]).filter(([, v]) => v))
+            const honor = Object.fromEntries(CATEGORIAS_HONOR.map(([k]) => [k, entero(campo(`honor:${k}`).value)]).filter(([, v]) => v))
+            const estado = form.querySelector('input[name="tsrEstado"]:checked')?.value || null
+            const cm = Number(campo('cumpleM').value)
+            const cd = Number(campo('cumpleD').value)
+            const d = {
+                secciones: secciones(), prod, honor,
+                ventasSem: n('ventasSem'), inicios: n('inicios'), iniciosDe: Number(campo('iniciosDe').value) === 1800 ? 1800 : 600,
+                estrella: n('estrella'), primeraLinea: n('primeraLinea'),
+                tsr: estado ? { estado, nivel: Number(campo('tsrNivel').value) === 2 ? 2 : 1, premio: campo('tsrPremio').value === 'bono' ? 'bono' : 'automovil', valor: n('tsrValor') } : null,
+                cumple: cm && cd ? `${pad2(cm)}-${pad2(cd)}` : null, inicio: campo('inicio').value || null,
+            }
+            return Object.fromEntries(Object.entries(d).filter(([, v]) => v != null && !(typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)))
+        }
+        // lo que falta para seguir; vacío = se puede
+        const falta = () => {
+            if (paso === 0) {
+                const nombre = campo('nombre').value.trim()
+                if (nombre.split(' ').filter(Boolean).length < 2) return 'Escribe su nombre y al menos un apellido.'
+                const otra = delMes().find(a => a.id !== editando && claveNombre(a.nombre) === claveNombre(nombre))
+                if (otra) return 'Ya la agregaste este mes.'
+                return ''
+            }
+            if (paso === 1) {
+                const d = datos()
+                const sec = new Set(d.secciones || [])
+                if (!sec.size) return 'Marca al menos una sección donde reconocerla.'
+                const mesB = D.meses[D.meses.length - 1]
+                const f = []
+                if (sec.has('carrera') && !Object.keys(d.prod || {}).length) f.push('su producción de unidad de la carrera')
+                if (sec.has('bonos') && !d.prod?.[mesB]) f.push(`su producción de unidad de ${mes} (para el bono)`)
+                if (sec.has('honor') && !Object.keys(d.honor || {}).length && !d.prod?.[mesB]) f.push('al menos una cifra del Cuadro de Honor')
+                if (sec.has('cortes') && !d.ventasSem && !d.inicios && !(sec.has('carrera') && Object.keys(d.prod || {}).length)) f.push('su producción personal acumulada o sus inicios calificados')
+                if (sec.has('estrellas') && !d.estrella) f.push('su producción personal del trimestre')
+                if (sec.has('camino') && !d.primeraLinea) f.push('sus directoras en primera línea')
+                if (sec.has('tsr') && !d.tsr) f.push('cómo va en el auto rosa')
+                if (sec.has('tsr') && d.tsr?.estado === 'calificacion' && !d.tsr.valor) f.push('su producción de unidad de los dos trimestres')
+                if (sec.has('celebraciones') && !d.cumple && !d.inicio) f.push('su cumpleaños o su fecha de inicio')
+                return f.length ? `Falta ${f.join(', ').replace(/, ([^,]*)$/, ' y $1')}.` : ''
+            }
+            return ''
+        }
+        const pintarRevision = () => {
+            const nombre = campo('nombre').value.trim().replace(/\s+/g, ' ')
+            const yo = { id: editando || 'nueva', nombre, foto: null, datos: datos() }
+            const otras = delMes().filter(a => a.id !== editando)
+            const url = foto?.blob ? previa : foto?.url
+            $('[data-ad-vista]', pop).innerHTML = `${url ? `<span class="cara"><img src="${esc(url)}" alt=""></span>` : `<span class="cara">${esc(iniDe(nombre))}</span>`}<b>${esc(nombre)}</b><span class="marca-a">Adoptiva</span>`
+            const donde = dondeSale(D0, [...otras, yo], yo.id)
+            $('[data-ad-donde]', pop).innerHTML = donde.length
+                ? donde.map(([t, v, no]) => `<li class="${no ? 'no' : ''}"><small>${esc(t)}</small><b>${esc(v)}</b></li>`).join('')
+                : '<li class="no"><b>Con estos números no sale en ninguna sección todavía.</b></li>'
+        }
+        // ojo: si ya viene en los reportes del Área, saldría dos veces
+        const avisarDuplicada = () => {
+            const k = claveNombre(campo('nombre').value)
+            const ya = k.length > 4 && (D0.personas || []).find(x => claveNombre(x.nombre) === k)
+            const aviso = $('[data-ad-dup]', pop)
+            aviso.hidden = !ya
+            if (ya) aviso.textContent = `${ya.nombre} ya viene en los reportes de tu Área y sale sola en el boletín. Si es ella, no hace falta agregarla.`
+            if (!foto) verFoto()
+        }
+        on(campo('nombre'), 'input', avisarDuplicada)
+
+        const abrir = (a, deOtroMes) => {
+            editando = a && !deOtroMes ? a.id : null
+            quitarFoto = false
+            foto = a?.foto ? (deOtroMes ? { url: a.foto, de: a.id } : { url: a.foto }) : null
+            llenar(a, deOtroMes)
+            $('[data-ad-titulo]', pop).textContent = editando ? `Editar a ${a.nombre}` : deOtroMes ? `Volver a agregar a ${a.nombre}` : 'Agregar directora adoptiva'
+            verFoto()
+            avisarDuplicada()
+            panel.hidden = true
+            botonAjustes.setAttribute('aria-expanded', 'false')
+            pop.hidden = false
+            document.documentElement.style.overflow = 'hidden'
+            ponerPaso(deOtroMes ? 1 : 0)
+            setTimeout(() => (deOtroMes ? $('input[name="sec"]', form) : campo('nombre')).focus({ preventScroll: true }), 50)
+        }
+        const cerrar = (volverAjustes = true) => {
+            pop.hidden = true
+            document.documentElement.style.overflow = ''
+            if (previa) { URL.revokeObjectURL(previa); previa = null }
+            if (volverAjustes) { panel.hidden = false; botonAjustes.setAttribute('aria-expanded', 'true') }
+        }
+        limpiar.push(() => { document.documentElement.style.overflow = ''; if (previa) URL.revokeObjectURL(previa) })
+
+        on(lista, 'click', e => {
+            const li = e.target.closest('li[data-id]')
+            if (!li) return
+            // el renglón se redibuja: que el clic no cierre Ajustes como si fuera afuera
+            e.stopPropagation()
+            const a = delMes().find(x => x.id === li.dataset.id)
+            if (e.target.closest('[data-adop-editar]')) abrir(a, false)
+            if (e.target.closest('[data-adop-quitar]')) {
+                li.classList.add('quitando')
+                li.innerHTML = `<span>¿Quitar a <b>${esc(a.nombre)}</b> del boletín?</span><button type="button" class="ad-link fuerte" data-si>Sí, quitar</button><button type="button" class="ad-link" data-no>No</button>`
+            }
+            if (e.target.closest('[data-no]')) pintarLista()
+            if (e.target.closest('[data-si]')) {
+                li.innerHTML = '<span>Quitando…</span>'
+                Promise.resolve(op.adoptivas.quitar(a.id)).then(nuevo => { D0.ajustes = { ...aj(), ...nuevo }; rehacer() },
+                    () => { pintarLista(); $('.guardado').textContent = 'No se pudo quitar. Revisa tu conexión.' })
+            }
+        })
+        on($('[data-adop-nueva]'), 'click', e => { e.stopPropagation(); abrir(null, false) })
+        on($('[data-adop-ant]'), 'click', e => {
+            const btn = e.target.closest('[data-adop-otra]')
+            if (!btn) return
+            e.stopPropagation()
+            abrir((aj().anteriores || []).find(x => x.id === btn.dataset.adopOtra), true)
+        })
+        on(pop, 'click', e => { if (e.target.closest('[data-ad-cerrar]')) cerrar() })
+        on(pop, 'keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); cerrar() } })
+        on($('[data-ad-atras]', pop), 'click', () => ponerPaso(Math.max(0, paso - 1)))
+        on($('[data-ad-sinfoto]', pop), 'click', () => { foto = null; quitarFoto = true; verFoto() })
+        on($('[data-ad-archivo]', pop), 'change', e => {
+            const archivo = e.target.files?.[0]
+            e.target.value = ''
+            if (!archivo) return
+            achicarFoto(archivo).then(blob => { foto = { blob }; quitarFoto = false; verFoto(); err.textContent = '' },
+                () => { err.textContent = 'No pudimos abrir esa foto. Prueba con una JPG o PNG.' })
+        })
+        let guardando = false
+        on(form, 'submit', e => {
+            e.preventDefault()
+            if (guardando) return
+            const f = falta()
+            if (f) { err.textContent = f; return }
+            if (paso < 2) { ponerPaso(paso + 1); return }
+            guardando = true
+            const sig = $('[data-ad-sig]', pop)
+            sig.disabled = true
+            sig.textContent = 'Guardando…'
+            Promise.resolve(op.adoptivas.guardar({
+                id: editando, nombre: campo('nombre').value.trim().replace(/\s+/g, ' '), datos: datos(),
+                foto: foto?.blob || null, fotoDe: foto?.de || null, quitarFoto: quitarFoto && !foto,
+            })).then(nuevo => { D0.ajustes = { ...aj(), ...nuevo }; cerrar(false); rehacer() }, er => {
+                guardando = false
+                sig.disabled = false
+                ponerPaso(2)
+                err.textContent = (typeof er?.message === 'string' && er.message.length < 140 && er.message) || 'No se pudo guardar. Revisa tu conexión e inténtalo otra vez.'
+            })
+        })
     }
 
     // ---- Modo junta: presentar el boletín paso a paso (botón, flechas o el control de la presentación) ----

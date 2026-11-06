@@ -99,6 +99,8 @@ export const API_ROUTES = {
         /* El boletín nacional interactivo y el mensaje de la Directora Nacional para su junta */
         BOLETIN_NACIONAL: '/reports/boletin-nacional',
         BOLETIN_NACIONAL_AJUSTES: '/reports/boletin-nacional/ajustes',
+        /** Directoras adoptivas del boletín nacional: POST agrega (o edita con id, con su foto) y DELETE quita. */
+        BOLETIN_NACIONAL_ADOPTIVAS: (id?: string) => `/reports/boletin-nacional/adoptivas${id ? `/${id}` : ''}`,
         NATIONAL: '/reports/national',
         LIST_UPLOADS: '/reports/uploads',
         UPLOAD: '/reports/upload',

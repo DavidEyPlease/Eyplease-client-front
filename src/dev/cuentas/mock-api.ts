@@ -500,6 +500,25 @@ export const calls: Array<{ method: string, path: string, mocked: boolean }> = [
 
 const LENTO = Number(new URLSearchParams(location.search).get('lento') ?? 0) || 0
 
+/* Las directoras adoptivas del boletín nacional: en sessionStorage, como si la API las guardara (la foto, como data:) */
+type AdoptivaDemo = { id: string, nombre: string, foto: string | null, datos: Record<string, unknown> }
+const ADOPTIVAS = 'cuentas:adoptivas'
+const leerAdoptivas = (): Record<string, AdoptivaDemo[]> => { try { return JSON.parse(sessionStorage.getItem(ADOPTIVAS) || '{}') } catch { return {} } }
+const clave = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+const ajustesAdoptivas = (mes: string) => {
+    const todo = leerAdoptivas()
+    const adoptivas = todo[mes] || []
+    const ya = new Set(adoptivas.map(a => clave(a.nombre)))
+    const [y, m] = mes.split('-').map(Number)
+    const desde = `${new Date(y, m - 4, 1).getFullYear()}-${String(new Date(y, m - 4, 1).getMonth() + 1).padStart(2, '0')}`
+    const vistas = new Set<string>()
+    const anteriores = Object.keys(todo).filter(k => k < mes && k >= desde).sort().reverse()
+        .flatMap(k => todo[k].map(a => ({ ...a, mes: k })))
+        .filter(a => !ya.has(clave(a.nombre)) && !vistas.has(clave(a.nombre)) && !!vistas.add(clave(a.nombre)))
+    return { adoptivas, anteriores, maxAdoptivas: 10 }
+}
+const comoDataUrl = (b: Blob) => new Promise<string>(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.readAsDataURL(b) })
+
 const respond = (data: unknown, status = 200) => new Response(JSON.stringify({ success: status < 400, data, message: status < 400 ? 'OK' : 'Sin permiso (simulado)' }), { status, headers: { 'Content-Type': 'application/json' } })
 
 export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => {
@@ -825,9 +844,41 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         }
         /* El boletín nacional interactivo: sólo el plan Nacional; …&boletin=vacio, un mes sin reportes del Área */
         else if (path === '/reports/boletin-nacional') response = owned.has('national_newsletter') && PLAN_KEYS[actual.id] === 'national'
-            ? respond(sessionStorage.getItem('cuentas:boletin') === 'vacio' ? { ...boletinNacionalDemo, personas: [] } : structuredClone(boletinNacionalDemo))
+            ? respond(sessionStorage.getItem('cuentas:boletin') === 'vacio' ? { ...boletinNacionalDemo, personas: [] }
+                : { ...structuredClone(boletinNacionalDemo), ajustes: { mensaje: null, ...ajustesAdoptivas(q.get('year_month') || '') } })
             : respond(null, 403)
-        else if (path === '/reports/boletin-nacional/ajustes' && method === 'PUT') response = respond({ mensaje: JSON.parse(String(init?.body ?? '{}')).mensaje || null })
+        else if (path === '/reports/boletin-nacional/ajustes' && method === 'PUT') {
+            const body = JSON.parse(String(init?.body ?? '{}'))
+            response = respond({ mensaje: body.mensaje || null, ...ajustesAdoptivas(body.year_month) })
+        }
+        /* Sus directoras adoptivas: agregar o editar (formulario con foto) y quitar */
+        else if (/^\/reports\/boletin-nacional\/adoptivas(\/[^/]+)?$/.test(path) && method === 'POST') {
+            const f = init?.body as FormData
+            const id = path.split('/')[4]
+            const mes = String(f.get('year_month'))
+            const todo = leerAdoptivas()
+            const lista = todo[mes] || []
+            const antes = id ? lista.find(a => a.id === id) : undefined
+            const foto = f.get('foto') as Blob | null
+            const deOtro = f.get('foto_de') ? Object.values(todo).flat().find(a => a.id === f.get('foto_de'))?.foto : null
+            const fila: AdoptivaDemo = {
+                id: id || crypto.randomUUID(), nombre: String(f.get('nombre')), datos: JSON.parse(String(f.get('datos'))),
+                foto: foto ? await comoDataUrl(foto) : deOtro || (f.get('quitar_foto') ? null : antes?.foto ?? null),
+            }
+            if (!id && lista.length >= 10) response = new Response(JSON.stringify({ success: false, message: 'Ya tienes 10 directoras adoptivas este mes.' }), { status: 422, headers: { 'Content-Type': 'application/json' } })
+            else {
+                todo[mes] = id ? lista.map(a => (a.id === id ? fila : a)) : [...lista, fila]
+                sessionStorage.setItem(ADOPTIVAS, JSON.stringify(todo))
+                response = respond({ mensaje: null, ...ajustesAdoptivas(mes) })
+            }
+        }
+        else if (/^\/reports\/boletin-nacional\/adoptivas\/[^/]+$/.test(path) && method === 'DELETE') {
+            const mes = q.get('year_month') || ''
+            const todo = leerAdoptivas()
+            todo[mes] = (todo[mes] || []).filter(a => a.id !== path.split('/')[4])
+            sessionStorage.setItem(ADOPTIVAS, JSON.stringify(todo))
+            response = respond({ mensaje: null, ...ajustesAdoptivas(mes) })
+        }
         else if (path === '/reports/preferences') {
             // Como la API real: sólo los boletines que su plan trae, con las secciones del catálogo
             const newsletters = (utilData.newsletters as Array<{ code: string, name: string, sections: Array<{ sectionKey: string, name: string }> }>)
