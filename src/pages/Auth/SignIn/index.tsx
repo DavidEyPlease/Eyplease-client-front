@@ -8,7 +8,7 @@ import { ApiResponse, AuthResponse } from "@/interfaces/common"
 import Button from "@/components/common/Button"
 import TextInput from "@/components/common/Inputs/TextInput"
 import Link from "@/components/common/Link"
-import { APP_ROUTES, FAREWELL_KEY, PENDING_GIFT_KEY, SESSION_KEY } from "@/constants/app"
+import { APP_ROUTES, FAREWELL_KEY, PENDING_GIFT_KEY, RETURN_AFTER_LOGIN_KEY, SESSION_KEY, safeReturnPath } from "@/constants/app"
 import { API_ROUTES } from "@/constants/api"
 import useAuth from "@/hooks/useAuth"
 import { isNewShell } from "@/layouts/TopShell/useNewShell"
@@ -55,7 +55,15 @@ const SignInPage = () => {
                 await getMe()
                 // Venía de la página de su regalo («Invitar con regalo»): regresa a activarlo
                 const regalo = (() => { try { return sessionStorage.getItem(PENDING_GIFT_KEY) } catch { return null } })()
-                navigate(regalo ? APP_ROUTES.GIFT.replace(':token', regalo) : APP_ROUTES.HOME.INITIAL)
+                // Venía de una liga sin sesión (p. ej. «Conecta tu Mary Kay» del bot o de un correo): regresa ahí
+                const volver = (() => {
+                    try {
+                        const path = sessionStorage.getItem(RETURN_AFTER_LOGIN_KEY)
+                        sessionStorage.removeItem(RETURN_AFTER_LOGIN_KEY)
+                        return safeReturnPath(path)
+                    } catch { return null }
+                })()
+                navigate(regalo ? APP_ROUTES.GIFT.replace(':token', regalo) : volver ?? APP_ROUTES.HOME.INITIAL)
             }
         } catch (error) {
             console.error(error)

@@ -4,7 +4,7 @@ import HttpService from '@/services/http'
 import { ApiResponse, GlobalUtilData } from "@/interfaces/common"
 import { useLocation, useNavigate } from "react-router"
 import useAuthStore from "@/store/auth"
-import { APP_ROUTES, FAREWELL_KEY, isPublicPath, SESSION_KEY } from "@/constants/app"
+import { APP_ROUTES, FAREWELL_KEY, isPublicPath, SESSION_KEY, RETURN_AFTER_LOGIN_KEY, safeReturnPath } from "@/constants/app"
 import { API_ROUTES } from "@/constants/api"
 import { IChangePasswordData, IUser, IUserUpdate } from "@/interfaces/users"
 import { toast } from "sonner"
@@ -85,6 +85,11 @@ const useAuth = () => {
         }).catch(() => {
             // Sin sesión: el acceso, salvo en el registro y las páginas públicas (la del regalo)
             if (!Object.values(APP_ROUTES.AUTH).includes(location.pathname) && !isPublicPath(location.pathname)) {
+                // Su sesión venció en una liga (del bot, de un correo): al entrar regresa ahí
+                const wanted = safeReturnPath(location.pathname + location.search)
+                if (wanted && location.pathname !== APP_ROUTES.HOME.INITIAL) {
+                    try { sessionStorage.setItem(RETURN_AFTER_LOGIN_KEY, wanted) } catch { /* va a «Hoy» */ }
+                }
                 navigate(APP_ROUTES.AUTH.SIGN_IN)
             }
         }).finally(() => {

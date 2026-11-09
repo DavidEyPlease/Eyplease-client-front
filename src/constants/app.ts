@@ -71,6 +71,12 @@ export const PUBLIC_PREFIXES = ['/regalo/']
 export const isPublicPath = (pathname: string) => PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix))
 /** El regalo que quería activar quien ya tenía cuenta: al entrar, se le regresa a su página */
 export const PENDING_GIFT_KEY = 'eyplease:regalo'
+/** La página que pidió sin sesión (una liga del bot o de un correo, p. ej. `/tu-estrategia?conectar=1`): al entrar regresa ahí */
+export const RETURN_AFTER_LOGIN_KEY = 'eyplease:volver'
+
+/** Sólo rutas internas de la app (nada de otro dominio ni de las pantallas de acceso) */
+export const safeReturnPath = (path: string | null | undefined): string | null =>
+    path && path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/auth') ? path : null
 /** Lo que se acaba de activar, para el aviso de bienvenida en «Tu estrategia» (una sola vez) */
 export const GIFT_WELCOME_KEY = 'eyplease:regalo-activo'
 /** Nombre de quien acaba de cerrar sesión: el acceso lo lee una vez para despedirla */

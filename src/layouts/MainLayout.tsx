@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Navigate, Outlet, useLocation } from "react-router"
 import { useQueryClient } from "@tanstack/react-query"
 
-import { APP_ROUTES, SESSION_KEY } from "@/constants/app"
+import { APP_ROUTES, RETURN_AFTER_LOGIN_KEY, SESSION_KEY, safeReturnPath } from "@/constants/app"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { BillingEnforcementProvider } from "@/components/billing/enforcement/BillingEnforcementContext"
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
@@ -44,6 +44,11 @@ const MainLayout = () => {
     }, [location.pathname])
 
     if (!localStorage.getItem(SESSION_KEY)) {
+        // Llegó por una liga (del bot, de un correo) sin sesión: al entrar se le regresa ahí, no a «Hoy»
+        const wanted = safeReturnPath(location.pathname + location.search)
+        if (wanted && location.pathname !== APP_ROUTES.HOME.INITIAL) {
+            try { sessionStorage.setItem(RETURN_AFTER_LOGIN_KEY, wanted) } catch { /* sin almacenamiento: va a «Hoy» */ }
+        }
         return <Navigate to={APP_ROUTES.AUTH.SIGN_IN} replace />
     }
 
