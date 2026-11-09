@@ -107,6 +107,8 @@ export const API_ROUTES = {
         GENERATE_REPORT_PDF: '/reports/generate-pdf/{templateId}/{reportType}',
         GENERATE_REPORT_PPTX: '/reports/generate-pptx/{templateId}/{reportType}',
         GENERATE_ANNUAL_REPORT: '/reports/generate-annual-report',
+        /** Su contraseña de InTouch: GET dice si ya la tiene (y con qué cuenta entra el robot); PUT la guarda cifrada */
+        INTOUCH: '/reports/intouch',
     },
     CHAT: {
         SEND_SERVICES_MESSAGE: '/chat/services',

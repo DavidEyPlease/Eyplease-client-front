@@ -18,6 +18,7 @@ import ItemRow, { ItemGroup } from './components/ItemRow'
 import HowToDialog from './components/HowToDialog'
 import SaleDialog from './components/SaleDialog'
 import SalesList from './components/SalesList'
+import ConnectMaryKay from './components/ConnectMaryKay'
 
 export const Figure = ({ label, value, win = false, wide = false }: { label: string, value: string, win?: boolean, wide?: boolean }) => (
     <div className={cn('rounded-2xl px-3.5 py-3', wide && 'col-span-2', win ? 'bg-[linear-gradient(135deg,#E5077D,#6C47FF)] text-white' : 'bg-foreground/[0.04]')}>
@@ -87,6 +88,8 @@ const InventarioPage = () => {
                 {data && !error && !locked && <SellButton onClick={() => setSelling(true)} />}
             </PageHead>
 
+            {!locked && <ConnectMaryKay />}
+
             {locked ? (
                 <StrategyLock title="Tu inventario viene con el Plan Standard" text="Tus pedidos de Mary Kay se suman solos, ves cuánto tienes guardado y lo que te costó, y lo que vendes baja al anotarlo en «Ya me compró»." />
             ) : loading ? (
@@ -121,7 +124,7 @@ const InventarioPage = () => {
                         {!hasItems && (
                             <div className="mt-3 rounded-2xl border border-dashed border-border px-4 py-6 text-center">
                                 <p className="text-[14px] font-extrabold">Todavía no vemos pedidos tuyos</p>
-                                <p className="mt-1 text-[13px] text-muted-foreground">Cuando bajemos tus pedidos de Mary Kay aparecen aquí solos. Mientras, agrega lo que tienes guardado.</p>
+                                <p className="mt-1 text-[13px] text-muted-foreground">Cuando bajemos tus pedidos de Mary Kay aparecen aquí solos (para eso conecta tu Mary Kay arriba). Mientras, agrega lo que tienes guardado.</p>
                             </div>
                         )}
 

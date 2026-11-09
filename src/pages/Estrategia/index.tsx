@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { isStrategyLockedError, useStrategyAccess } from './feature'
 import { estrategiaDeEjemplo } from './ejemplo'
 import StrategyLock from './components/StrategyLock'
+import ConnectMaryKay from './components/ConnectMaryKay'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { dayLabel, friendlyError, money, splitPrice } from './format'
 import { Card, Chip } from './components/Chips'
@@ -167,6 +168,7 @@ const EstrategiaPage = () => {
 
             {locked && <StrategyLock />}
             {!locked && <GiftWelcome />}
+            {!locked && <ConnectMaryKay />}
 
             {isLoading ? (
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">

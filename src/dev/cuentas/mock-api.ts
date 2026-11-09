@@ -526,6 +526,7 @@ const ajustesAdoptivas = (mes: string) => {
 }
 const comoDataUrl = (b: Blob) => new Promise<string>(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.readAsDataURL(b) })
 
+let intouchSaved = false
 const respond = (data: unknown, status = 200) => new Response(JSON.stringify({ success: status < 400, data, message: status < 400 ? 'OK' : 'Sin permiso (simulado)' }), { status, headers: { 'Content-Type': 'application/json' } })
 
 export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => {
@@ -608,6 +609,9 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             const blob = await invitationsDemo?.image(path.split('/')[3])
             response = blob ? new Response(blob, { status: 200, headers: { 'Content-Type': 'image/jpeg' } }) : notFound('No encontramos esa invitación.')
         }
+        // Su contraseña de InTouch («Conecta tu Mary Kay», 9-nov-2026): sin ella al entrar; `&intouch=si` ya la trae
+        else if (path === '/reports/intouch' && method === 'GET') response = respond({ has_password: intouchSaved || new URLSearchParams(location.search).get('intouch') === 'si', account: '581974' })
+        else if (path === '/reports/intouch' && method === 'PUT') { intouchSaved = true; response = respond({ has_password: true }) }
         else if (path === '/billing/standard' && method === 'GET') response = respond(standardQuote(actual, role))
         else if (path === '/billing/standard' && method === 'POST') {
             const quote = standardQuote(actual, role)
