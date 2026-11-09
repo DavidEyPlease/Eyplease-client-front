@@ -772,3 +772,32 @@ button { font: inherit; color: inherit; cursor: pointer; }
     .ad-pie .ad-b { flex: 1 1 auto; }
     .ad-rejilla { grid-template-columns: 1fr; }
 }
+
+/* ---- la carrera, las unidades y los bonos, tapados hasta coronar a la última reina del Cuadro de Honor ---- */
+.tapada { min-height: 640px; }
+.tapada > :not(.cab):not(.velo) { filter: blur(22px) brightness(.7) saturate(.6); pointer-events: none; user-select: none; }
+.destapando > :not(.cab):not(.velo) { animation: desvela 1s var(--ease) both; }
+@keyframes desvela { from { filter: blur(22px) brightness(.7) saturate(.6); } to { filter: blur(0) brightness(1) saturate(1); } }
+.velo { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; pointer-events: none; }
+.velo-in {
+    position: sticky; top: calc(var(--barra) + 18vh); display: grid; justify-items: center; gap: 10px;
+    width: min(460px, calc(100% - 32px)); margin: 20px auto 40px; padding: 30px 26px 24px; text-align: center;
+    pointer-events: auto; background: rgba(var(--hondo-rgb), .82); box-shadow: 0 0 0 1px rgba(246, 199, 107, .35) inset, 0 30px 70px -30px rgba(0, 0, 0, .95);
+}
+.velo-corona { width: 38px; aspect-ratio: 64 / 44; background: var(--oro); filter: drop-shadow(0 0 12px rgba(246, 199, 107, .55));
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path d='M4 14l14 12L32 4l14 22 14-12-6 26H10z'/></svg>") center / contain no-repeat;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path d='M4 14l14 12L32 4l14 22 14-12-6 26H10z'/></svg>") center / contain no-repeat; }
+.velo-in .kicker { color: var(--oro); }
+.velo-in b { font: 600 calc(24px * var(--l))/1.2 var(--serif); }
+.velo-in p:not(.kicker) { margin: 0; font-size: calc(15px * var(--l)); line-height: 1.5; color: rgba(var(--marfil-rgb), .82); }
+.velo-n { font-size: calc(12.5px * var(--l)); font-weight: 600; letter-spacing: .04em; color: var(--rosa); }
+.velo-b { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px; }
+.velo-b .chico { height: 50px; }
+.velo.se-va .velo-in { animation: velo-va .5s var(--ease) both; }
+@keyframes velo-va { to { opacity: 0; transform: translateY(-14px) scale(.96); } }
+@media (max-width: 600px) {
+    .tapada { min-height: 600px; }
+    .velo-in { padding: 24px 18px 20px; }
+    .velo-in b { font-size: calc(20px * var(--l)); }
+    .velo-b .ir, .velo-b .chico { flex: 1 1 100%; justify-content: center; }
+}

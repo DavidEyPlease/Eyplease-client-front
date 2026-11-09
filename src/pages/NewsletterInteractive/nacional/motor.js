@@ -224,18 +224,20 @@ const achicarFoto = archivo => new Promise((ok, mal) => {
 export function crearBoletinNacional(host, D, op = {}) {
     const titulo = document.title
     let vivo = null
+    // lo que sobrevive a rehacerlo: si ya destapó la carrera y los bonos, no se le vuelven a tapar
+    const estado = { destapado: false }
     // al guardar o quitar una adoptiva el boletín se vuelve a armar con ella, en el mismo lugar y con Ajustes abierto
     const rehacer = () => {
         const y = window.scrollY
         vivo?.destruir()
-        vivo = armarBoletin(host, D, op, rehacer, true)
+        vivo = armarBoletin(host, D, op, rehacer, true, estado)
         window.scrollTo(0, y)
     }
-    vivo = armarBoletin(host, D, op, rehacer, false)
+    vivo = armarBoletin(host, D, op, rehacer, false, estado)
     return { destruir() { vivo?.destruir(); document.title = titulo } }
 }
 
-function armarBoletin(host, D0, op, rehacer, abrirAjustes) {
+function armarBoletin(host, D0, op, rehacer, abrirAjustes, estado = { destapado: false }) {
     const D = conAdoptivas(D0)
     if (!document.getElementById('boletin-nacional-fuentes')) {
         const l = document.createElement('link')
@@ -809,6 +811,7 @@ function armarBoletin(host, D0, op, rehacer, abrirAjustes) {
                 const caja = $('.finalistas')
                 caja.insertAdjacentHTML('beforeend', `<div class="insignia">${esc(insignia(k(), reinas.map(x => x.p)))}</div>`)
                 reveladas.add(cat)
+                revisarVelos()
                 pintarReinas()
                 pintarMeses(k(), true)
                 // la reina sale en grande; al cerrarla sigue la ceremonia
@@ -1213,6 +1216,62 @@ function armarBoletin(host, D0, op, rehacer, abrirAjustes) {
         $(`.secciones a[href="#${id}"]`)?.setAttribute('hidden', '')
     })
 
+    // ---- sin adelantar a las reinas: la carrera, las unidades y los bonos dicen quién produjo más, así que se quedan
+    // tapados hasta coronar a la reina de cada categoría del Cuadro de Honor (o hasta que la Directora toque «Ver ahora»).
+    // Cada vez que se abre el boletín empiezan tapados. ----
+    let tapado = CATS.length > 0 && !estado.destapado
+    const velos = []
+    const contenido = s => [...s.children].filter(c => !c.matches('.cab, .velo'))
+    // el velo empieza donde termina el título de la sección: el título sí se lee
+    const colocarVelos = () => velos.forEach(({ s, v }) => { v.style.top = `${contenido(s)[0]?.offsetTop || 0}px` })
+    const contarVelos = () => $$('[data-velo-n]').forEach(n => { n.textContent = `Van ${reveladas.size} de ${CATS.length} categorías coronadas` })
+    const ro = new ResizeObserver(colocarVelos)
+    if (tapado) ['carrera', 'unidades', 'bonos'].forEach(id => {
+        const s = $(`#${id}`)
+        if (!s || s.hidden) return
+        s.classList.add('tapada')
+        contenido(s).forEach(c => { c.inert = true })
+        s.insertAdjacentHTML('beforeend', '<div class="velo"><div class="velo-in panel" role="note"><i class="velo-corona" aria-hidden="true"></i>'
+            + '<p class="kicker">Primero, las reinas</p><b>Se destapa al coronar a la última reina del Cuadro de Honor</b>'
+            + '<p>Así nadie sabe antes quién ganó.</p><small class="velo-n" data-velo-n></small>'
+            + '<div class="velo-b"><button type="button" class="ir" data-velo-ir>Ir al Cuadro de Honor</button><button type="button" class="chico" data-velo-ya>Ver ahora</button></div></div></div>')
+        velos.push({ s, v: $('.velo', s) })
+        ro.observe(s)
+    })
+    contarVelos()
+    limpiar.push(() => ro.disconnect())
+    function destapar() {
+        if (!tapado) return
+        tapado = false
+        estado.destapado = true
+        ro.disconnect()
+        velos.forEach(({ s, v }) => {
+            v.classList.add('se-va')
+            s.classList.replace('tapada', 'destapando')
+            contenido(s).forEach(c => { c.inert = false })
+            const t = setTimeout(() => { v.remove(); s.classList.remove('destapando') }, 1000)
+            limpiar.push(() => clearTimeout(t))
+        })
+        // si la carrera ya está a la vista, arranca
+        ioC.unobserve($('.pista'))
+        ioC.observe($('.pista'))
+        if (enJunta) pasos = calcularPasos()
+    }
+    function revisarVelos() {
+        contarVelos()
+        if (tapado && reveladas.size >= CATS.length) destapar()
+    }
+    on(root, 'click', e => {
+        if (e.target.closest('[data-velo-ya]')) destapar()
+        if (!e.target.closest('[data-velo-ir]')) return
+        // a la primera categoría que falta coronar
+        const i = CATS.findIndex((_, j) => !reveladas.has(j))
+        if (i >= 0 && (cat < 0 || reveladas.has(cat))) mostrarCat(i)
+        const j = enJunta ? pasos.findIndex(p => p.matches('.ceremonia')) : -1
+        if (j >= 0) irPaso(j)
+        else $('#top').scrollIntoView({ behavior: 'smooth' })
+    })
+
     // ---- lo que aparece al verse, la carrera arranca sola la primera vez ----
     const io = new IntersectionObserver(entradas => entradas.forEach(e => { if (e.isIntersecting) { e.target.classList.add('ver'); io.unobserve(e.target) } }), { threshold: .15 })
     $$('.revela').forEach(el => io.observe(el))
@@ -1220,7 +1279,7 @@ function armarBoletin(host, D0, op, rehacer, abrirAjustes) {
     ioH.observe($('.ceremonia'))
     ioV.observe($('.ceremonia'))
     let arrancada = false
-    const ioC = new IntersectionObserver(([e]) => { if (e.isIntersecting && !arrancada) { arrancada = true; correr() } }, { threshold: .35 })
+    const ioC = new IntersectionObserver(([e]) => { if (e.isIntersecting && !arrancada && !tapado) { arrancada = true; correr() } }, { threshold: .35 })
     ioC.observe($('.pista'))
 
     // ---- navegación dentro del Shadow DOM ----
@@ -1542,7 +1601,7 @@ function armarBoletin(host, D0, op, rehacer, abrirAjustes) {
         const bloques = []
         $$('main > section:not([hidden])').forEach(s => {
             if (s.matches('.entrada, .cierre, #mensaje')) { bloques.push(s); return }
-            ;[...s.children].filter(visible).forEach(c => {
+            ;[...s.children].filter(c => visible(c) && !c.matches('.velo')).forEach(c => {
                 if (c.offsetHeight > alto && c.children.length > 1 && !c.matches('.ceremonia, .escenario')) bloques.push(...[...c.children].filter(visible))
                 else bloques.push(c)
             })
@@ -1559,11 +1618,12 @@ function armarBoletin(host, D0, op, rehacer, abrirAjustes) {
     const irPaso = i => {
         iPaso = Math.max(0, Math.min(pasos.length - 1, i))
         const el = pasos[iPaso]
-        if (el.matches('.escenario')) arrancada = true // la arranca la junta, desde cero
+        const corre = el.matches('.escenario') && !tapado // tapada no corre: arranca al destaparla
+        if (corre) arrancada = true // la arranca la junta, desde cero
         const y = el.getBoundingClientRect().top + scrollY - (el.matches('.entrada, .escenario, .ceremonia') ? 12 : 28)
         window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' })
         ponerHud()
-        if (el.matches('.escenario')) { const t = setTimeout(() => { detener(); reiniciar(); correr() }, 700); limpiar.push(() => clearTimeout(t)) }
+        if (corre) { const t = setTimeout(() => { detener(); reiniciar(); correr() }, 700); limpiar.push(() => clearTimeout(t)) }
     }
     const cerTerminada = () => cat >= CATS.length - 1 && etapa >= etapas.length - 1
     function ponerHud() {
