@@ -1,3 +1,5 @@
+import { useRef } from "react"
+
 import { API_ROUTES } from "@/constants/api"
 import useFetchQuery from "@/hooks/useFetchQuery"
 import { IPlan, IPlanOfferCommitment, PlanKeys } from "@/interfaces/plans"
@@ -61,17 +63,27 @@ export const planDeal = (plan: IPlan | null | undefined): PlanDeal => {
     return { kind: 'none', title: null, detail: null, short: null, cta: 'Me quedo con este plan', label: null, commitment: null }
 }
 
-/** El plan que se le recomienda en el registro (misma petición para el paso del plan, «Tu cuenta» y el botón) */
-const useRecommendedPlan = (planKey: PlanKeys | null | undefined, enabled = true) => {
+/**
+ * El plan que se le recomienda en el registro (misma petición para el paso del plan, «Tu cuenta» y el botón).
+ * `preferTrial`: la Directora escogió su mes gratis en lugar de la promoción con permanencia (Elite y Área en el Buen
+ * Fin): la API le quita la oferta, le deja su prueba y devuelve en `declined_offer` la promoción que dejó.
+ * `promo` es esa promoción, la tenga puesta o no: con ella el paso del plan le deja escoger entre las dos.
+ */
+const useRecommendedPlan = (planKey: PlanKeys | null | undefined, enabled = true, preferTrial = false) => {
     const { response, loading } = useFetchQuery<IPlan>(
-        API_ROUTES.SIGN_UP.GET_RECOMMENDED_PLAN.replace('{plan_key}', planKey ?? ''),
+        API_ROUTES.SIGN_UP.GET_RECOMMENDED_PLAN.replace('{plan_key}', planKey ?? '') + (preferTrial ? '?prefer_trial=1' : ''),
         {
-            customQueryKey: queryKeys.detail('plan', planKey ?? ''),
+            customQueryKey: queryKeys.detail('plan', `${planKey ?? ''}${preferTrial ? ':mes-gratis' : ''}`),
             enabled: !!planKey && enabled,
         }
     )
-    const plan = response?.data ?? null
-    return { plan, loading, deal: planDeal(plan) }
+    // Al cambiar entre la promoción y el mes gratis se queda la tarjeta anterior (del mismo plan) mientras llega la otra
+    const last = useRef<IPlan | null>(null)
+    const fresh = response?.data ?? null
+    if (fresh) last.current = fresh
+    const plan = fresh ?? (last.current && last.current.plan_key === planKey ? last.current : null)
+    const promo = plan?.offer?.commitment ? plan.offer : (plan?.declined_offer ?? null)
+    return { plan, loading, deal: planDeal(plan), promo }
 }
 
 export default useRecommendedPlan

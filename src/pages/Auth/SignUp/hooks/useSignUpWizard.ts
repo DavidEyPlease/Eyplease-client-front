@@ -41,6 +41,8 @@ const STEPS_OTHER: StepKey[] = ['name', 'email', 'phone', 'userType', 'otherCont
  * `?plan=executive` es el plan de regalo de la invitación (la de «Mis Directoras» regala el primer mes del Ejecutivo,
  * que es la prueba de 30 días del registro): se elige ése en vez del que se le recomendaría por su unidad.
  * `?plan=national` (Plan Área) entra desde el Buen Fin de nov-2026: las ligas de la promoción llevan a Elite o a Área.
+ * `?prueba=1` (8-nov-2026): la Directora llega escogiendo su mes gratis en lugar de la promoción del Buen Fin (la liga
+ * que le da el bot); en el paso del plan puede cambiar a la otra.
  */
 const PLANES_DE_INVITACION: string[] = [PlanKeys.BASIC, PlanKeys.EXECUTIVE, PlanKeys.ELITE, PlanKeys.NATIONAL]
 
@@ -53,6 +55,7 @@ const inviteParams = () => {
         unitAccount: query.get('unidad')?.trim() || null,
         source: /^[a-z0-9_-]{1,40}$/.test(source) ? source : null,
         plan: PLANES_DE_INVITACION.includes(plan) ? plan as PlanKeys : null,
+        preferTrial: ['1', 'si', 'sí', 'true'].includes(query.get('prueba')?.trim().toLowerCase() ?? ''),
     }
 }
 
@@ -92,6 +95,7 @@ const useSignUpWizard = () => {
         otherContext: '',
         acceptTerms: false as unknown as true,
         acceptPromoTerms: false,
+        preferTrial: invite.preferTrial,
     })
 
     const { watch, setValue, trigger, getValues, setError, clearErrors } = form
@@ -102,11 +106,12 @@ const useSignUpWizard = () => {
     const unitSize = watch('unitSize')
     const directorYears = watch('directorYears')
     const recommendedPlan = watch('recommendedPlan')
+    const preferTrial = !!watch('preferTrial')
 
     const planToShow: PlanKeys = recommendedPlan
         ?? recommendPlan(userType, unitSize, directorYears)
     // Con oferta de entrada (el Standard desde su lanzamiento) no hay prueba: al terminar se le lleva a contratarlo
-    const { deal } = useRecommendedPlan(planToShow, userType !== 'other')
+    const { deal } = useRecommendedPlan(planToShow, userType !== 'other', preferTrial)
     // La permanencia de su oferta (Elite y Área en el Buen Fin): el último paso le pide aceptarla y va en el alta
     const commitment = deal.kind === 'offer' ? deal.commitment : null
 
@@ -216,6 +221,8 @@ const useSignUpWizard = () => {
             ...(commitment && data.acceptPromoTerms
                 ? { accept_promo_terms: true, promo_terms_version: commitment.terms_version }
                 : {}),
+            // Escogió su mes gratis en lugar de la promoción: la API no se la aplica y la deja con su prueba
+            ...(data.preferTrial && !commitment ? { prefer_trial: true } : {}),
         }
         try {
             const response = await request<typeof payload, AuthResponse>('POST', API_ROUTES.SIGN_UP.REGISTER, payload)

@@ -117,7 +117,12 @@ const SignUpPage = () => {
                     <StepUnitDetails control={control} errors={errors} />
                 )}
                 {currentKey === 'plan' && (
-                    <StepPlanRecommendation planKey={planToShow} firstName={firstName} />
+                    <StepPlanRecommendation
+                        planKey={planToShow}
+                        firstName={firstName}
+                        preferTrial={!!values.preferTrial}
+                        onPreferTrial={(value) => setValue('preferTrial', value)}
+                    />
                 )}
                 {currentKey === 'mk' && (
                     <StepMKConnect

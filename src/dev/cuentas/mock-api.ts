@@ -346,11 +346,15 @@ const STANDARD_FEATURES_LANZAMIENTO = [
     'Tu estrategia del mes: qué ofrecer y a qué precio', 'Tu inventario y tus ventas, desde tus órdenes',
     'Piezas con tu logo para tus clientas', 'Mis clientas y a quién volver a ofrecerle', 'Biblioteca',
 ]
-const recommendedPlan = (key: string) => {
+const recommendedPlan = (key: string, preferTrial = false) => {
     const found = PLANS.find(p => PLAN_KEYS[p.id] === key)
     if (!found) return null
     const base = { ...found, plan_key: key, trial_days: 30, offer: null as { months: number, amount: number, label?: string, commitment?: typeof BUEN_FIN_COMMITMENT } | null }
-    if (BUEN_FIN && (key === 'elite' || key === 'national')) return { ...base, trial_days: 0, offer: { months: 6, amount: 659, label: 'Buen Fin', commitment: BUEN_FIN_COMMITMENT } }
+    if (BUEN_FIN && (key === 'elite' || key === 'national')) {
+        const promo = { months: 6, amount: 659, label: 'Buen Fin', commitment: BUEN_FIN_COMMITMENT }
+        // Como la API: con `?prefer_trial=1` se queda con su mes gratis y la promoción va en `declined_offer`
+        return preferTrial ? { ...base, declined_offer: promo } : { ...base, trial_days: 0, offer: promo }
+    }
     if (key !== 'standard' || (REGISTRO !== 'lanzamiento' && !BUEN_FIN)) return base
     const offer = BUEN_FIN ? { months: 6, amount: 99, label: 'Buen Fin' } : { months: 3, amount: 99 }
     return { ...base, price: 139, trial_days: 0, offer, features: STANDARD_FEATURES_LANZAMIENTO }
@@ -687,7 +691,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             : new Response(JSON.stringify({ success: false, data: null, message: 'Unauthenticated.' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
         else if (path === '/sign-up/validate-email' || path === '/sign-up/validate-username') response = respond(null)
         else if (path.startsWith('/sign-up/recommended-plan/')) {
-            const found = recommendedPlan(path.split('/').pop() ?? '')
+            const found = recommendedPlan(path.split('/').pop() ?? '', q.get('prefer_trial') === '1')
             response = found ? respond(found) : new Response(JSON.stringify({ success: false, data: null, message: 'PLAN_NOT_FOUND' }), { status: 422, headers: { 'Content-Type': 'application/json' } })
         }
         else if (path === '/sign-up/register' && method === 'POST') {

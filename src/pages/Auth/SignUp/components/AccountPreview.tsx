@@ -43,7 +43,7 @@ const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0
  */
 const AccountPreview = ({ values, steps, current, planKey }: Props) => {
     // Cómo entra a su plan (oferta de entrada o prueba gratis): la misma petición que el paso del plan
-    const { deal } = useRecommendedPlan(planKey, values.userType !== 'other')
+    const { deal } = useRecommendedPlan(planKey, values.userType !== 'other', !!values.preferTrial)
     const reached = (key: StepKey) => {
         const i = steps.indexOf(key)
         return i !== -1 && i <= current

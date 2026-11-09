@@ -36,6 +36,8 @@ export const SignUpSchema = z.object({
     acceptTerms: z.literal(true, { message: 'Acepta los términos para continuar' }),
     // La permanencia de la oferta (Elite y Área en el Buen Fin). Sólo se exige si el plan la trae: lo revisa el wizard.
     acceptPromoTerms: z.boolean().optional(),
+    // Directora que prefiere su mes gratis de siempre en lugar de la promoción (Elite y Área en el Buen Fin)
+    preferTrial: z.boolean().optional(),
 })
 
 export type ISignUp = z.infer<typeof SignUpSchema>

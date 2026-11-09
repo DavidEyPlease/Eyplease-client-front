@@ -16,6 +16,9 @@ export interface IPlan {
     /** La oferta de entrada al registrarse, en lugar de la prueba (el Standard desde su lanzamiento: 3 meses a $99; en el
      * Buen Fin, el Standard 6 meses a $99 y Elite y Área 6 meses a $659) */
     offer?: IPlanOffer | null
+    /** La promoción que dejó por quedarse con su mes gratis (`?prefer_trial=1`, Elite y Área en el Buen Fin), para poder
+     * regresar a ella. Sólo viene cuando la escogió así */
+    declined_offer?: IPlanOffer | null
 }
 
 export interface IPlanOffer {
