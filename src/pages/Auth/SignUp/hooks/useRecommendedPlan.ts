@@ -8,9 +8,10 @@ import { queryKeys } from "@/utils/cache"
 const money = (n: number) => `$${n.toLocaleString('es-MX')}`
 
 /**
- * Cómo entra a su plan al registrarse, ya en palabras: con la oferta de entrada (el Standard desde su lanzamiento:
- * «Tus primeros 3 meses a $99», y luego el precio del plan), con su prueba gratis (los días que diga el plan) o
- * pagando sin más. Lo decide la API (`offer` y `trial_days`), no el registro.
+ * Cómo entra a su plan al registrarse, ya en palabras: con la oferta de entrada («Tus primeros 6 meses a $659» en el
+ * Buen Fin), con su prueba gratis (los días que diga el plan) o pagando sin más. Lo decide la API (`offer` y
+ * `trial_days`), no el registro. El Standard, desde el 9-nov-2026, entra con su mes gratis y dice lo que paga si se
+ * queda (`after_trial_offer`: «tus primeros 6 meses a $99»).
  * Si la oferta trae permanencia (`offer.commitment`: Elite y Área en el Buen Fin) ya no se cancela «cuando quieras»: lo
  * dice, y el último paso le pide aceptar sus términos.
  */
@@ -50,10 +51,13 @@ export const planDeal = (plan: IPlan | null | undefined): PlanDeal => {
     }
     const days = Number(plan?.trial_days ?? 0)
     if (days > 0) {
+        const after = plan?.after_trial_offer ?? null
         return {
             kind: 'trial',
             title: `Pruébalo ${trialSpan(days)} gratis`,
-            detail: 'Sin cobro automático. Cancela cuando quieras.',
+            detail: after
+                ? `Sin tarjeta y sin pagar hoy. Si te quedas, tus primeros ${after.months} ${after.months === 1 ? 'mes' : 'meses'} a ${money(after.amount)}${after.label ? ` por el ${after.label}` : ''} y después ${money(plan?.price ?? 0)} al mes. Lo cancelas cuando quieras.`
+                : 'Sin cobro automático. Cancela cuando quieras.',
             short: days === 30 ? '1 mes gratis' : `${days} ${days === 1 ? 'día' : 'días'} gratis`,
             cta: days === 30 ? 'Activar mi mes gratis' : `Activar mi${days === 1 ? '' : 's'} ${days} ${days === 1 ? 'día' : 'días'} gratis`,
             label: null,

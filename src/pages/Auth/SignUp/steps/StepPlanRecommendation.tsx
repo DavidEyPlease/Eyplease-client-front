@@ -52,7 +52,8 @@ const StepPlanRecommendation = ({ planKey, firstName, preferTrial = false, onPre
 
     const planMetadata = PLANS_METADATA[planKey]
     const planWithMetadata = plan ? { ...plan, ...planMetadata } : null
-    const offer = plan?.offer ?? null
+    // El precio que se enseña: el de su oferta, o el que paga si se queda al terminar su mes gratis (el Standard)
+    const offer = plan?.offer ?? plan?.after_trial_offer ?? null
 
     const personalGreeting = firstName ? `${firstName}, este plan es para ti` : 'Este plan es para ti'
 
@@ -90,7 +91,7 @@ const StepPlanRecommendation = ({ planKey, firstName, preferTrial = false, onPre
                             )}
                         </div>
 
-                        {/* Con oferta (la del Standard o la del Buen Fin), el precio de la oferta y el normal tachado */}
+                        {/* Con oferta (la del Buen Fin, o la del Standard después de su mes gratis), el precio de la oferta y el normal tachado */}
                         <div className="mt-4 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
                             <span className="text-[40px] leading-none font-extrabold tracking-[-.04em]">
                                 {formatPrice(offer ? offer.amount : planWithMetadata.price ?? 0)}

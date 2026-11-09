@@ -357,6 +357,9 @@ const recommendedPlan = (key: string, preferTrial = false) => {
     }
     if (key !== 'standard' || (REGISTRO !== 'lanzamiento' && !BUEN_FIN)) return base
     const offer = BUEN_FIN ? { months: 6, amount: 99, label: 'Buen Fin' } : { months: 3, amount: 99 }
+    // Como la API desde el 9-nov-2026 (`finance.standard.signup_trial_days`): la consultora entra con su mes gratis y
+    // `after_trial_offer` dice lo que paga si se queda. En el lanzamiento, como antes: la oferta, pagando al terminar.
+    if (BUEN_FIN) return { ...base, price: 139, trial_days: 30, after_trial_offer: offer, features: STANDARD_FEATURES_LANZAMIENTO }
     return { ...base, price: 139, trial_days: 0, offer, features: STANDARD_FEATURES_LANZAMIENTO }
 }
 

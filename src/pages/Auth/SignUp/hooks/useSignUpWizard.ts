@@ -110,7 +110,8 @@ const useSignUpWizard = () => {
 
     const planToShow: PlanKeys = recommendedPlan
         ?? recommendPlan(userType, unitSize, directorYears)
-    // Con oferta de entrada (el Standard desde su lanzamiento) no hay prueba: al terminar se le lleva a contratarlo
+    // Con oferta de entrada no hay prueba (el Standard hasta el 8-nov-2026: al terminar se le llevaba a contratarlo; desde
+    // el 9-nov entra con su mes gratis y la API ya no manda la oferta)
     const { deal } = useRecommendedPlan(planToShow, userType !== 'other', preferTrial)
     // La permanencia de su oferta (Elite y Área en el Buen Fin): el último paso le pide aceptarla y va en el alta
     const commitment = deal.kind === 'offer' ? deal.commitment : null

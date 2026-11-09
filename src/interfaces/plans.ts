@@ -19,6 +19,9 @@ export interface IPlan {
     /** La promoción que dejó por quedarse con su mes gratis (`?prefer_trial=1`, Elite y Área en el Buen Fin), para poder
      * regresar a ella. Sólo viene cuando la escogió así */
     declined_offer?: IPlanOffer | null
+    /** Lo que paga si se queda al terminar su mes gratis (el Standard desde el 9-nov-2026: entra con su prueba y, si lo
+     * contrata, su oferta; la del Buen Fin si se registra en esas fechas) */
+    after_trial_offer?: IPlanOffer | null
 }
 
 export interface IPlanOffer {
