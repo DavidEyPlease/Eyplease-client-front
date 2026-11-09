@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { CheckIcon, Loader2Icon, SparklesIcon } from 'lucide-react'
+import { CheckIcon, ImagesIcon, Loader2Icon, SparklesIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { APP_ROUTES } from '@/constants/app'
@@ -16,7 +16,8 @@ import AddItemDialog from './components/AddItemDialog'
 import { Card } from './components/Chips'
 import ItemRow, { ItemGroup } from './components/ItemRow'
 import HowToDialog from './components/HowToDialog'
-import SaleDialog from './components/SaleDialog'
+import SaleDialog, { SalePreset } from './components/SaleDialog'
+import ItemShareDialog from './components/ItemShareDialog'
 import SalesList from './components/SalesList'
 import ConnectMaryKay from './components/ConnectMaryKay'
 
@@ -47,7 +48,8 @@ const InventarioPage = () => {
     const sales = useSales({ perPage: 6, enabled: !access.locked })
     const locked = access.locked || isStrategyLockedError(error)
     const [adding, setAdding] = useState(false)
-    const [selling, setSelling] = useState(false)
+    const [selling, setSelling] = useState<{ preset: SalePreset | null } | null>(null)
+    const [sharing, setSharing] = useState<InventoryItem | null>(null)
     const [showOut, setShowOut] = useState(false)
     const [howto, setHowto] = useState<CustomerSale | null>(null)
 
@@ -64,6 +66,14 @@ const InventarioPage = () => {
     const summary = data?.summary
     const hasItems = !!data && data.items.length > 0
     const lastOrder = data?.last_order
+    // Los que ya tienen su imagen de la biblioteca (con su logo) y le quedan: cada uno con su «Compartir»
+    const shareable = data ? data.items.filter(item => item.piece && item.on_hand > 0).length : 0
+
+    /** «Ya me compró» desde «Compartir»: con ese producto, a su precio */
+    const sellItem = (item: InventoryItem) => {
+        setSharing(null)
+        setSelling({ preset: { lines: [{ sku: item.sku, quantity: 1 }] } })
+    }
 
     const onReview = () => review.mutate(undefined, {
         onSuccess: () => { setReviewing(false); toast.success('Listo. Desde hoy cada pedido nuevo se suma solo.') },
@@ -71,7 +81,7 @@ const InventarioPage = () => {
     })
 
     const rows = (items: InventoryItem[], group: ItemGroup) => items.map(item => (
-        <ItemRow key={item.sku} item={item} group={group} onStep={delta => stepOnHand(item.sku, delta)} />
+        <ItemRow key={item.sku} item={item} group={group} onStep={delta => stepOnHand(item.sku, delta)} onShare={setSharing} />
     ))
     const heading = (text: string) => <p className="mt-4 text-[13px] font-extrabold first:mt-3">{text}</p>
 
@@ -85,7 +95,7 @@ const InventarioPage = () => {
                 <Link to={APP_ROUTES.STRATEGY} className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-[13.5px] font-semibold hover:border-[#6C47FF]/40">
                     <SparklesIcon className="size-4 text-[#6C47FF]" /> Tu estrategia
                 </Link>
-                {data && !error && !locked && <SellButton onClick={() => setSelling(true)} />}
+                {data && !error && !locked && <SellButton onClick={() => setSelling({ preset: null })} />}
             </PageHead>
 
             {!locked && <ConnectMaryKay />}
@@ -120,6 +130,13 @@ const InventarioPage = () => {
                                 </button>
                             </div>
                         ))}
+
+                        {shareable > 0 && (
+                            <p className="mt-2 flex items-start gap-2 px-1 text-[12.5px] leading-snug text-muted-foreground">
+                                <ImagesIcon className="mt-0.5 size-4 shrink-0 text-[#6C47FF] dark:text-[#A894FF]" />
+                                <span><b className="text-foreground">{shareable === 1 ? 'Un producto ya tiene' : `${shareable} productos ya tienen`} su imagen con tu logo.</b> Tócale «Compartir» para mandárselo a tus clientas.</span>
+                            </p>
+                        )}
 
                         {!hasItems && (
                             <div className="mt-3 rounded-2xl border border-dashed border-border px-4 py-6 text-center">
@@ -169,14 +186,15 @@ const InventarioPage = () => {
                             ) : (
                                 <p className="mt-2 text-[13px] text-muted-foreground">Todavía no anotas ventas. Cada vez que vendas, tócale «Ya me compró»: baja de tu inventario y queda en la ficha de tu clienta.</p>
                             )}
-                            <SellButton onClick={() => setSelling(true)} className="mt-3 w-full" />
+                            <SellButton onClick={() => setSelling({ preset: null })} className="mt-3 w-full" />
                         </Card>
                     </div>
                 </div>
             )}
 
-            <AddItemDialog open={adding} onClose={() => setAdding(false)} onSave={payload => addItem.mutateAsync(payload)} saving={addItem.isPending} />
-            <SaleDialog open={selling} onClose={() => setSelling(false)} />
+            <AddItemDialog open={adding} onClose={() => setAdding(false)} onSave={payload => addItem.mutateAsync(payload)} saving={addItem.isPending} existing={data?.items} />
+            <ItemShareDialog item={sharing} onClose={() => setSharing(null)} onSold={sellItem} />
+            <SaleDialog open={!!selling} onClose={() => setSelling(null)} preset={selling?.preset ?? null} />
             <HowToDialog sale={howto} onClose={() => setHowto(null)} />
         </div>
     )

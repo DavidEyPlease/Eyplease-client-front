@@ -24,10 +24,11 @@ export interface SaleCustomer {
     name: string
 }
 
-/** Lo que ya trae puesto al abrir: los productos de una pieza de su estrategia, con el precio que puso */
+/** Lo que ya trae puesto al abrir: los productos de una pieza de su estrategia (o uno de su inventario), con el precio que puso */
 export interface SalePreset {
     note?: string
-    lines: Array<{ sku: string, quantity: number, unitPrice: number }>
+    /** Sin `unitPrice`, el precio de su inventario */
+    lines: Array<{ sku: string, quantity: number, unitPrice?: number }>
 }
 
 type Who = { kind: 'client', id: string, name: string } | { kind: 'new' } | null

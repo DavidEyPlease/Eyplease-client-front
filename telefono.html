@@ -5,7 +5,7 @@
     <title>La web en teléfono (sólo dev)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- SÓLO DEV (no entra en el build): el simulador de la web (cuentas.html) dentro de un marco de teléfono, para juzgar
-         tamaños de toque y alcance del pulgar.  http://localhost:<puerto>/telefono.html?demo=regalo
+         tamaños de toque y alcance del pulgar.  http://localhost:<puerto>/telefono.html?demo=regalo (o ?demo=inventario)
          …?ir=<lo que va después de cuentas.html?, codificado>  abre cualquier caso del simulador. -->
     <style>
       :root { color-scheme: dark; }
@@ -24,8 +24,16 @@
     <div class="telefono"><iframe id="marco" title="La web en teléfono"></iframe></div>
     <small id="nota">Demo con gente y cifras de EJEMPLO (nada se guarda). El marco mide 390 px de ancho, como un teléfono.</small>
     <script>
+      // Cada demo con sus casos (?demo=…; sin él, «Invitar con regalo»)
+      const DEMOS = {}
+      // «Tu inventario»: «Compartir» en los productos con imagen y «Agregar» escogiendo de la lista de Mary Kay
+      DEMOS.inventario = [
+        ['Tu inventario', 'plan=standard&ir=/tu-inventario'],
+        ['Sin pedidos: todo a mano', 'plan=standard&inventario=vacio&ir=/tu-inventario'],
+        ['Va empezando', 'plan=standard&inventario=empieza&ir=/tu-inventario'],
+      ]
       // «Invitar con regalo»: la consultora (sin cuenta) y la Directora (Mi unidad)
-      const CASOS = [
+      DEMOS.regalo = [
         ['Regalo: con pedidos', 'registro=regalo&ir=/regalo/demo'],
         ['Regalo: sin pedidos', 'registro=regalo&ir=/regalo/demo-sin'],
         ['Ya tiene cuenta', 'registro=regalo&ir=/regalo/demo-cuenta'],
@@ -35,6 +43,7 @@
         ['Directora: Mi unidad', 'plan=elite&ir=/my-unit'],
       ]
       const params = new URLSearchParams(location.search)
+      const CASOS = DEMOS[params.get('demo')] || DEMOS.regalo
       const marco = document.getElementById('marco'), barra = document.getElementById('barra')
       const abrir = query => {
         marco.src = '/cuentas.html?' + query

@@ -149,6 +149,8 @@ export const API_ROUTES = {
         INVENTORY_REVIEW: '/consultant/inventory/review',
         /** Agregar algo que no sale en sus pedidos */
         INVENTORY_ITEMS: '/consultant/inventory/items',
+        /** Buscar en la lista de productos de Mary Kay de su país (`?q=`, mín. 2 letras) para agregar a mano */
+        INVENTORY_CATALOG: '/consultant/inventory/catalog',
         /** Corregir «te quedan» de un producto */
         INVENTORY_ITEM: '/consultant/inventory/items/{sku}',
         /** «Ya me compró»: lista paginada (con `client_customer_id`, la de una clienta) y anotar */

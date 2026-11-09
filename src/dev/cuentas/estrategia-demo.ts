@@ -3,7 +3,10 @@
 // La estrategia se arma con las MISMAS reglas que la API (config/strategy.php), así que reacciona a lo que ella vende o corrige.
 // Perfiles: el de siempre es «Lupita» del prototipo (compra grande al 50 %, perfumes de septiembre guardados, CC Cream del
 // Ordena Ya). Variantes: ?inventario=empieza (va empezando, al 35 %) | vacio | revisado | sin-ligar
-import type { ConsultantInventory, CustomerSale, InventoryItem } from '@/interfaces/inventory'
+// «Tu inventario» (API cfb7ffb, 9-nov-2026): cada producto con imagen trae su `piece` para «Compartir», y «Agregar» busca
+// en una lista de Mary Kay de mentira (`consultant/inventory/catalog?q=`). Con ?inventario=vacio se ve como una consultora
+// sin pedidos conectados: todo lo agrega a mano, escogiéndolo de la lista.
+import type { CatalogProduct, ConsultantInventory, CustomerSale, InventoryItem, InventoryPiece } from '@/interfaces/inventory'
 import type { ConsultantStrategy, StrategyLevel, StrategyMoment, StrategyPiece, StrategyProduct, StrategyStep } from '@/interfaces/strategy'
 
 const STALE_DAYS = 30
@@ -270,6 +273,76 @@ const buildStrategy = (inventory: ConsultantInventory, sales: CustomerSale[], le
     }
 }
 
+// ---------- «Tu inventario»: la pieza de cada producto y la lista de Mary Kay ----------
+
+const plainName = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+
+/** Como StrategyLibraryService::normalize: sin «Mary Kay», sin el «Tono …» que escriben a mano y sin el tono entre paréntesis */
+const libraryName = (name: string) => plainName(short(name).replace(/^(\S+(?:\s+\S+)+?)\s+tono\s+.+$/iu, '$1').replace(/\s*\([^)]*\)\s*$/u, ''))
+
+/** Los productos de LIBRARY por nombre: lo agregado a mano (con o sin clave) encuentra su imagen igual que en la API */
+const LIBRARY_BY_NAME: Record<string, string> = {
+    [libraryName('CC Cream Crema Correctora de Color FPS 15')]: '08_cc_cream',
+    [libraryName('Loción Desmaquillante de Ojos Libre de Aceite')]: '02_locion_desmaquillante_ojos',
+    [libraryName('Mary Kay If You Believe® Eau de Toilette')]: '03_if_you_believe',
+    [libraryName('Mary Kay Joy Emotion Scent® Eau de Parfum')]: '07_joy_emotion',
+}
+const libraryKey = (sku: string, name: string) => LIBRARY[sku] ?? LIBRARY_BY_NAME[libraryName(name)] ?? null
+
+/** Como ConsultantInventoryService::piece: su lámina con el logo y «Lo tengo para entrega inmediata…»; null sin imagen */
+const pieceFor = (item: { sku: string, name: string, shade: string | null }, price: number): InventoryPiece | null => {
+    const key = libraryKey(item.sku, item.name)
+    if (!key) return null
+    const title = short(item.name) + (item.shade ? ` · ${item.shade}` : '')
+    return {
+        slides: [{ key, url: slideUrl(key) }],
+        message: `¡Hola! Lo tengo para entrega inmediata: ${title}.${price > 0 ? ` Cuesta ${money(price)}.` : ''} ¿Te lo aparto?`,
+    }
+}
+
+/**
+ * La lista de mentira de `consultant/inventory/catalog` (en la API sale de lo pedido en su país en 6 meses): nombre
+ * corto, tono, precio de lista con IVA y cuántas veces se pidió (para ordenar). Las claves de Lupita son las mismas.
+ */
+const CATALOG: Array<{ sku: string, name: string, shade: string | null, price: number | null, total: number }> = [
+    { sku: '10216713', name: 'CC Cream Crema Correctora de Color FPS 15', shade: 'Light to Medium', price: 404, total: 412 },
+    { sku: '10216709', name: 'CC Cream Crema Correctora de Color FPS 15', shade: 'Medium to Deep', price: 404, total: 288 },
+    { sku: '10216705', name: 'CC Cream Crema Correctora de Color FPS 15', shade: 'Very Light', price: 404, total: 141 },
+    { sku: '10045632', name: 'Loción Desmaquillante de Ojos Libre de Aceite', shade: null, price: 414, total: 530 },
+    { sku: '10195642', name: 'If You Believe Eau de Toilette', shade: null, price: 664, total: 205 },
+    { sku: '10230518', name: 'Joy Emotion Scent Eau de Parfum', shade: null, price: 544, total: 176 },
+    { sku: '10241155', name: 'Velvet Scent Eau de Parfum', shade: null, price: 523, total: 98 },
+    { sku: '10236911', name: 'Agua Micelar', shade: null, price: 394, total: 377 },
+    { sku: '10229031', name: 'Tónico Balanceador', shade: null, price: 319, total: 154 },
+    { sku: '10207045', name: 'Base de Maquillaje TimeWise 3D', shade: 'Ivory C 110', price: 389, total: 233 },
+    { sku: '10207052', name: 'Base de Maquillaje TimeWise 3D', shade: 'Beige N 150', price: 389, total: 199 },
+    { sku: '10207068', name: 'Base de Maquillaje TimeWise 3D', shade: 'Bronze W 200', price: 389, total: 87 },
+    { sku: '10224187', name: 'Sombra Mate para Ojos en Barra', shade: 'Smoky Quartz', price: 254, total: 121 },
+    { sku: '10180326', name: 'Crema para Manos Satin Hands Libre de Fragancia', shade: null, price: 244, total: 309 },
+    { sku: '10252210', name: 'Labial Líquido Mate At Play', shade: 'Red My Mind', price: 299, total: 64 },
+    { sku: '10252226', name: 'Labial Líquido Mate At Play', shade: 'Mauve Mood', price: 299, total: 58 },
+    { sku: '10252232', name: 'Labial Líquido Mate At Play', shade: 'Nude Attitude', price: 299, total: 71 },
+    { sku: '10252248', name: 'Labial Líquido Mate At Play', shade: 'Pink Pow', price: 299, total: 40 },
+    { sku: '10219874', name: 'Gel Limpiador TimeWise 4 en 1', shade: null, price: 459, total: 266 },
+    { sku: '10219890', name: 'Crema de Noche TimeWise', shade: null, price: 589, total: 190 },
+    { sku: '10219882', name: 'Crema de Día TimeWise FPS 30', shade: null, price: 589, total: 184 },
+    { sku: '10233417', name: 'Máscara para Pestañas Lash Love', shade: null, price: 329, total: 150 },
+    { sku: '10228650', name: 'Protector Solar FPS 50', shade: null, price: 409, total: 92 },
+    { sku: '10240034', name: 'Bálsamo Labial Satin Lips', shade: null, price: 199, total: 133 },
+    { sku: '10247719', name: 'Mascarilla Purificante de Carbón Clear Proof', shade: null, price: null, total: 22 },
+]
+
+/** Como ConsultantInventoryService::searchCatalog: todas las palabras (de 2 letras o más), primero lo que empieza igual */
+const searchCatalog = (query: string): CatalogProduct[] => {
+    const words = plainName(query).split(' ').filter(word => word.length >= 2)
+    if (!words.length) return []
+    return CATALOG
+        .filter(row => words.every(word => plainName(`${row.name} ${row.shade ?? ''}`).includes(word)))
+        .sort((a, b) => Number(plainName(b.name).startsWith(words[0])) - Number(plainName(a.name).startsWith(words[0])) || b.total - a.total)
+        .slice(0, 15)
+        .map(row => ({ sku: row.sku, name: row.name, shade: row.shade, price: row.price, has_image: !!libraryKey(row.sku, row.name) }))
+}
+
 // ---------- «Mándale cómo usarlo» (StrategyLibraryService::howToFor) ----------
 
 /** 3 de las 9 piezas «Cómo usarlo» de Astra (lote 2, v2): sus láminas de prueba están en ./laminas */
@@ -329,7 +402,7 @@ export const createStrategyDemo = (options: {
             sku: item.sku, name: item.name, shade: item.shade, manual: item.manual, is_ordena_ya: item.is_ordena_ya, purchased: item.purchased,
             on_hand: onHand, price: item.price, unit_cost: item.unit_cost, profit_per_unit: item.unit_cost !== null ? r2(item.price - item.unit_cost) : null,
             last_purchased_at: item.last_purchased_at, oldest_unit_at: onHand > 0 ? item.oldest_unit_at : null, days_stored: days,
-            stale: onHand > 0 && days >= STALE_DAYS, reviewed: item.reviewed,
+            stale: onHand > 0 && days >= STALE_DAYS, reviewed: item.reviewed, piece: pieceFor(item, item.price),
         }
     }
     const inventory = (): ConsultantInventory => {
@@ -359,6 +432,11 @@ export const createStrategyDemo = (options: {
         if (path === '/consultant/inventory/review' && method === 'POST') {
             stock = stock.map(item => ({ ...item, reviewed: true }))
             return ok(inventory())
+        }
+        if (path === '/consultant/inventory/catalog' && method === 'GET') {
+            const q = (query.get('q') ?? '').trim()
+            if (q.length < 2) return fail('El campo q debe contener al menos 2 caracteres.', 422)
+            return ok(searchCatalog(q))
         }
         if (path === '/consultant/inventory/items' && method === 'POST') {
             const sku = String(body.sku ?? '').trim() || `M-${Math.random().toString(36).slice(2, 10).toUpperCase()}`

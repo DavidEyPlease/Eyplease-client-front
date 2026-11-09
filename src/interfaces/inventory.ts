@@ -29,6 +29,26 @@ export interface InventoryItem {
     /** Lleva guardado más de lo debido: «Muévelo primero» */
     stale: boolean
     reviewed: boolean
+    /** Su imagen de la biblioteca (con su logo) y el mensaje para mandarlo suelto; nulo si todavía no tiene imagen */
+    piece?: InventoryPiece | null
+}
+
+export interface InventoryPiece {
+    /** `url` = consultant/strategy/images/{key}: se baja como las piezas de la estrategia */
+    slides: StrategySlide[]
+    /** «¡Hola! Lo tengo para entrega inmediata: … Cuesta $X. ¿Te lo aparto?» */
+    message: string
+}
+
+/** Un producto de la lista de Mary Kay de su país (lo que se ha pedido ahí), para agregarlo a mano ligado a su clave */
+export interface CatalogProduct {
+    sku: string
+    name: string
+    shade: string | null
+    /** Precio de lista con IVA, en pesos enteros; nulo si no lo tenemos */
+    price: number | null
+    /** Ya tiene su imagen en la biblioteca: al agregarlo, sale con «Compartir» */
+    has_image: boolean
 }
 
 export interface InventorySummary {

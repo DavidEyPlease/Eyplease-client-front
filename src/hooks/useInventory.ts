@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import HttpService from '@/services/http'
 import { API_ROUTES } from '@/constants/api'
 import { ApiResponse, PaginationResponse } from '@/interfaces/common'
-import { ConsultantInventory, CustomerSale, InventoryItem, InventorySummary, NewInventoryItemPayload, NewSalePayload } from '@/interfaces/inventory'
+import { CatalogProduct, ConsultantInventory, CustomerSale, InventoryItem, InventorySummary, NewInventoryItemPayload, NewSalePayload } from '@/interfaces/inventory'
 import useAuthStore from '@/store/auth'
 
 /** Como el resto de la web: nada sale antes de tener a la usuaria (ni con la sesión cerrada) */
@@ -153,6 +153,42 @@ const useInventory = ({ enabled = true, onSaveError }: Options = {}) => {
         stepOnHand,
         review,
         addItem,
+    }
+}
+
+const CATALOG_DELAY_MS = 250
+
+/**
+ * La lista de productos de Mary Kay de su país, mientras escribe en «Agregar»: espera a que deje de teclear, pide
+ * con 2 letras o más y deja a la vista lo de antes mientras llega lo nuevo (la lista no parpadea a cada letra).
+ */
+export const useInventoryCatalog = (text: string, enabled = true) => {
+    const wanted = text.trim().replace(/\s+/g, ' ').slice(0, 80)
+    const [query, setQuery] = useState(wanted)
+    useEffect(() => {
+        const timer = setTimeout(() => setQuery(wanted), CATALOG_DELAY_MS)
+        return () => clearTimeout(timer)
+    }, [wanted])
+
+    const active = enabled && query.length >= 2
+    const canRun = useQueryGate(active)
+    const result = useQuery({
+        // Fuera de INVENTORY_KEY: al guardar algo no hace falta volver a buscar
+        queryKey: ['consultant', 'inventory-catalog', query.toLowerCase()],
+        queryFn: async () => (await HttpService.get<ApiResponse<CatalogProduct[]>>(`${API_ROUTES.CONSULTANT.INVENTORY_CATALOG}?${new URLSearchParams({ q: query })}`)).data,
+        staleTime: 10 * 60 * 1000,
+        retry: false,
+        placeholderData: keepPreviousData,
+        enabled: canRun,
+    })
+
+    return {
+        products: active ? result.data ?? [] : [],
+        /** Todavía escribe o ya pidió y no llega: el «Buscando…» */
+        searching: enabled && wanted.length >= 2 && (wanted !== query || result.isFetching),
+        /** Ya buscó lo que está escrito (para decir «no sale en la lista») */
+        searched: active && wanted === query && !result.isFetching && !result.isPlaceholderData && result.isSuccess,
+        failed: active && result.isError,
     }
 }
 
