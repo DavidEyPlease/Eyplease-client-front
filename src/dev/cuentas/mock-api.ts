@@ -527,6 +527,8 @@ const ajustesAdoptivas = (mes: string) => {
 const comoDataUrl = (b: Blob) => new Promise<string>(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.readAsDataURL(b) })
 
 let intouchSaved = false
+// Se lee al cargar: con `&ir=` la página cambia de dirección y el parámetro se pierde
+const INTOUCH = new URLSearchParams(location.search).get('intouch')
 const respond = (data: unknown, status = 200) => new Response(JSON.stringify({ success: status < 400, data, message: status < 400 ? 'OK' : 'Sin permiso (simulado)' }), { status, headers: { 'Content-Type': 'application/json' } })
 
 export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => {
@@ -609,8 +611,11 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             const blob = await invitationsDemo?.image(path.split('/')[3])
             response = blob ? new Response(blob, { status: 200, headers: { 'Content-Type': 'image/jpeg' } }) : notFound('No encontramos esa invitación.')
         }
-        // Su contraseña de InTouch («Conecta tu Mary Kay», 9-nov-2026): sin ella al entrar; `&intouch=si` ya la trae
-        else if (path === '/reports/intouch' && method === 'GET') response = respond({ has_password: intouchSaved || new URLSearchParams(location.search).get('intouch') === 'si', account: '581974' })
+        // Su contraseña de InTouch («Conecta tu Mary Kay», 9-nov-2026): sin ella al entrar; `&intouch=si` ya la trae;
+        // `&intouch=rechazada` la trae y Mary Kay la rechazó (10-nov-2026)
+        else if (path === '/reports/intouch' && method === 'GET') {
+            response = respond({ has_password: intouchSaved || INTOUCH === 'si' || INTOUCH === 'rechazada', account: '581974', rejected: !intouchSaved && INTOUCH === 'rechazada' })
+        }
         else if (path === '/reports/intouch' && method === 'PUT') { intouchSaved = true; response = respond({ has_password: true }) }
         else if (path === '/billing/standard' && method === 'GET') response = respond(standardQuote(actual, role))
         else if (path === '/billing/standard' && method === 'POST') {
