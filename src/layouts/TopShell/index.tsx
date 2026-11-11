@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 
 import GlobalPaymentBanner from '@/components/billing/enforcement/GlobalPaymentBanner'
+import { ABRIR_ASISTENTE } from '@/components/generics/Notifications/destino'
 import AssistantDock from './AssistantDock'
 import LogoutDialog from './LogoutDialog'
 import TopBar from './TopBar'
@@ -36,6 +37,13 @@ const TopShell = () => {
             /* Sin almacenamiento el panel no recuerda su estado; nada más */
         }
     }, [dockOpen])
+
+    /* Un aviso de la campana («Le quedó algo pendiente») abre el Asistente */
+    useEffect(() => {
+        const abrir = () => setDockOpen(true)
+        window.addEventListener(ABRIR_ASISTENTE, abrir)
+        return () => window.removeEventListener(ABRIR_ASISTENTE, abrir)
+    }, [])
 
     return (
         <div className="relative min-h-screen w-full bg-[#F3F2FA] dark:bg-[#0B0A1A]">

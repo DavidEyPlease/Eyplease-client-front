@@ -14,26 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import useNotifications from "./useNotifications"
 import { formatDate } from "@/utils/dates"
 import { INotification } from "@/interfaces/notification"
-import { APP_ROUTES } from "@/constants/app"
-
-/**
- * Los avisos traen la ruta de la APP (`navigateTo` + `navigateParam`); aquí se traduce a la de
- * la web. Lo que la web no tiene se queda sin destino (el clic sólo cierra el menú).
- */
-const destinoEnLaWeb = (data: INotification['data']): string | null => {
-    const param = data?.navigateParam ? String(data.navigateParam) : ''
-    switch (data?.navigateTo) {
-        /* La presentación regresa sola al listado si el tema no tiene una */
-        case '/training-detail': return param ? APP_ROUTES.TRAININGS.WEB.replace(':id', encodeURIComponent(param)) : APP_ROUTES.TRAININGS.LIST
-        case '/training': return APP_ROUTES.TRAININGS.LIST
-        case '/news': return APP_ROUTES.POSTS.LIST
-        case '/tools': return APP_ROUTES.TOOLS
-        case '/services':
-        case '/service-detail': return APP_ROUTES.SERVICES
-        case '/newsletter': return APP_ROUTES.HOME.NEWSLETTER
-        default: return null
-    }
-}
+import { ABRIR_ASISTENTE, destinoEnLaWeb } from "./destino"
 
 export function NotificationsDropdown() {
     const [isOpen, setIsOpen] = useState(false)
@@ -49,9 +30,14 @@ export function NotificationsDropdown() {
         setIsOpen(false)
         const destino = destinoEnLaWeb(notification.data)
         if (!destino) return
-        /* La presentación de un entrenamiento abre en pestaña nueva, como desde el listado */
-        if (destino.endsWith('/presentacion')) window.open(destino, '_blank', 'noopener')
-        else navigate(destino)
+        if ('asistente' in destino) {
+            window.dispatchEvent(new Event(ABRIR_ASISTENTE))
+            return
+        }
+        /* Una página web (la liga de Zoom de una junta) y la presentación de un entrenamiento abren en pestaña nueva */
+        if ('externa' in destino) window.open(destino.externa, '_blank', 'noopener')
+        else if (destino.ruta.endsWith('/presentacion')) window.open(destino.ruta, '_blank', 'noopener')
+        else navigate(destino.ruta)
     }
 
     return (
