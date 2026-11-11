@@ -68,8 +68,8 @@ export const APP_ROUTES = {
 }
 
 export const SESSION_KEY = 'eyWebPleaseToken'
-/** Páginas que se abren sin sesión (fuera de /auth): sin cuenta, no se manda al acceso */
-export const PUBLIC_PREFIXES = ['/regalo/']
+/** Páginas que se abren sin sesión (fuera de /auth): sin cuenta, no se manda al acceso. La del regalo y la liga del boletín */
+export const PUBLIC_PREFIXES = ['/regalo/', '/b/']
 export const isPublicPath = (pathname: string) => PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix))
 /** El regalo que quería activar quien ya tenía cuenta: al entrar, se le regresa a su página */
 export const PENDING_GIFT_KEY = 'eyplease:regalo'
