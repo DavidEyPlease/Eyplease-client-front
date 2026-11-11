@@ -33,6 +33,7 @@ import MainLayout from "./layouts/MainLayout"
 import EstrategiaPage from "./pages/Estrategia"
 import InventarioPage from "./pages/Estrategia/Inventario"
 import RegaloPage from "./pages/Regalo"
+import BoletinPublicoPage from "./pages/BoletinPublico"
 
 const Router = () => {
     const { isLogged, getMe } = useAuth()
@@ -61,6 +62,8 @@ const Router = () => {
             <Route path={APP_ROUTES.HOME.PLAN_STANDARD} element={<PlanStandardPage />} />
             {/* La página del regalo de una consultora: pública (la abre sin cuenta con la liga de su Directora) */}
             <Route path={APP_ROUTES.GIFT} element={<RegaloPage />} />
+            {/* El boletín interactivo que una Directora compartió con su liga: público y sólo para ver */}
+            <Route path={APP_ROUTES.BOLETIN_PUBLICO} element={<BoletinPublicoPage />} />
             <Route element={<MainLayout />}>
                 <Route path={APP_ROUTES.HOME.INITIAL} element={<DashboardPage />} />
                 <Route path={APP_ROUTES.HOME.NEWSLETTER} element={<NewsletterPage />} />

@@ -581,6 +581,10 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         if (strategyRoute && (PLAN_KEYS[actual.id] ?? '').startsWith('free')) {
             response = new Response(JSON.stringify({ success: false, message: 'PLAN_REQUIRED_STRATEGY', errors: [] }), { status: 403, headers: { 'Content-Type': 'application/json' } })
         }
+        // La liga del boletín interactivo (sin sesión): `demoliga0000000001` abre el boletín de ejemplo; otra, «ya no abre»
+        else if (/^\/boletin-publico\/[^/]+$/.test(path) && method === 'GET') {
+            response = path.endsWith('/demoliga0000000001') ? respond({ ...boletinDinamicoDemo(), piel: 'p10', year_month: month(1).slice(0, 7) }) : respond(null, 404)
+        }
         // «Invitar con regalo»: la página del regalo (sin sesión) y activarlo con su cuenta
         else if (/^\/gifts\/[^/]+$/.test(path) && method === 'GET') {
             const view = giftView(path.split('/')[2], { loggedIn: registrada, claimed: !!giftTrial && !REGISTRO, registered: !!giftTrial && !!REGISTRO })
@@ -854,6 +858,12 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path.startsWith('/reports/generate-')) response = respond(null, 403)
         /* El boletín interactivo: la data cruda de unidad, con la forma de la API real */
         else if (path === '/reports/boletin-dinamico') response = owned.has('unit_newsletter') && ['elite', 'national'].includes(PLAN_KEYS[actual.id]) ? respond(boletinDinamicoDemo()) : respond(null, 403)
+        // Su liga para compartirlo: compartir (la de ejemplo), ver y dejar de compartir
+        else if (path === '/reports/boletin-dinamico/liga') {
+            const vence = new Date(Date.now() + 60 * 86400000).toISOString()
+            response = method === 'DELETE' ? respond(null)
+                : respond({ url: `${location.origin}/b/demoliga0000000001`, year_month: month(1).slice(0, 7), piel: 'p10', expires_at: vence, times_opened: 7, last_opened_at: iso(0) })
+        }
         else if (path === '/reports/boletin-dinamico/ajustes' && method === 'PUT') {
             const cambios = JSON.parse(String(init?.body ?? '{}'))
             response = respond({ tempraneras: { activa: cambios.tempraneras_activa ?? true, hasta: cambios.tempraneras_hasta ?? 10 }, mensaje: cambios.mensaje ?? null })

@@ -44,6 +44,8 @@ export const APP_ROUTES = {
     MY_DIRECTORS: '/my-directors',
     /** La página del regalo de una consultora («Invitar con regalo»): pública, la abre con la liga que le mandó su Directora */
     GIFT: '/regalo/:token',
+    /** El boletín interactivo que una Directora compartió con su unidad: público, sólo para ver */
+    BOLETIN_PUBLICO: '/b/:token',
     /** «Tu estrategia» de la consultora (plan Standard) y su inventario */
     STRATEGY: '/tu-estrategia',
     INVENTORY: '/tu-inventario',

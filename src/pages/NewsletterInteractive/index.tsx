@@ -11,6 +11,7 @@ import { LIGA_LO_QUIERO, MES_DEL_EJEMPLO, ofrecerBoletinDinamico, planConBoletin
 import { BoletinDinamicoDatos, crearBoletinDinamico } from './dinamico/motor'
 import { esMes, etiquetaMes as monthLabel, precargar, ultimosMeses as lastMonths } from './meses'
 import PantallaDeCarga from './PantallaDeCarga'
+import CompartirLiga from './CompartirLiga'
 import { useAvanceDeCarga } from './useAvanceDeCarga'
 
 type Ajustes = NonNullable<BoletinDinamicoDatos['ajustes']>
@@ -89,6 +90,8 @@ const NewsletterInteractivePage = () => {
     const vacio = !ejemplo && !!datos && !datos.personas?.length
 
     const hostRef = useRef<HTMLDivElement>(null)
+    /* En Modo junta el botón de compartir se esconde: la pantalla es para presentar */
+    const [enJunta, setEnJunta] = useState(false)
     useEffect(() => {
         if (!hostRef.current || !datos || !mostrar || vacio) return
         window.scrollTo(0, 0)
@@ -115,7 +118,10 @@ const NewsletterInteractivePage = () => {
             guardarAjustes: ejemplo ? undefined : cambios => guardar(cambios),
             guardarMensaje: ejemplo ? undefined : mensaje => guardar({ mensaje }),
         })
-        return () => boletin.destruir()
+        const pagina = hostRef.current.shadowRoot?.querySelector('.pagina')
+        const vigia = pagina ? new MutationObserver(() => setEnJunta(pagina.classList.contains('junta'))) : null
+        if (pagina) vigia?.observe(pagina, { attributes: true, attributeFilter: ['class'] })
+        return () => { vigia?.disconnect(); boletin.destruir() }
     }, [datos, ejemplo, months, mostrar, piel, vacio])
 
     if (!initialLoading && !user) return <Navigate to={APP_ROUTES.AUTH.SIGN_IN} replace />
@@ -152,6 +158,10 @@ const NewsletterInteractivePage = () => {
                 </>} />
             )}
             <div ref={hostRef} />
+            {/* La liga para su unidad (se abre sin cuenta, sólo para ver): sólo con su boletín, no en el ejemplo */}
+            {!ejemplo && abierto && !!datos && mostrar && !vacio && (
+                <CompartirLiga yearMonth={yearMonth} piel={piel} mes={typeof datos.mes === 'string' && datos.mes ? datos.mes.toLowerCase() : monthLabel(yearMonth).split(' ')[0].toLowerCase()} oculto={enJunta} />
+            )}
             {/* El ejemplo se dice ejemplo todo el tiempo, y desde ahí se pide (o se abre el suyo, si ya lo tiene) */}
             {ejemplo && mostrar && (
                 <aside className="fixed inset-x-3 top-[70px] z-50 flex items-center justify-between gap-3 rounded-2xl bg-[#1b0f2b]/88 py-1.5 pr-1.5 pl-3.5 md:py-2 md:pr-2 md:pl-4 text-white shadow-[0_18px_40px_-18px_rgba(0,0,0,.9)] ring-1 ring-white/15 backdrop-blur-md md:inset-x-auto md:top-[80px] md:right-[max(10px,calc((100vw-1280px)/2))]">

@@ -96,6 +96,8 @@ export const API_ROUTES = {
         /* El boletín dinámico (el cierre del mes contado cómo pasó) y lo que la Directora decide de él */
         BOLETIN_DINAMICO: '/reports/boletin-dinamico',
         BOLETIN_DINAMICO_AJUSTES: '/reports/boletin-dinamico/ajustes',
+        /** Su liga para compartirlo con su unidad: GET (la de ese mes), POST (compartir), DELETE (dejar de compartir) */
+        BOLETIN_DINAMICO_LIGA: '/reports/boletin-dinamico/liga',
         /* El boletín nacional interactivo y el mensaje de la Directora Nacional para su junta */
         BOLETIN_NACIONAL: '/reports/boletin-nacional',
         BOLETIN_NACIONAL_AJUSTES: '/reports/boletin-nacional/ajustes',
@@ -165,6 +167,8 @@ export const API_ROUTES = {
         INVITATION_IMAGE: '/unit/invitations/{id}/image',
     },
     /** La página del regalo de la consultora (sin sesión, por el token de su liga) y activarlo con su cuenta */
+    /** La liga del boletín interactivo de una Directora: pública, sólo para ver */
+    BOLETIN_PUBLICO: '/boletin-publico/{token}',
     GIFTS: {
         SHOW: '/gifts/{token}',
         OPEN: '/gifts/{token}/open',
