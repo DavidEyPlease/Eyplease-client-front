@@ -6,6 +6,7 @@ import { CustomerSale } from '@/interfaces/inventory'
 import useSlideImages from '@/hooks/useSlideImages'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import shareSlides from '../shareSlides'
+import { IOS_SHARE_HINT, messageGoesSeparate } from '@/lib/share'
 import Panel from './Panel'
 
 interface Props {
@@ -72,10 +73,13 @@ const HowToDialog = ({ sale, notice = null, onClose }: Props) => {
             footer={
                 <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
                     {withImages ? (
-                        <button type="button" onClick={() => send()} disabled={!slides.ready || sending} className="hoy-cta flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-[14.5px] font-bold text-white disabled:cursor-default disabled:opacity-60">
-                            {!slides.ready || sending ? <Loader2Icon className="size-4 animate-spin" /> : <ImagesIcon className="size-4" />}
-                            {slides.ready ? `Compartir ${count === 1 ? 'la imagen' : `las ${count} imágenes`} y el mensaje` : 'Preparando las imágenes…'}
-                        </button>
+                        <>
+                            <button type="button" onClick={() => send()} disabled={!slides.ready || sending} className="hoy-cta flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-[14.5px] font-bold text-white disabled:cursor-default disabled:opacity-60">
+                                {!slides.ready || sending ? <Loader2Icon className="size-4 animate-spin" /> : <ImagesIcon className="size-4" />}
+                                {slides.ready ? `Compartir ${count === 1 ? 'la imagen' : `las ${count} imágenes`} y el mensaje` : 'Preparando las imágenes…'}
+                            </button>
+                            {messageGoesSeparate(withImages) && <p className="text-[12px] leading-snug text-muted-foreground sm:order-last sm:col-span-2">{IOS_SHARE_HINT}</p>}
+                        </>
                     ) : (
                         <a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#25D366]/12 px-5 text-[14px] font-bold text-[#0b7a5c] hover:bg-[#25D366]/20 dark:text-[#5BE39A]">
                             <MessageCircleIcon className="size-4" /> Abrir WhatsApp con el mensaje

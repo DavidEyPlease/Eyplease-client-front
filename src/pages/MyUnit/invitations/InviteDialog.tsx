@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckIcon, CopyIcon, GiftIcon, Loader2Icon, MessageCircleIcon, SendIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import { IOS_SHARE_HINT, messageGoesSeparate } from '@/lib/share'
 
 import { API_ROUTES } from '@/constants/api'
 import { UNIT_INVITATIONS_KEY } from '@/hooks/useUnitInvitations'
@@ -123,6 +124,7 @@ const InviteDialog = ({ personId, gift, remaining, onClose, onNext, onSkip }: Pr
                 {sending || image.isLoading ? <Loader2Icon className="size-4 animate-spin" /> : <SendIcon className="size-4" />}
                 {image.isLoading ? 'Preparando su imagen…' : reminder ? 'Mandar el recordatorio' : 'Mandar imagen y mensaje'}
             </button>
+            {messageGoesSeparate(!!image.data) && <p className="text-[12px] leading-snug text-muted-foreground">{IOS_SHARE_HINT}</p>}
             <div className="grid grid-cols-2 gap-2">
                 {data.person.whatsapp
                     ? <button type="button" onClick={openWhatsApp} className="flex h-11 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#25D366]/12 px-3 text-[13px] font-bold text-[#0b7a5c] hover:bg-[#25D366]/20 dark:text-[#5BE39A]"><MessageCircleIcon className="size-4" /> Su WhatsApp</button>

@@ -1,6 +1,7 @@
 import { MessageCircleIcon, SendIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { shareFilesWithMessage } from '@/lib/share'
 import { ESCALONES } from '@/pages/Dashboard/components/useUnitFollowUp'
 import RingMeter from '@/pages/Hoy/components/RingMeter'
 import { haceCuanto, iniciales, ligaWhatsApp, mensajeDeInvitacion, mensajeParaDirectora, sinEnviarHaceMucho } from './lib'
@@ -119,10 +120,11 @@ export const InviteRow = ({ director, link, onInvite, image }: { director: AreaD
             target="_blank"
             rel="noreferrer"
             onClick={event => {
-                /* En el teléfono va con su invitación personalizada: el menú de compartir manda la imagen y el mensaje */
+                /* En el teléfono va con su invitación personalizada: el menú de compartir manda la imagen y el mensaje (en
+                   iPhone, la imagen sola y el mensaje copiado para pegarlo: ver lib/share) */
                 if (puedeCompartirImagen(image)) {
                     event.preventDefault()
-                    navigator.share({ files: [image], text: mensajeDeInvitacion(director, link) }).catch(() => { })
+                    shareFilesWithMessage([image], mensajeDeInvitacion(director, link)).catch(() => { })
                 }
                 onInvite(director)
             }}

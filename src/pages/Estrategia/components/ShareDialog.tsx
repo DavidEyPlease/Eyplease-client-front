@@ -10,6 +10,7 @@ import Field from './Field'
 import Panel from './Panel'
 import useSlideImages from '@/hooks/useSlideImages'
 import shareSlides from '../shareSlides'
+import { IOS_SHARE_HINT, messageGoesSeparate } from '@/lib/share'
 import PieceVisual from './PieceVisual'
 
 /** El mensaje con el precio nuevo: cambia el primer «$749» por el que ella puso. */
@@ -100,6 +101,7 @@ const ShareDialog = ({ piece, level, price, onPriceChange, onClose, onSold }: Pr
                                 {!slides.ready || sending ? <Loader2Icon className="size-4 animate-spin" /> : <ImagesIcon className="size-4" />}
                                 {slides.ready ? `Compartir ${piece.slides!.length === 1 ? 'la imagen' : `las ${piece.slides!.length} imágenes`} y el mensaje` : 'Preparando las imágenes…'}
                             </button>
+                            {messageGoesSeparate(withImages) && <p className="text-[12px] leading-snug text-muted-foreground sm:order-last sm:col-span-3">{IOS_SHARE_HINT}</p>}
                             <button type="button" onClick={copy} className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-border px-5 text-[14px] font-bold hover:border-[#6C47FF]/40">
                                 <CopyIcon className="size-4" /> Copiar mensaje
                             </button>

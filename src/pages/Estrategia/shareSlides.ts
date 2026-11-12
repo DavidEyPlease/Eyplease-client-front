@@ -1,4 +1,5 @@
 import { SlideImage } from '@/hooks/useSlideImages'
+import { shareFilesWithMessage } from '@/lib/share'
 
 export type ShareOutcome = 'shared' | 'canceled' | 'downloaded'
 
@@ -7,7 +8,8 @@ const fileName = (title: string, index: number) =>
 
 /**
  * Comparte las láminas de una pieza con su mensaje. Si el navegador sabe compartir archivos (el teléfono, Safari,
- * Chrome en Windows), abre su hoja de compartir con todas de una vez; si no (o si ella lo pide), las baja y copia el
+ * Chrome en Windows), abre su hoja de compartir con todas de una vez (en iPhone, las imágenes solas y el mensaje copiado:
+ * ver lib/share); si no (o si ella lo pide), las baja y copia el
  * mensaje para que las mande desde WhatsApp Web.
  */
 const shareSlides = async (images: SlideImage[], message: string, title: string, mode: 'share' | 'download' = 'share'): Promise<ShareOutcome> => {
@@ -15,7 +17,7 @@ const shareSlides = async (images: SlideImage[], message: string, title: string,
 
     if (mode === 'share' && files.length && typeof navigator.canShare === 'function' && navigator.canShare({ files })) {
         try {
-            await navigator.share({ files, text: message })
+            await shareFilesWithMessage(files, message)
             return 'shared'
         } catch (error) {
             if ((error as { name?: string } | null)?.name === 'AbortError') return 'canceled'
