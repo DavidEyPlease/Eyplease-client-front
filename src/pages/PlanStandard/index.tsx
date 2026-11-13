@@ -7,6 +7,7 @@ import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES } from '@/constants/app'
 import { BILLING_PATH } from '@/components/billing/SubscriptionCard'
 import CashPaymentCard from '@/components/billing/CashPaymentCard'
+import DownloadApp from '@/components/generics/DownloadApp'
 import { ICashPayment } from '@/interfaces/billing'
 import { cn } from '@/lib/utils'
 import useAuth from '@/hooks/useAuth'
@@ -149,7 +150,10 @@ const PlanStandardPage = () => {
                             <span className="grid size-14 place-items-center rounded-full bg-[linear-gradient(135deg,#E5077D,#6C47FF)] text-white shadow-[0_12px_24px_-12px_rgba(229,7,125,.8)]"><PartyPopperIcon className="size-7" /></span>
                             <h1 className="text-[26px] leading-tight font-extrabold tracking-tight">¡Listo! Ya tienes el {user?.plan?.name ?? nombrePlan}</h1>
                             <p className="max-w-[40ch] text-sm text-muted-foreground">Tu pago quedó registrado. Tu estrategia del mes ya está abierta, armada con tus pedidos.</p>
-                            <div className="mt-3 grid w-full gap-2.5">
+                            {/* Recién contratado es el final de su registro: primero, que baje la app */}
+                            <DownloadApp className="mt-3 w-full" />
+                            <div className="mt-2 h-px w-full bg-border" />
+                            <div className="mt-2 grid w-full gap-2.5">
                                 <button type="button" onClick={() => navigate(APP_ROUTES.STRATEGY)} className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-primary-gradient px-5 text-[15px] font-extrabold text-white shadow-primary-glow">
                                     Ver mi estrategia <ArrowRightIcon className="size-4" />
                                 </button>
