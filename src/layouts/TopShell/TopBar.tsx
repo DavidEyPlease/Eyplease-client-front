@@ -164,7 +164,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                                             </span>
                                             <span className="min-w-0">
                                                 <b className="block text-[13.5px] font-bold">{labelOf(item)}</b>
-                                                <small className="block text-[11.5px] text-muted-foreground">{COPY[item.key]?.hint}</small>
+                                                <small className="block text-[11.5px] text-muted-foreground">{maryKay ? COPY[item.key]?.hint : COPY[item.key]?.hint.replace('tu unidad', 'tu grupo')}</small>
                                             </span>
                                         </DropdownMenuItem>
                                     )

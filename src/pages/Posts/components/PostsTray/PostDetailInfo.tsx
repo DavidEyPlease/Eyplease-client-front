@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import useFiles from '@/hooks/useFiles'
 import { IPost } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
+import { useIsMaryKay } from '@/utils/company'
 import { formatDate } from '@/utils/dates'
 import { CalendarIcon, CheckIcon, DownloadIcon, ImagesIcon, RefreshCwIcon, Undo2Icon } from 'lucide-react'
 import usePostActions from '../../hooks/usePostActions'
@@ -29,6 +30,8 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 	/* Sin foto propia el render repetiría la pieza con el avatar por defecto: primero
 	   se pide la foto y solo después se encola. */
 	const needsPhoto = post.has_photo === false && !!post.vendorable
+	/* Con otra empresa (Zermat) la pieza la sube el equipo terminada: no se vuelve a generar */
+	const maryKay = useIsMaryKay()
 
 	const onRegenerate = () => {
 		if (needsPhoto) {
@@ -102,15 +105,17 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 				)}
 
 				<div className="flex gap-2">
-					<Button
-						variant="outline"
-						disabled={regenerating}
-						onClick={onRegenerate}
-						className={cn(ACTION_CLASSES, 'flex-1')}
-					>
-						<RefreshCwIcon className={cn(regenerating && 'animate-spin')} />
-						{regenerating ? 'Generando…' : 'Volver a generar'}
-					</Button>
+					{maryKay && (
+						<Button
+							variant="outline"
+							disabled={regenerating}
+							onClick={onRegenerate}
+							className={cn(ACTION_CLASSES, 'flex-1')}
+						>
+							<RefreshCwIcon className={cn(regenerating && 'animate-spin')} />
+							{regenerating ? 'Generando…' : 'Volver a generar'}
+						</Button>
+					)}
 					<PrimaryButton
 						text={
 							<>

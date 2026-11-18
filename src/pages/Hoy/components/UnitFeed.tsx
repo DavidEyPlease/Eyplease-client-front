@@ -6,6 +6,7 @@ import { APP_ROUTES, MAP_MAIN_POSTS_SECTIONS } from '@/constants/app'
 import { MainPostSectionTypes, PostSectionTypes } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
 import { usePostsStore } from '@/store/posts'
+import { useIsMaryKay } from '@/utils/company'
 import useUnitToday, { UnitGroup } from '../hooks/useUnitToday'
 import UnitGroupCard from './UnitGroupCard'
 
@@ -15,6 +16,8 @@ const SCOPES: Record<MainPostSectionTypes, { title: string, empty: string }> = {
     [MainPostSectionTypes.DIRECTORS]: { title: 'Mis Directoras', empty: 'Hoy no hay reconocimientos nuevos de tus Directoras.' },
     [MainPostSectionTypes.CLIENTS]: { title: 'Mis clientas', empty: 'Hoy no hay piezas nuevas de tus clientas.' },
 }
+/** Con otra empresa (Zermat) su gente es «su grupo», y sus piezas las sube el equipo: no salen de reportes. */
+const GROUP_SCOPE = { title: 'Mi grupo', empty: 'Hoy no hay reconocimientos nuevos en tu grupo.' }
 
 /** Lo vivo va primero porque es lo que cambia hoy; el cierre es el lote del mes anterior. */
 const STAGES: Array<{ key: UnitGroup['stage'], title: (month: string) => string }> = [
@@ -47,7 +50,8 @@ const UnitFeed = ({ feed, chip, onChip, index = 0 }: Props) => {
     const setPostFilters = usePostsStore(state => state.setFilters)
     const { groups, todayGroups, previousGroups, loading, patchPost, mainSection, scopes, setMainSection, sections } = feed
 
-    const copy = SCOPES[mainSection] ?? SCOPES[MainPostSectionTypes.UNITY]
+    const maryKay = useIsMaryKay()
+    const copy = !maryKay && mainSection === MainPostSectionTypes.UNITY ? GROUP_SCOPE : SCOPES[mainSection] ?? SCOPES[MainPostSectionTypes.UNITY]
     const chips = sections
         .map(section => ({ key: section.key.toString(), label: section.label, count: piecesOf(groups.filter(group => group.key === section.key.toString())) }))
         .filter(item => item.count > 0)
@@ -143,7 +147,7 @@ const UnitFeed = ({ feed, chip, onChip, index = 0 }: Props) => {
                 <>
                     {!loading && !today.length && (
                         <p className="shell-glass hoy-rise rounded-[22px] px-5 py-8 text-center text-[13px] text-muted-foreground" style={{ '--i': index + 2 } as React.CSSProperties}>
-                            {groups.length ? copy.empty : 'Todavía no hay publicaciones este mes. En cuanto se carguen tus reportes, aquí aparecen.'}
+                            {groups.length ? copy.empty : (maryKay ? 'Todavía no hay publicaciones este mes. En cuanto se carguen tus reportes, aquí aparecen.' : 'Todavía no hay publicaciones este mes. En cuanto el equipo suba tus piezas, aquí aparecen.')}
                         </p>
                     )}
 

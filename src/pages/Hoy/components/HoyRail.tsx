@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import useUnitFollowUp, { ESCALONES } from '@/pages/Dashboard/components/useUnitFollowUp'
 import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
+import { useIsMaryKay } from '@/utils/company'
 import { titleCaseName } from '../lib'
 import NationalNotice from './NationalNotice'
 import RingMeter from './RingMeter'
@@ -26,6 +27,8 @@ interface Props {
 /** La columna de la izquierda del Hoy: quién eres y cómo va tu seguimiento. */
 const HoyRail = ({ onPickSection }: Props) => {
     const user = useAuthStore(state => state.user)
+    /* Con otra empresa (Zermat) su gente es «su grupo», no consultoras de una unidad */
+    const maryKay = useIsMaryKay()
     const { loading, pendientes, enviadas, cobertura } = useUnitFollowUp()
 
     const reports = useReportsStatus()
@@ -59,10 +62,10 @@ const HoyRail = ({ onPickSection }: Props) => {
                     {hasCoverage ? (
                         /* Apilado en la columna angosta; con sitio a lo ancho, el anillo a la izquierda */
                         <div className="mt-3 grid items-center gap-x-5 gap-y-2.5 max-xl:sm:grid-cols-[auto_minmax(0,1fr)]">
-                            <div className="grid justify-items-center"><RingMeter percent={cobertura.percent} size={120} /></div>
+                            <div className="grid justify-items-center"><RingMeter percent={cobertura.percent} size={120} label={maryKay ? undefined : 'de tu grupo'} /></div>
                             <div>
                             <p className="text-center text-[12px] text-muted-foreground max-xl:sm:text-left max-xl:sm:text-[13px]">
-                                <b className="text-foreground">{cobertura.people_reached} de {cobertura.people_count}</b> consultoras recibieron algo tuyo este mes.
+                                <b className="text-foreground">{cobertura.people_reached} de {cobertura.people_count}</b> {maryKay ? 'consultoras' : 'personas de tu grupo'} recibieron algo tuyo este mes.
                             </p>
                             {/* Escalera, nunca un semáforo: la mediana del padrón está en el 10% y un color
                                 de alarma convierte la meta en una nota reprobatoria. */}
