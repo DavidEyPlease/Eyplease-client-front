@@ -23,6 +23,7 @@ import { requestLogout } from './logoutBridge'
 import ThemeModeSelector from './ThemeModeSelector'
 import { strategyLinks, useStrategyAccess } from '@/pages/Estrategia/feature'
 import { planConMisDirectoras } from '@/pages/MyDirectors/useAreaDirectors'
+import { useIsMaryKay } from '@/utils/company'
 
 /**
  * Cómo se reparte el menú de siempre en la barra. NO inventa entradas: agrupa las que ya
@@ -58,6 +59,11 @@ const UNIT_EXTRAS = [
     { key: 'my-unit', label: 'Mi unidad', hint: 'Lo que logró cada consultora y lo que falta compartirle', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
 ]
 
+/** Otra empresa (Zermat): su grupo sí, pero sin Indicadores, que salen de los reportes de Mary Kay. */
+const GROUP_EXTRAS = [
+    { key: 'my-unit', label: 'Mi grupo', hint: 'Las personas de tu grupo y sus piezas', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
+]
+
 /** Sólo el plan Nacional: el seguimiento de las Directoras de su Área. */
 const NATIONAL_EXTRAS = [
     { key: 'my-directors', label: 'Mis Directoras', hint: 'Cómo va el seguimiento de cada Directora de tu Área', path: APP_ROUTES.MY_DIRECTORS, Icon: CrownIcon },
@@ -80,6 +86,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
     const hasNewsletter = useAuthStore(state => state.utilData.newsletters.length > 0)
     const hasUnit = useAuthStore(state => state.permissions.includes(PermissionKeys.POSTS_UNITY))
     const strategy = useStrategyAccess()
+    const maryKay = useIsMaryKay()
     const nationalPlan = planConMisDirectoras(user)
     /* Su plan y su cobro, en el menú de la cuenta. A las cuentas que se cobran por fuera no se les pide ni se les pinta */
     const { overview, canSeeBilling } = useBilling()
@@ -112,7 +119,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
             <nav className="ml-1.5 hidden items-center gap-0.5 md:flex">
                 {pick(DIRECT_FIRST).map(direct)}
 
-                {hasNewsletter && (
+                {hasNewsletter && maryKay && (
                     <Link to={APP_ROUTES.HOME.NEWSLETTER} className={cn(NAV_BUTTON, location.pathname.includes(APP_ROUTES.HOME.NEWSLETTER) && 'text-foreground')}>
                         Boletín
                         {location.pathname.includes(APP_ROUTES.HOME.NEWSLETTER) && <ActiveBar />}
@@ -121,7 +128,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
 
                 {GROUPS.map(group => {
                     const items = pick(group.keys)
-                    const extras = group.label !== 'Mi negocio' ? [] : [...(hasUnit ? UNIT_EXTRAS : []), ...(nationalPlan ? NATIONAL_EXTRAS : []), ...(strategy.show ? strategyLinks(strategy.locked) : [])]
+                    const extras = group.label !== 'Mi negocio' ? [] : [...(hasUnit ? (maryKay ? UNIT_EXTRAS : GROUP_EXTRAS) : []), ...(nationalPlan ? NATIONAL_EXTRAS : []), ...(strategy.show ? strategyLinks(strategy.locked) : [])]
                     if (!items.length && !extras.length) return null
                     if (items.length === 1 && !extras.length) return direct(items[0])
 
@@ -173,14 +180,14 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
             <CommandBar labelOf={(key, fallback) => COPY[key as MenuKeys]?.label ?? fallback} />
 
             <div className="ml-auto flex items-center gap-1">
-                <button
+                {maryKay && <button
                     type="button"
                     title={assistantOpen ? 'Plegar el Asistente' : 'Abrir el Asistente'}
                     onClick={onToggleAssistant}
                     className={cn('hidden size-[38px] cursor-pointer place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground lg:grid', assistantOpen && 'text-primary')}
                 >
                     <PanelRightIcon className="size-[18px]" />
-                </button>
+                </button>}
                 <ThemeModeSelector className="mx-1 hidden sm:inline-flex" />
                 <NotificationsDropdown />
 

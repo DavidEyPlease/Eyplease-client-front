@@ -6,6 +6,7 @@ import { ABRIR_ASISTENTE } from '@/components/generics/Notifications/destino'
 import AssistantDock from './AssistantDock'
 import LogoutDialog from './LogoutDialog'
 import TopBar from './TopBar'
+import { useIsMaryKay } from '@/utils/company'
 import './shell.css'
 
 const DOCK_KEY = 'eyplease:assistant-dock'
@@ -29,6 +30,7 @@ const readDock = () => {
 const TopShell = () => {
     const location = useLocation()
     const [dockOpen, setDockOpen] = useState(readDock)
+    const maryKay = useIsMaryKay()
 
     useEffect(() => {
         try {
@@ -60,7 +62,7 @@ const TopShell = () => {
                         </div>
                     </main>
 
-                    <AssistantDock open={dockOpen} onOpenChange={setDockOpen} />
+                    {maryKay && <AssistantDock open={dockOpen} onOpenChange={setDockOpen} />}
                 </div>
             </div>
 

@@ -21,6 +21,8 @@ export interface IAuthUser {
     on_notifications: boolean
     on_biometric_auth: boolean
     plan: IPlan
+    /** Su empresa de venta directa: Mary Kay o, desde nov-2026, Zermat (`@/utils/company`). Sin el dato, Mary Kay. */
+    company?: 'mary_kay' | 'zermat'
     canva_connected: boolean
     template_id: string | null
     /** Hasta cuándo dura su prueba o su regalo (el de «Invitar con regalo»); null si no tiene */

@@ -1,3 +1,4 @@
+import { isMaryKay } from '@/utils/company'
 import { BoxIcon, LockIcon, SparklesIcon } from 'lucide-react'
 
 import { APP_ROUTES } from '@/constants/app'
@@ -34,7 +35,8 @@ export const useStrategyAccess = (): { show: boolean, locked: boolean } => {
     const consultant = useAuthStore(state => !!state.user && (state.user.plan?.audience === 'clients' || !state.permissions.includes(PermissionKeys.POSTS_UNITY)))
     const director = useAuthStore(state => PLANES_DE_DIRECTORA_CON_ESTRATEGIA.includes(state.user?.plan?.plan_key ?? ''))
     const free = useAuthStore(state => (state.user?.plan?.plan_key ?? '').startsWith('free'))
-    const show = (consultant || director) && (TU_ESTRATEGIA_EN_LA_WEB || import.meta.env.DEV)
+    const maryKay = useAuthStore(state => isMaryKay(state.user))
+    const show = maryKay && (consultant || director) && (TU_ESTRATEGIA_EN_LA_WEB || import.meta.env.DEV)
     return { show, locked: show && free }
 }
 
