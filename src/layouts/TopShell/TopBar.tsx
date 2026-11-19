@@ -23,7 +23,7 @@ import { requestLogout } from './logoutBridge'
 import ThemeModeSelector from './ThemeModeSelector'
 import { strategyLinks, useStrategyAccess } from '@/pages/Estrategia/feature'
 import { planConMisDirectoras } from '@/pages/MyDirectors/useAreaDirectors'
-import { useIsMaryKay } from '@/utils/company'
+import { CompanyFeature, CompanyTerm, useCompany } from '@/utils/company'
 
 /**
  * Cómo se reparte el menú de siempre en la barra. NO inventa entradas: agrupa las que ya
@@ -37,36 +37,31 @@ const GROUPS: Array<{ label: string, keys: MenuKeys[] }> = [
 ]
 const DIRECT_LAST: MenuKeys[] = [MenuKeys.UPLOAD_REPORTS]
 
-/** El nombre y la bajada con que se presenta cada entrada en el marco nuevo. */
-const COPY: Partial<Record<MenuKeys, { label?: string, hint: string }>> = {
-    [MenuKeys.HOME]: { label: 'Hoy', hint: 'Lo que pasó hoy en tu unidad' },
+/** El nombre y la bajada con que se presenta cada entrada en el marco nuevo («unidad» o «grupo», según su empresa). */
+const copyFor = (t: (term: CompanyTerm) => string): Partial<Record<MenuKeys, { label?: string, hint: string }>> => ({
+    [MenuKeys.HOME]: { label: 'Hoy', hint: `Lo que pasó hoy en tu ${t('group')}` },
     [MenuKeys.POSTS]: { label: 'Publicaciones', hint: 'Todas las piezas del mes, sección por sección' },
-    [MenuKeys.GALLERY]: { hint: 'Las fotos de tu unidad para sus reconocimientos' },
+    [MenuKeys.GALLERY]: { hint: `Las fotos de tu ${t('group')} para sus reconocimientos` },
     [MenuKeys.MY_CLIENTS]: { label: 'Mis clientas', hint: 'Sus cumpleaños con la pieza lista' },
     [MenuKeys.TOOLS]: { hint: 'Todo lo que la biblioteca preparó para que compartas' },
     [MenuKeys.TRAININGS]: { label: 'Entrenamiento', hint: 'Un tema nuevo cada lunes, listo para tu junta' },
     [MenuKeys.SERVICES]: { label: 'Pedidos de diseño', hint: 'Lo que le encargas al equipo y sus entregas' },
     [MenuKeys.UPLOAD_REPORTS]: { hint: 'Tus reportes de Mary Kay: los que se cargan solos y los que faltan' },
-}
-const labelOf = (item: MenuItem) => COPY[item.key]?.label ?? item.label
+})
 
 /**
  * Lo que nace con el marco nuevo no está en el menú de siempre: se suma aquí a «Mi negocio», y
- * sólo para quien tiene unidad (los números, los retos y las personas son de la unidad).
+ * sólo para quien tiene unidad (los números, los retos y las personas son de la unidad). Cada uno
+ * dice qué función de su empresa pide (Indicadores sale de los reportes de Mary Kay).
  */
-const UNIT_EXTRAS = [
-    { key: 'indicators', label: 'Indicadores', hint: 'Tus números, tu seguimiento y los retos de tu unidad', path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon },
-    { key: 'my-unit', label: 'Mi unidad', hint: 'Lo que logró cada consultora y lo que falta compartirle', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
-]
-
-/** Otra empresa (Zermat): su grupo sí, pero sin Indicadores, que salen de los reportes de Mary Kay. */
-const GROUP_EXTRAS = [
-    { key: 'my-unit', label: 'Mi grupo', hint: 'Las personas de tu grupo y sus piezas', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
+const unitExtras = (t: (term: CompanyTerm) => string) => [
+    { key: 'indicators', feature: 'indicators' as CompanyFeature, label: 'Indicadores', hint: `Tus números, tu seguimiento y los retos de tu ${t('group')}`, path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon },
+    { key: 'my-unit', feature: null, label: t('my_group'), hint: `Lo que logró cada ${t('member')} y lo que falta compartirle`, path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
 ]
 
 /** Sólo el plan Nacional: el seguimiento de las Directoras de su Área. */
 const NATIONAL_EXTRAS = [
-    { key: 'my-directors', label: 'Mis Directoras', hint: 'Cómo va el seguimiento de cada Directora de tu Área', path: APP_ROUTES.MY_DIRECTORS, Icon: CrownIcon },
+    { key: 'my-directors', feature: 'directors' as CompanyFeature, label: 'Mis Directoras', hint: 'Cómo va el seguimiento de cada Directora de tu Área', path: APP_ROUTES.MY_DIRECTORS, Icon: CrownIcon },
 ]
 
 const NAV_BUTTON = 'relative flex h-[38px] cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground data-[state=open]:bg-foreground/5 data-[state=open]:text-foreground'
@@ -86,7 +81,9 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
     const hasNewsletter = useAuthStore(state => state.utilData.newsletters.length > 0)
     const hasUnit = useAuthStore(state => state.permissions.includes(PermissionKeys.POSTS_UNITY))
     const strategy = useStrategyAccess()
-    const maryKay = useIsMaryKay()
+    const { can, t } = useCompany()
+    const COPY = copyFor(t)
+    const labelOf = (item: MenuItem) => COPY[item.key]?.label ?? item.label
     const nationalPlan = planConMisDirectoras(user)
     /* Su plan y su cobro, en el menú de la cuenta. A las cuentas que se cobran por fuera no se les pide ni se les pinta */
     const { overview, canSeeBilling } = useBilling()
@@ -119,7 +116,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
             <nav className="ml-1.5 hidden items-center gap-0.5 md:flex">
                 {pick(DIRECT_FIRST).map(direct)}
 
-                {hasNewsletter && maryKay && (
+                {hasNewsletter && can('newsletter') && (
                     <Link to={APP_ROUTES.HOME.NEWSLETTER} className={cn(NAV_BUTTON, location.pathname.includes(APP_ROUTES.HOME.NEWSLETTER) && 'text-foreground')}>
                         Boletín
                         {location.pathname.includes(APP_ROUTES.HOME.NEWSLETTER) && <ActiveBar />}
@@ -128,7 +125,11 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
 
                 {GROUPS.map(group => {
                     const items = pick(group.keys)
-                    const extras = group.label !== 'Mi negocio' ? [] : [...(hasUnit ? (maryKay ? UNIT_EXTRAS : GROUP_EXTRAS) : []), ...(nationalPlan ? NATIONAL_EXTRAS : []), ...(strategy.show ? strategyLinks(strategy.locked) : [])]
+                    const extras = group.label !== 'Mi negocio' ? [] : [...(hasUnit ? unitExtras(t) : []), ...(nationalPlan ? NATIONAL_EXTRAS : []), ...(strategy.show ? strategyLinks(strategy.locked) : [])]
+                        .filter(extra => {
+                            const feature = (extra as { feature?: CompanyFeature | null }).feature
+                            return !feature || can(feature)
+                        })
                     if (!items.length && !extras.length) return null
                     if (items.length === 1 && !extras.length) return direct(items[0])
 
@@ -164,7 +165,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
                                             </span>
                                             <span className="min-w-0">
                                                 <b className="block text-[13.5px] font-bold">{labelOf(item)}</b>
-                                                <small className="block text-[11.5px] text-muted-foreground">{maryKay ? COPY[item.key]?.hint : COPY[item.key]?.hint.replace('tu unidad', 'tu grupo')}</small>
+                                                <small className="block text-[11.5px] text-muted-foreground">{COPY[item.key]?.hint}</small>
                                             </span>
                                         </DropdownMenuItem>
                                     )
@@ -180,7 +181,7 @@ const TopBar = ({ assistantOpen, onToggleAssistant }: Props) => {
             <CommandBar labelOf={(key, fallback) => COPY[key as MenuKeys]?.label ?? fallback} />
 
             <div className="ml-auto flex items-center gap-1">
-                {maryKay && <button
+                {can('assistant') && <button
                     type="button"
                     title={assistantOpen ? 'Plegar el Asistente' : 'Abrir el Asistente'}
                     onClick={onToggleAssistant}

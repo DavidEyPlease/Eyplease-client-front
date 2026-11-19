@@ -8,6 +8,7 @@ import { requestLogout } from '@/layouts/TopShell/logoutBridge'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
 import { ProfileSectionKey } from '../utils'
+import { useCompany } from '@/utils/company'
 
 const SECTIONS: { key: ProfileSectionKey, label: string, icon: React.ReactNode }[] = [
     { key: 'personal', label: 'Datos personales', icon: <UserRoundIcon /> },
@@ -27,7 +28,9 @@ interface Props {
 const SectionNav = ({ active, onChange }: Props) => {
     const { canSeeBilling } = useBillingAccess()
     /* La facturación no aplica a todas las cuentas: a las excluidas ni se les ofrece */
-    const sections = SECTIONS.filter(section => section.key !== 'billing' || canSeeBilling)
+    const { can } = useCompany()
+    /* Facturación no aplica a todas las cuentas; «Mis boletines», sólo si su empresa tiene boletín */
+    const sections = SECTIONS.filter(section => (section.key !== 'billing' || canSeeBilling) && (section.key !== 'reports' || can('newsletter')))
 
     return (
         <nav className="flex flex-col gap-1 rounded-3xl border bg-card p-2 shadow-card">

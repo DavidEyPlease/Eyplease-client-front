@@ -9,7 +9,7 @@ import { NewsletterSectionKeys } from '@/interfaces/common'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { IPost, PostTypes } from '@/interfaces/posts'
 import { cn } from '@/lib/utils'
-import { useIsMaryKay } from '@/utils/company'
+import { useCompany } from '@/utils/company'
 import RegeneratePhotoDialog from '@/pages/Posts/components/PostsTray/RegeneratePhotoDialog'
 import usePostActions from '@/pages/Posts/hooks/usePostActions'
 import {
@@ -52,8 +52,8 @@ interface Props {
  */
 const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
     const { markAsSentOnDownload, markManyAsSent, regenerate } = usePostActions({ patchPost })
-    /* Con otra empresa (Zermat) las piezas las sube el equipo terminadas: no salen del render, así que no se rehacen */
-    const maryKay = useIsMaryKay()
+    /* Rehacer y pedir la foto, sólo si su empresa tiene piezas del render (las de Zermat las sube el equipo terminadas) */
+    const canRegenerate = useCompany().can('regenerate')
     const { downloadFile } = useFiles()
     const queryClient = useQueryClient()
 
@@ -268,7 +268,7 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
                     </div>
 
                     {/* Las piezas de retos no salen del render: se piden como pedido de diseño, así que aquí no se rehacen */}
-                    {!isChallengePiece && maryKay && <div className="flex gap-2">
+                    {!isChallengePiece && canRegenerate && <div className="flex gap-2">
                         <button type="button" disabled={regenerating} onClick={onRegenerate} className={GHOST}>
                             <RefreshCwIcon className={cn(regenerating && 'animate-spin')} /> Rehacer
                         </button>

@@ -23,6 +23,10 @@ export interface IAuthUser {
     plan: IPlan
     /** Su empresa de venta directa: Mary Kay o, desde nov-2026, Zermat (`@/utils/company`). Sin el dato, Mary Kay. */
     company?: 'mary_kay' | 'zermat'
+    /** Qué permite su empresa (la API: `Companies::featureMap`). Se lee con `useCompany().can()`. */
+    company_features?: Partial<Record<import('@/utils/company').CompanyFeature, boolean>>
+    /** Cómo nombra su empresa a su gente («grupo», «unidad»…). Se lee con `useCompany().t()`. */
+    company_terms?: Partial<Record<import('@/utils/company').CompanyTerm, string>>
     canva_connected: boolean
     template_id: string | null
     /** Hasta cuándo dura su prueba o su regalo (el de «Invitar con regalo»); null si no tiene */

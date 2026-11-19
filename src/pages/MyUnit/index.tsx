@@ -14,6 +14,7 @@ import { buildUnitGroups, dayKey } from '@/pages/Hoy/hooks/useUnitToday'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { groupPostVersions } from '@/pages/Posts/lib'
 import InvitationsSection from './invitations/InvitationsSection'
+import { useCompany } from '@/utils/company'
 
 const TAG = 'inline-flex h-[22px] items-center rounded-full px-2.5 text-[10.5px] font-bold tracking-wide whitespace-nowrap'
 
@@ -44,6 +45,7 @@ const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(word
  * por sección; al abrirla salen sus piezas con las acciones de siempre.
  */
 const MyUnitPage = () => {
+    const { can, t } = useCompany()
     const { sections, postsBySection, loading, patchPost } = useSectionPosts(MainPostSectionTypes.UNITY)
     const [filter, setFilter] = useState<Filter>('all')
     const [search, setSearch] = useState('')
@@ -99,9 +101,9 @@ const MyUnitPage = () => {
             <header className="hoy-rise flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <p className="text-[10.5px] font-extrabold tracking-[.14em] text-[#6C47FF] uppercase dark:text-[#A894FF]">Mi negocio</p>
-                    <h1 className="hoy-title mt-1 text-[28px] leading-[1.1] font-extrabold tracking-tight">Mi unidad · <em>{people.length} con reconocimientos</em></h1>
+                    <h1 className="hoy-title mt-1 text-[28px] leading-[1.1] font-extrabold tracking-tight">{t('my_group')} · <em>{people.length} con reconocimientos</em></h1>
                     <p className="mt-1.5 max-w-[62ch] text-[13.5px] text-muted-foreground">
-                        Cada consultora, lo que logró este mes y lo que todavía no le compartes.
+                        Cada {t('member')}, lo que logró este mes y lo que todavía no le compartes.
                         {unsentPeople > 0 && <> A <b className="text-foreground">{unsentPeople}</b> {unsentPeople === 1 ? 'le falta' : 'les falta'} recibir algo tuyo.</>}
                     </p>
                 </div>
@@ -130,7 +132,7 @@ const MyUnitPage = () => {
                 </div>
             ) : visible.length === 0 ? (
                 <p className="shell-glass hoy-rise rounded-[22px] px-5 py-10 text-center text-[13px] text-muted-foreground">
-                    {people.length === 0 ? 'Todavía no hay reconocimientos este mes. En cuanto se carguen tus reportes, aquí aparece tu unidad.' : 'Nadie con ese filtro.'}
+                    {people.length === 0 ? (can('portal') ? `Todavía no hay reconocimientos este mes. En cuanto se carguen tus reportes, aquí aparece tu ${t('group')}.` : `Todavía no hay reconocimientos este mes. En cuanto el equipo suba tus piezas, aquí aparece tu ${t('group')}.`) : 'Nadie con ese filtro.'}
                 </p>
             ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">

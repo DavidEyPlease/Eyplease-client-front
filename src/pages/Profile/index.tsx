@@ -13,8 +13,10 @@ import ReportContent from "./components/ReportContent"
 import SectionNav from "./components/SectionNav"
 import { isProfileSectionKey, ProfileSectionKey } from "./utils"
 import PageHead from '@/layouts/TopShell/PageHead'
+import { useCompany } from '@/utils/company'
 
 const ProfilePage = () => {
+    const { can } = useCompany()
     const [searchParams] = useSearchParams()
     /* Los avisos de pago enlazan directo a la ficha de facturación */
     const requested = searchParams.get('section')
@@ -40,7 +42,7 @@ const ProfilePage = () => {
 
             <div>
                 {section === 'personal' && <FormEditProfile user={user} />}
-                {section === 'reports' && <ReportContent />}
+                {section === 'reports' && can('newsletter') && <ReportContent />}
                 {section === 'billing' && canSeeBilling && <Billing />}
                 {section === 'preferences' && <Preferences user={user} />}
                 {section === 'security' && <ChangePassword />}

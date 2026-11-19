@@ -1,4 +1,4 @@
-import { useIsMaryKay } from '@/utils/company'
+import { useCompany } from '@/utils/company'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { BadgeCheckIcon, ChartNoAxesColumnIcon, CrownIcon, NewspaperIcon, SearchIcon, SparklesIcon, UsersRoundIcon } from 'lucide-react'
@@ -41,7 +41,7 @@ const CommandBar = ({ labelOf }: Props) => {
     const permissions = useAuthStore(state => state.permissions)
     const hasUnit = permissions.includes(PermissionKeys.POSTS_UNITY)
     const strategy = useStrategyAccess()
-    const maryKay = useIsMaryKay()
+    const { can, t } = useCompany()
     const nationalPlan = useAuthStore(state => planConMisDirectoras(state.user))
     const [open, setOpen] = useState(false)
     const [query, setQuery] = useState('')
@@ -64,15 +64,12 @@ const CommandBar = ({ labelOf }: Props) => {
 
     const pages = [
         ...sidebarMenu.map(item => ({ key: item.key.toString(), label: labelOf(item.key.toString(), item.label), path: item.path, Icon: ICONS[item.icon] })),
-        ...(hasNewsletter && maryKay ? [{ key: 'newsletter', label: 'Boletín', path: APP_ROUTES.HOME.NEWSLETTER, Icon: NewspaperIcon }] : []),
-        ...(hasUnit ? (maryKay ? [
-            { key: 'indicators', label: 'Indicadores', path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon },
-            { key: 'my-unit', label: 'Mi unidad', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
-        ] : [
-            // Otra empresa (Zermat): su grupo, sin Indicadores (salen de los reportes de Mary Kay)
-            { key: 'my-unit', label: 'Mi grupo', path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
-        ]) : []),
-        ...(nationalPlan ? [{ key: 'my-directors', label: 'Mis Directoras', path: APP_ROUTES.MY_DIRECTORS, Icon: CrownIcon }] : []),
+        ...(hasNewsletter && can('newsletter') ? [{ key: 'newsletter', label: 'Boletín', path: APP_ROUTES.HOME.NEWSLETTER, Icon: NewspaperIcon }] : []),
+        ...(hasUnit ? [
+            ...(can('indicators') ? [{ key: 'indicators', label: 'Indicadores', path: APP_ROUTES.INDICATORS, Icon: ChartNoAxesColumnIcon }] : []),
+            { key: 'my-unit', label: t('my_group'), path: APP_ROUTES.MY_UNIT, Icon: UsersRoundIcon },
+        ] : []),
+        ...(nationalPlan && can('directors') ? [{ key: 'my-directors', label: 'Mis Directoras', path: APP_ROUTES.MY_DIRECTORS, Icon: CrownIcon }] : []),
         ...(strategy.show ? strategyLinks(strategy.locked) : []),
         { key: 'profile', label: 'Perfil', path: APP_ROUTES.HOME.PROFILE, Icon: BadgeCheckIcon },
     ]
@@ -87,16 +84,16 @@ const CommandBar = ({ labelOf }: Props) => {
                 className="ml-2 hidden h-[38px] min-w-0 flex-1 cursor-text items-center gap-2 rounded-xl border border-border bg-foreground/[.03] px-3 text-[12.5px] text-muted-foreground transition-colors hover:border-[#6C47FF]/40 hover:bg-foreground/[.05] lg:flex lg:max-w-[300px]"
             >
                 <SearchIcon className="size-[15px] shrink-0" />
-                <span className="min-w-0 flex-1 truncate text-left">Busca o pídele algo al Asistente…</span>
+                <span className="min-w-0 flex-1 truncate text-left">{can('assistant') ? 'Busca o pídele algo al Asistente…' : 'Busca una página…'}</span>
                 <kbd className="shrink-0 rounded-md border border-border bg-card/70 px-1.5 py-0.5 text-[10px] font-bold">{IS_MAC ? '⌘' : 'Ctrl'} K</kbd>
             </button>
 
-            <CommandDialog open={open} onOpenChange={setOpen} title="Buscar o pedir" description="Ve a una página o pídele algo al Asistente" className="shell-drop top-[22%] translate-y-0 rounded-[22px] sm:max-w-[560px]">
+            <CommandDialog open={open} onOpenChange={setOpen} title="Buscar o pedir" description={can('assistant') ? 'Ve a una página o pídele algo al Asistente' : 'Ve a una página'} className="shell-drop top-[22%] translate-y-0 rounded-[22px] sm:max-w-[560px]">
                 <CommandInput value={query} onValueChange={setQuery} placeholder="Escribe una página o lo que necesitas…" />
                 <CommandList className="max-h-[52vh]">
-                    <CommandEmpty>{maryKay ? 'Nada con ese nombre. Pulsa Enter abajo para pedírselo al Asistente.' : 'Nada con ese nombre.'}</CommandEmpty>
+                    <CommandEmpty>{can('assistant') ? 'Nada con ese nombre. Pulsa Enter abajo para pedírselo al Asistente.' : 'Nada con ese nombre.'}</CommandEmpty>
 
-                    {maryKay && typed.length > 2 && (
+                    {can('assistant') && typed.length > 2 && (
                         <CommandGroup heading="Asistente" forceMount>
                             <CommandItem forceMount value={`preguntar ${typed}`} onSelect={() => ask(typed)} className="cursor-pointer gap-3 rounded-xl">
                                 <span className="shell-grad grid size-8 shrink-0 place-items-center rounded-[10px] text-white"><SparklesIcon className="!size-4" /></span>
@@ -114,7 +111,7 @@ const CommandBar = ({ labelOf }: Props) => {
                         ))}
                     </CommandGroup>
 
-                    {maryKay && <CommandGroup heading="Pídele al Asistente">
+                    {can('assistant') && <CommandGroup heading="Pídele al Asistente">
                         {QUESTIONS.filter(question => permissions.includes(question.needs)).map(({ text }) => (
                             <CommandItem key={text} value={text} onSelect={() => ask(text)} className="cursor-pointer gap-3 rounded-xl">
                                 <span className="shell-drop-icon grid size-8 shrink-0 place-items-center rounded-[10px] text-primary"><SparklesIcon className="!size-4" /></span>

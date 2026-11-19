@@ -7,6 +7,7 @@ import useAuth from '@/hooks/useAuth'
 import useFetchQuery from '@/hooks/useFetchQuery'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
+import { useCompany } from '@/utils/company'
 
 type ReferralStatus = 'registered' | 'joined' | 'paid' | 'rewarded'
 
@@ -39,7 +40,9 @@ const shortPlan = (name: string) => name.replace(/^Plan\s+/i, '')
  */
 const ReferralCard = ({ className }: { className?: string }) => {
     const { hasAccess } = useAuth()
-    const isDirector = hasAccess(PermissionKeys.POSTS_UNITY)
+    // Recomendar es de Mary Kay (la liga lleva a sus planes): su empresa lo tiene que permitir
+    const { can } = useCompany()
+    const isDirector = hasAccess(PermissionKeys.POSTS_UNITY) && can('referrals')
     const [copied, setCopied] = useState(false)
 
     const { response } = useFetchQuery<MyReferrals>(API_ROUTES.REFERRALS.MINE, {

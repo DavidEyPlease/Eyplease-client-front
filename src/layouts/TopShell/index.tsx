@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useLocation } from 'react-router'
+import { Navigate, Outlet, useLocation } from 'react-router'
 
 import GlobalPaymentBanner from '@/components/billing/enforcement/GlobalPaymentBanner'
 import { ABRIR_ASISTENTE } from '@/components/generics/Notifications/destino'
 import AssistantDock from './AssistantDock'
 import LogoutDialog from './LogoutDialog'
 import TopBar from './TopBar'
-import { useIsMaryKay } from '@/utils/company'
+import { APP_ROUTES } from '@/constants/app'
+import { featureForPath, useCompany } from '@/utils/company'
 import './shell.css'
 
 const DOCK_KEY = 'eyplease:assistant-dock'
@@ -30,7 +31,10 @@ const readDock = () => {
 const TopShell = () => {
     const location = useLocation()
     const [dockOpen, setDockOpen] = useState(readDock)
-    const maryKay = useIsMaryKay()
+    const { can } = useCompany()
+    /* Una página que su empresa no tiene (llegó por una liga, un aviso o la dirección): de vuelta a Hoy */
+    const blockedFeature = featureForPath(location.pathname)
+    const blocked = blockedFeature !== null && !can(blockedFeature)
 
     useEffect(() => {
         try {
@@ -58,11 +62,11 @@ const TopShell = () => {
                     <main className="min-w-0 flex-1">
                         <GlobalPaymentBanner />
                         <div key={location.pathname} className="shell-page flex flex-col gap-4">
-                            <Outlet />
+                            {blocked ? <Navigate to={APP_ROUTES.HOME.INITIAL} replace /> : <Outlet />}
                         </div>
                     </main>
 
-                    {maryKay && <AssistantDock open={dockOpen} onOpenChange={setDockOpen} />}
+                    {can('assistant') && <AssistantDock open={dockOpen} onOpenChange={setDockOpen} />}
                 </div>
             </div>
 

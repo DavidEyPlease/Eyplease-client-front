@@ -17,8 +17,10 @@ import { EmptySection } from "@/components/generics/EmptySection"
 import { IconGallery } from "@/components/Svg/IconGallery"
 import { useGalleryStore } from "@/store/gallery"
 import PageHead from '@/layouts/TopShell/PageHead'
+import { useCompany } from '@/utils/company'
 
 const GalleryPage = () => {
+    const { can, t } = useCompany()
     const { filters, setFilters, getListQueryKey } = useGalleryStore(state => state)
     const listQueryKey = getListQueryKey()
 
@@ -48,7 +50,7 @@ const GalleryPage = () => {
 
     return (
         <div className="flex flex-col gap-4 pt-2">
-            <PageHead eyebrow="Mi negocio" title={<>Galería de <em>tu unidad</em></>} sub="La foto de cada consultora, que es la que sale en sus reconocimientos. Súbela una vez y se usa en todos sus diseños." />
+            <PageHead eyebrow="Mi negocio" title={<>Galería de <em>tu {t('group')}</em></>} sub={can('regenerate') ? `La foto de cada ${t('member')}, que es la que sale en sus reconocimientos. Súbela una vez y se usa en todos sus diseños.` : `La foto de cada ${t('member')}. Súbela una vez y la tenemos para sus piezas.`} />
             <div className="flex flex-col gap-3.5 rounded-3xl border bg-card bg-hero-glow px-5 py-4 shadow-card">
                 <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center">
                     <div className="min-w-60 flex-1">
@@ -59,8 +61,9 @@ const GalleryPage = () => {
                     </div>
                     <DynamicTabs
                         items={[
-                            { value: "unity", label: "Unidad", icon: <IconBySection sectionKey={PermissionKeys.POSTS_UNITY} /> },
-                            { value: "directors", label: "Directoras", icon: <IconBySection sectionKey={PermissionKeys.POSTS_DIRECTORS} /> },
+                            { value: "unity", label: t('group').charAt(0).toUpperCase() + t('group').slice(1), icon: <IconBySection sectionKey={PermissionKeys.POSTS_UNITY} /> },
+                            // Directoras es de Mary Kay (su Área)
+                            ...(can('directors') ? [{ value: "directors", label: "Directoras", icon: <IconBySection sectionKey={PermissionKeys.POSTS_DIRECTORS} /> }] : []),
                         ]}
                         value={filters.vendorRole}
                         onValueChange={value => setFilters({ vendorRole: value as VendorFilterType })}

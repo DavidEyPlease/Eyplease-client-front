@@ -24,7 +24,10 @@ const useAuth = () => {
         try {
             const response = await HttpService.put<ApiResponse<IAuthUser>>(API_ROUTES.UPDATE_USER, data)
             if (response.data) {
-                setUser(response.data)
+                // Se combina con lo que ya se sabía: la respuesta de editar no trae todo lo de `/me` (su empresa, lo que
+                // su empresa permite, sus palabras) y reemplazarlo le enseñaría lo de Mary Kay hasta recargar.
+                const current = useAuthStore.getState().user
+                setUser(current ? { ...current, ...response.data } : response.data)
                 toast.success('Perfil actualizado correctamente')
             }
             return response?.data

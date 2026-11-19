@@ -1,5 +1,6 @@
 import { APP_ROUTES } from '@/constants/app'
 import type { IUser } from '@/interfaces/users'
+import { companyCan } from '@/utils/company'
 
 /** El boletín dinámico viene en los planes Elite y Nacional (David, 22-oct-2026). La API pide lo mismo. */
 const PLANES = ['elite', 'national']
@@ -14,8 +15,10 @@ const CUENTAS_DE_PRUEBA = null as string[] | null
 /** La unidad de ejemplo es el cierre de septiembre de 2026 (piel de la Plantilla 9). */
 export const MES_DEL_EJEMPLO = '2026-09'
 
+/** Y su empresa tiene boletín (utils/company): a otra empresa no se le ofrece el de Mary Kay ni con candado. */
 const lanzado = (user?: IUser | null): boolean =>
-    import.meta.env.DEV || CUENTAS_DE_PRUEBA === null || (!!user?.account && CUENTAS_DE_PRUEBA.includes(user.account))
+    companyCan(user as Parameters<typeof companyCan>[0], 'newsletter')
+    && (import.meta.env.DEV || CUENTAS_DE_PRUEBA === null || (!!user?.account && CUENTAS_DE_PRUEBA.includes(user.account)))
 
 export const planConBoletinDinamico = (user?: IUser | null): boolean =>
     !!user?.plan?.plan_key && PLANES.includes(user.plan.plan_key)

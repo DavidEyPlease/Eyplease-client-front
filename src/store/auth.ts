@@ -3,6 +3,7 @@ import { IAuthUser } from '@/interfaces/auth'
 import { GlobalUtilData, MenuItem } from '@/interfaces/common'
 import { PermissionKeys } from '@/interfaces/permissions'
 import { create } from 'zustand'
+import { companyCan, MENU_FEATURE } from '@/utils/company'
 
 type State = {
     initialLoading: boolean
@@ -35,6 +36,9 @@ const useAuthStore = create<State & Actions>((set) => ({
     },
     setAuth: (user: IAuthUser, permissionKeys: PermissionKeys[]) => set(() => {
         const sidebarMenu = SIDEBAR_ITEMS.filter(item => {
+            // Lo que su EMPRESA no permite no sale aunque el plan lo trajera (utils/company)
+            const feature = MENU_FEATURE[item.key]
+            if (feature && !companyCan(user, feature)) return false
             if (!item.requiredPermission) return true
             return permissionKeys.some(key => item.permissionKeys?.includes(key))
         }).map(item => {
