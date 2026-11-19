@@ -29,7 +29,7 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                 title={simple ? 'Conecta tu cuenta Mary Kay' : 'Conectemos tu cuenta Mary Kay'}
                 description={
                     simple
-                        ? 'Con tu usuario te enlazamos con tu Directora; con tu contraseña bajamos tus pedidos para armar tu estrategia.'
+                        ? 'Con tu usuario te enlazamos con tu Directora. La contraseña es opcional.'
                         : 'Para que Eyplease+ trabaje con tu unidad real, ingresa tus datos de marykayintouch.com.mx.'
                 }
             >
@@ -59,7 +59,7 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                         error={errors.mkUserId?.message}
                     />
 
-                    {/* La consultora también (David, 9-nov-2026): sin su contraseña el robot no baja sus pedidos y su estrategia sale vacía */}
+                    {/* La consultora también la puede poner, OPCIONAL y sin insistir (David, 19-nov-2026: Mary Kay pidió no darla tras el hackeo) */}
                     {simple && (
                         <div className="flex flex-col gap-2.5">
                             <WizardInput
@@ -76,8 +76,8 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                                 </span>
                                 <div className="flex-1 text-left text-[12.5px] leading-relaxed text-muted-foreground">
                                     <p>
-                                        <b className="text-foreground">Con tu contraseña, tus pedidos entran solos</b>{' '}
-                                        cada noche y te armo tu estrategia y tu inventario. Si la dejas vacía, la puedes poner después en «Tu estrategia».
+                                        <b className="text-foreground">Es opcional.</b>{' '}
+                                        Si la pones, tus pedidos entran solos cada noche. Si prefieres no ponerla, agregas lo que tienes guardado de la lista de Mary Kay en «Tu inventario».
                                     </p>
                                     <p className="mt-1.5">
                                         Esta <b className="text-foreground">no es tu clave de Eyplease+</b>: es la que usas en marykayintouch.com.mx.

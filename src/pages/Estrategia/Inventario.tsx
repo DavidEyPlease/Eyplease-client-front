@@ -90,7 +90,7 @@ const InventarioPage = () => {
             <PageHead
                 eyebrow="Tu estrategia"
                 title={<>Tu <em>inventario</em></>}
-                sub={data ? `Sale solo de tus pedidos de Mary Kay de los últimos ${data.lookback_months} meses${lastOrder ? ` (el último, del ${dayLabel(lastOrder.date)})` : ''}. Lo que vendes baja al anotarlo en «Ya me compró».` : 'Lo que compraste, a la mano.'}
+                sub={data ? (lastOrder ? `Sale solo de tus pedidos de Mary Kay de los últimos ${data.lookback_months} meses (el último, del ${dayLabel(lastOrder.date)}) y de lo que agregas tú. Lo que vendes baja al anotarlo en «Ya me compró».` : 'Lo que tienes guardado: agrégalo de la lista de Mary Kay. Lo que vendes baja al anotarlo en «Ya me compró».') : 'Lo que compraste, a la mano.'}
             >
                 <Link to={APP_ROUTES.STRATEGY} className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-[13.5px] font-semibold hover:border-[#6C47FF]/40">
                     <SparklesIcon className="size-4 text-[#6C47FF]" /> Tu estrategia
@@ -140,8 +140,8 @@ const InventarioPage = () => {
 
                         {!hasItems && (
                             <div className="mt-3 rounded-2xl border border-dashed border-border px-4 py-6 text-center">
-                                <p className="text-[14px] font-extrabold">Todavía no vemos pedidos tuyos</p>
-                                <p className="mt-1 text-[13px] text-muted-foreground">Cuando bajemos tus pedidos de Mary Kay aparecen aquí solos (para eso conecta tu Mary Kay arriba). Mientras, agrega lo que tienes guardado.</p>
+                                <p className="text-[14px] font-extrabold">Agrega lo que tienes guardado</p>
+                                <p className="mt-1 text-[13px] text-muted-foreground">Escógelo de la lista de Mary Kay y queda con su precio. Si conectas tu Mary Kay (es opcional), tus pedidos también se suman solos.</p>
                             </div>
                         )}
 
@@ -160,7 +160,7 @@ const InventarioPage = () => {
                         )}
 
                         <button type="button" onClick={() => setAdding(true)} className="mt-3 w-full cursor-pointer rounded-full border border-dashed border-[#6C47FF]/45 py-2.5 text-[13px] font-semibold text-[#4E31C0] hover:bg-[#6C47FF]/5 dark:text-[#BBAAFF]">
-                            + Agregar algo que no sale en tus pedidos
+                            {hasItems ? '+ Agregar algo que no sale en tus pedidos' : '+ Agregar de la lista de Mary Kay'}
                         </button>
                     </Card>
 

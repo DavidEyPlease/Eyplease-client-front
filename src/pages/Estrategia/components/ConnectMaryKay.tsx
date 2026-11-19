@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { CheckIcon, Loader2Icon, LockIcon, ShieldCheckIcon } from 'lucide-react'
+import { CheckIcon, ChevronRightIcon, Loader2Icon, LockIcon, ShieldCheckIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { API_ROUTES } from '@/constants/api'
@@ -25,6 +25,10 @@ interface IntouchStatus {
  * Salvo dos casos (10-nov-2026, Aide DFP684: «no me da chance de meter mi nueva contraseña»): si Mary Kay RECHAZÓ la
  * guardada (`rejected`), sale sola pidiéndole otra; y con `?conectar=1` sale aunque ya tenga una, para cambiarla. Antes
  * se escondía en cuanto había cualquier contraseña, también la mala, y no había dónde corregirla.
+ *
+ * Opcional y sin insistir (David, 19-nov-2026: a Mary Kay la hackearon, se le cayó InTouch y les pidió a las consultoras
+ * no dar su contraseña; «tenemos que tener la opción pero no insistir»). Sin contraseña ya no sale la tarjeta grande:
+ * sólo una línea discreta que la abre si ella quiere. La tarjeta completa queda para `?conectar=1` y para la rechazada.
  */
 const ConnectMaryKay = () => {
     const { response, loading, fetchRetry } = useFetchQuery<IntouchStatus>(API_ROUTES.REPORTS.INTOUCH, { customQueryKey: ['intouch'] })
@@ -33,6 +37,7 @@ const ConnectMaryKay = () => {
     const wanted = params.get('conectar') === '1'
     const [password, setPassword] = useState('')
     const [saved, setSaved] = useState(false)
+    const [open, setOpen] = useState(false)
     const box = useRef<HTMLFormElement>(null)
     const input = useRef<HTMLInputElement>(null)
     const status = response?.data ?? null
@@ -40,10 +45,10 @@ const ConnectMaryKay = () => {
     const show = !!status && (!status.has_password || rejected || wanted)
 
     useEffect(() => {
-        if (!wanted || !show) return
+        if (!(wanted || open) || !show) return
         box.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         input.current?.focus({ preventScroll: true })
-    }, [wanted, show])
+    }, [wanted, open, show])
 
     if (saved) {
         return (
@@ -58,11 +63,28 @@ const ConnectMaryKay = () => {
     }
     if (loading || !status || !show) return null
 
+    // Sin contraseña y sin pedirla: una línea, no la tarjeta
+    if (!status.has_password && !rejected && !wanted && !open) {
+        return (
+            <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-2xl border border-border bg-card px-4 py-2.5 text-left text-[13px] text-muted-foreground hover:border-[#6C47FF]/30"
+            >
+                <LockIcon className="size-4 shrink-0 text-[#6C47FF]/70 dark:text-[#A894FF]/80" />
+                <span className="min-w-0 flex-1">
+                    <b className="font-semibold text-foreground">Opcional:</b> conecta tu Mary Kay y tus pedidos entran solos. Si prefieres no hacerlo, agrega tus productos de la lista.
+                </span>
+                <ChevronRightIcon className="size-4 shrink-0" />
+            </button>
+        )
+    }
+
     const title = rejected
         ? 'Mary Kay no aceptó tu contraseña: ponla otra vez'
         : status.has_password
             ? 'Actualiza tu contraseña de Mary Kay'
-            : 'Conecta tu Mary Kay para que tus pedidos entren solos'
+            : 'Conecta tu Mary Kay (opcional)'
 
     const save = async (event: FormEvent) => {
         event.preventDefault()
@@ -93,7 +115,7 @@ const ConnectMaryKay = () => {
                         Pon la contraseña con la que entras a marykayintouch.com.mx{status.account ? <> (usuario <b className="text-foreground">{status.account}</b>)</> : null}.
                         {rejected
                             ? ' Si no la recuerdas, cámbiala primero allá y pon aquí la nueva. Mientras tanto tus pedidos no entran.'
-                            : ' Cada noche bajamos tus pedidos y con ellos te armo tu estrategia y tu inventario.'} No es tu clave de Eyplease+.
+                            : ' Cada noche bajamos tus pedidos y se suman a tu inventario. Si prefieres no ponerla, agrega tus productos de la lista y todo funciona igual.'} No es tu clave de Eyplease+.
                     </p>
                 </div>
             </div>
