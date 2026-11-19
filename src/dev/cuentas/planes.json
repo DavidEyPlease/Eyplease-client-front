@@ -1535,5 +1535,114 @@
     "custom_permissions": []
    }
   ]
+ },
+ {
+  "id": "zermat-demo",
+  "name": "Plan Zermat",
+  "price": 659.0,
+  "color": "#8A5A3C",
+  "features": [
+   "Piezas de tu grupo: bienvenida, cumpleañeros, te extrañamos y ascensos"
+  ],
+  "free": false,
+  "accesses": [
+   {
+    "name": "Publicaciones",
+    "permission_key": "posts",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Unidad",
+    "permission_key": "unity",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "posts",
+    "custom_permissions": [
+     {
+      "key": "zermat_welcome",
+      "label": "Bienvenida"
+     },
+     {
+      "key": "zermat_birthdays",
+      "label": "Cumpleañeros"
+     },
+     {
+      "key": "zermat_comeback",
+      "label": "Te extrañamos"
+     },
+     {
+      "key": "zermat_rank_up",
+      "label": "Ascensos"
+     }
+    ]
+   },
+   {
+    "name": "Galeria",
+    "permission_key": "gallery",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Biblioteca",
+    "permission_key": "tools",
+    "is_active": true,
+    "is_submodule": false,
+    "parent_module_key": null,
+    "custom_permissions": []
+   },
+   {
+    "name": "Inicia",
+    "permission_key": "get_started",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Aprende",
+    "permission_key": "learn",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Propuestas",
+    "permission_key": "proposals",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Explica",
+    "permission_key": "explain",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Productos",
+    "permission_key": "products",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   },
+   {
+    "name": "Enterate Ya",
+    "permission_key": "stay_informed",
+    "is_active": true,
+    "is_submodule": true,
+    "parent_module_key": "tools",
+    "custom_permissions": []
+   }
+  ]
  }
 ]

@@ -62,7 +62,7 @@ const postsFor = (plan: DemoPlan, section: string): unknown[] => {
             id: `post-${section}-${index}`,
             created_at: iso(index < 3 ? 0 : 2),
             shared_at: index === 2 ? iso(0) : null,
-            has_photo: index !== 1,
+            has_photo: section.startsWith('zermat_') ? undefined : index !== 1,
             files: [
                 file(`post-${section}-${index}`, piece(label, name, hue)),
                 file(`post-${section}-${index}-sq`, piece(label, name, hue, '1:1'), 'image_square'),
@@ -289,7 +289,20 @@ const PLAN_KEYS: Record<string, string> = {
     'fb85b91b-63d3-4227-9cff-0cfe3c9dcf8e': 'basic', '98bb65ac-86b2-450b-80a3-09a269f08ae1': 'executive',
     '4d1f7fb7-b26b-4fdd-817b-96fde7d4ef26': 'elite', 'dd84da0a-efa1-4566-ae9a-d95a1ded138f': 'national',
     'a2cab71b-ed42-4bc3-937e-65549f51938b': 'free_consultant',
+    // Zermat (otra empresa, 18-nov-2026): plan de mentira con la forma del de producción
+    'zermat-demo': 'zermat',
 }
+
+/**
+ * `plan=plan-zermat`: lo que manda /me para una clienta de otra empresa. Desde el 19-nov-2026 trae su propio Asistente y
+ * su Biblioteca; lo demás de Mary Kay, en falso.
+ */
+const ZERMAT_COMPANY = {
+    company: 'zermat',
+    company_features: Object.fromEntries(['strategy', 'portal', 'newsletter', 'indicators', 'challenges', 'library', 'trainings', 'events', 'design_requests', 'assistant', 'gift_invites', 'referrals', 'plan_upgrade', 'customers', 'directors', 'regenerate'].map(key => [key, key === 'assistant' || key === 'library'])),
+    company_terms: { group: 'grupo', my_group: 'Mi grupo', member: 'persona de tu grupo', members: 'personas de tu grupo', leader: 'líder' },
+}
+const isZermat = (plan: DemoPlan) => PLAN_KEYS[plan.id] === 'zermat'
 
 /*
  * Contratar el Plan Standard con tarjeta (StandardSubscriptionService::quote, API 651f890). La Gratis Consultora puede
@@ -422,6 +435,7 @@ const userFor = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string 
     accounts: CON_DOS_CUENTAS
         ? CUENTAS.map(c => ({ id: c.id, account: numeroDe(c.id, role), country: c.country, name: 'Mariana Directora Demo', plan: c.plan, active: true, current: c.id === cuentaActiva() }))
         : [],
+    ...(isZermat(plan) ? { ...ZERMAT_COMPANY, account: 'ZM-DEMO', name: 'Vianey Líder Demo', client_role: { name: 'Rubí', slug: 'zermat_rubi' } } : {}),
 })
 
 const NO_ENFORCEMENT = { days_overdue: 0, show_reminder_popup: false, show_home_banner: false, show_global_banner: false, restricted_features: [], days_until_block: null, block_date: null, account_blocked: false, paused_reason: null }
@@ -751,7 +765,8 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             sessionStorage.setItem('cuentas:activa', destino)
             response = respond({ token: 'simulador', account: numeroDe(destino, role), country: CUENTAS.find(c => c.id === destino)?.country ?? 'MEX' })
         }
-        else if (path === '/util-data') response = respond(utilData)
+        // Zermat: la API manda util-data filtrado por su empresa (sólo su plan, sin preguntas, plantillas ni categorías)
+        else if (path === '/util-data') response = respond(isZermat(plan) ? { ...utilData, plans: [], templates: [], faqs: [], task_categories: [], training_categories: [] } : utilData)
         else if (path === '/billing/overview') response = respond(billingFor(plan, scenario))
         else if (path === '/billing/payments') response = respond(page(paymentsFor(plan, scenario)))
         /* Subir comprobante: el mes queda en revisión (cubierto), como en la API */
@@ -824,6 +839,8 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             savedStore = [entry, ...savedStore.filter(item => item.id !== entry.id)]
             response = respond(entry)
         }
+        // Zermat: su Biblioteca sólo trae lo publicado para su plan; en la demo, todavía nada
+        else if (path === '/tools' && isZermat(plan)) response = respond(page([]))
         else if (path === '/tools') {
             const section = q.get('section') ?? ''
             response = owned.has(section) ? respond(page(toolsFor(section))) : respond(null, 403)
@@ -949,7 +966,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             response = new Response(JSON.stringify({ success: false, message: 'Ya usaste los 120 mensajes de tu Asistente de este mes. Se renuevan el 1 de octubre. Si lo usas mucho, con el Plan Ejecutivo tienes más.', errors: { code: 'ASSISTANT_LIMIT' } }), { status: 429, headers: { 'Content-Type': 'application/json' } })
         }
         /* Pedirle algo de la Biblioteca («¿tienes algo de Día de Muertos?», «la frase de hoy»): como show-library en la API real */
-        else if (path === '/chat/services' && /biblioteca|frase|carrusel|muertos/i.test(String(JSON.parse(String(init?.body ?? '{}')).message ?? ''))) {
+        else if (path === '/chat/services' && !isZermat(plan) && /biblioteca|frase|carrusel|muertos/i.test(String(JSON.parse(String(init?.body ?? '{}')).message ?? ''))) {
             await new Promise(listo => setTimeout(listo, 600))
             const slides = ['Portada', 'Paso 1', 'Paso 2', 'Cierre'].map((name, i) => ({
                 artifact: 'image', label: `Lámina ${i + 1}`, url: piece('Día de Muertos', name, 20 + i * 12, '4:5'), uri: `demo/muertos-${i + 1}.svg`, ext: 'svg',
@@ -967,7 +984,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
             })
         }
         /* Pedirle una pieza («compárteme…», «enséñame…»): contesta con tarjetas, como show-pieces en la API real */
-        else if (path === '/chat/services' && /compart|ense[ñn]a|m[aá]nda|pieza/i.test(String(JSON.parse(String(init?.body ?? '{}')).message ?? ''))) {
+        else if (path === '/chat/services' && !isZermat(plan) && /compart|ense[ñn]a|m[aá]nda|pieza/i.test(String(JSON.parse(String(init?.body ?? '{}')).message ?? ''))) {
             await new Promise(listo => setTimeout(listo, 600))
             const card = (id: string, section: string, name: string, extra: Record<string, unknown> = {}) => ({
                 id, title: `${section} · ${name}`, section, person: name, shared_at: null, is_regenerating: false, live: false, can_mark_sent: true,
@@ -989,7 +1006,9 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/chat/services') {
             const sent = JSON.parse(String(init?.body ?? '{}'))
             const files = (sent.attachments ?? []) as Array<{ name: string, previewUri?: string | null }>
-            const reply = files.length
+            const reply = isZermat(plan)
+                ? 'Su grupo tiene 42 personas. Esta semana cumplen años:\n- Cecilia Barrón, el sábado 22\n- Norma Patraca, el jueves 26\n\n¿Le escribo una felicitación para alguna?'
+                : files.length
                 ? `Esto es el simulador: recibí ${files.length} ${files.length === 1 ? 'archivo' : 'archivos'} (${files.map(f => f.name).join(', ')}); ${files.filter(f => f.previewUri).length} con copia ligera para que la IA los vea. Con tu sesión real la IA los mira y los adjunta al pedido.`
                 : 'Esto es el simulador: aquí el Asistente no está conectado. Con tu sesión real contesta con tus datos.'
             // La conversación: la que manda la web, o una nueva arriba del listado

@@ -1,4 +1,4 @@
-import { useCompany } from '@/utils/company'
+import { CompanyFeature, useCompany } from '@/utils/company'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { BadgeCheckIcon, ChartNoAxesColumnIcon, CrownIcon, NewspaperIcon, SearchIcon, SparklesIcon, UsersRoundIcon } from 'lucide-react'
@@ -15,11 +15,17 @@ import { askAssistant } from './assistantBridge'
 const IS_MAC = typeof navigator !== 'undefined' && /mac/i.test(navigator.platform)
 
 /** Lo que la IA sí sabe hacer: sus pedidos de diseño y consultar su unidad, sus piezas, sus clientas y sus reportes. Las mismas del saludo del panel. */
-const QUESTIONS: Array<{ text: string, needs: PermissionKeys }> = [
+/*
+ * `company`: sólo si su empresa tiene esa función (lo de reportes es de Mary Kay); `without`: sólo si NO la tiene (lo del
+ * Asistente de otra empresa, Zermat, que es otro). `{group}` es la palabra de su empresa («unidad», «grupo»).
+ */
+const QUESTIONS: Array<{ text: string, needs: PermissionKeys, company?: CompanyFeature, without?: CompanyFeature }> = [
     /* La IA entrevista y crea el pedido: es un mensaje más, no un flujo aparte */
     { text: 'Quiero pedir un diseño', needs: PermissionKeys.SERVICES },
-    { text: '¿Cómo va mi unidad este mes?', needs: PermissionKeys.POSTS_UNITY },
-    { text: '¿Qué activas no han pedido este mes?', needs: PermissionKeys.POSTS_UNITY },
+    { text: '¿Cómo va mi {group} este mes?', needs: PermissionKeys.POSTS_UNITY },
+    { text: '¿Qué activas no han pedido este mes?', needs: PermissionKeys.POSTS_UNITY, company: 'portal' },
+    { text: '¿Quién de mi {group} cumple años pronto?', needs: PermissionKeys.POSTS_UNITY, without: 'portal' },
+    { text: 'Escríbeme una felicitación para alguien de mi {group}', needs: PermissionKeys.POSTS_UNITY, without: 'portal' },
     { text: '¿Qué piezas me faltan por compartir?', needs: PermissionKeys.POSTS_UNITY },
     { text: '¿Cómo van mis pedidos?', needs: PermissionKeys.SERVICES },
     { text: '¿Cómo van mis Directoras con su seguimiento?', needs: PermissionKeys.POSTS_DIRECTORS },
@@ -112,7 +118,11 @@ const CommandBar = ({ labelOf }: Props) => {
                     </CommandGroup>
 
                     {can('assistant') && <CommandGroup heading="Pídele al Asistente">
-                        {QUESTIONS.filter(question => permissions.includes(question.needs)).map(({ text }) => (
+                        {QUESTIONS
+                            .filter(question => permissions.includes(question.needs))
+                            .filter(question => (!question.company || can(question.company)) && (!question.without || !can(question.without)))
+                            .map(question => ({ text: question.text.replace('{group}', t('group')) }))
+                            .map(({ text }) => (
                             <CommandItem key={text} value={text} onSelect={() => ask(text)} className="cursor-pointer gap-3 rounded-xl">
                                 <span className="shell-drop-icon grid size-8 shrink-0 place-items-center rounded-[10px] text-primary"><SparklesIcon className="!size-4" /></span>
                                 {text}

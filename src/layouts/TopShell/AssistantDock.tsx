@@ -10,6 +10,7 @@ import { PermissionKeys } from '@/interfaces/permissions'
 import { cn } from '@/lib/utils'
 import useAuthStore from '@/store/auth'
 import { queryKeys } from '@/utils/cache'
+import { CompanyFeature, CompanyTerm, useCompany } from '@/utils/company'
 import { useAssistantRequests } from './assistantBridge'
 
 const ACTION = 'flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground'
@@ -33,9 +34,19 @@ export const DESIGN_REQUEST_LABEL = 'Quiero pedir un diseño'
  * quitó: repetía preguntas, no notaba lo que faltaba y registraba el pedido con la petición entera
  * como título. Cómo entrevista y cómo redacta el pedido se afina en la API (el prompt), no aquí.
  */
-const buildIntro = (name: string | undefined, hasServices: boolean): ChatIntro => {
+const buildIntro = (name: string | undefined, hasServices: boolean, can: (feature: CompanyFeature) => boolean, t: (term: CompanyTerm) => string): ChatIntro => {
     const first = (name ?? '').trim().split(/\s+/)[0] ?? ''
     const hola = first ? `Hola, ${first.charAt(0).toUpperCase()}${first.slice(1).toLowerCase()}` : 'Hola'
+
+    /* El Asistente de otra empresa (Zermat, 19-nov-2026) es otro: su grupo, sus piezas, su Biblioteca y mensajes listos;
+       nada de reportes, activas ni diseños de Mary Kay */
+    if (!can('portal')) {
+        return {
+            title: `${hola}.`,
+            text: `Conozco tu ${t('group')} y tus piezas. Pregúntame quién cumple años o qué te falta compartir, pídeme que te enseñe una pieza, o que te escriba un mensaje para tu ${t('group')}.`,
+            suggestions: [`¿Quién de mi ${t('group')} cumple años pronto?`, `Escríbeme una felicitación para alguien de mi ${t('group')}`, '¿Qué piezas me faltan por compartir?'],
+        }
+    }
 
     /* Fase 2 del Asistente: además de consultar (estatus de cada consultora, sus piezas, sus clientas,
        sus reportes) enseña piezas aquí mismo y, según el plan, hace cosas por ella con su sí (rehacer
@@ -80,7 +91,8 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
     const user = useAuthStore(state => state.user)
     const permissions = useAuthStore(state => state.permissions)
     const hasServices = permissions.includes(PermissionKeys.SERVICES)
-    const intro = buildIntro(user?.name, hasServices)
+    const { can, t } = useCompany()
+    const intro = buildIntro(user?.name, hasServices, can, t)
 
     const isHistory = view === 'history'
 
@@ -131,7 +143,7 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
                         <b className="block text-[14.5px] font-extrabold">Asistente</b>
                         <small className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
                             <i className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,.2)]" />
-                            Conoce tu unidad, tus piezas y tus clientas
+                            {can('customers') ? 'Conoce tu unidad, tus piezas y tus clientas' : `Conoce tu ${t('group')} y tus piezas`}
                         </small>
                     </div>
                     <button type="button" title="Plegar" onClick={() => onOpenChange(false)} className="grid size-9 cursor-pointer place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground">
