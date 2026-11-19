@@ -2,6 +2,7 @@ import { useState } from "react"
 import { type UseFormRegister, type FieldErrors, type UseFormSetValue, type UseFormWatch } from "react-hook-form"
 import { Hash, Lock, ShieldCheck, AlertTriangle, Info } from "lucide-react"
 
+import { mkPortalFor } from "@/constants/countries"
 import StepShell from "../components/StepShell"
 import WizardInput from "../components/WizardInput"
 import ManualReportDialog from "../components/ManualReportDialog"
@@ -19,8 +20,10 @@ interface Props {
     simple?: boolean
 }
 
-const StepMKConnect = ({ register, errors, simple = false }: Props) => {
+const StepMKConnect = ({ register, errors, watch, simple = false }: Props) => {
     const [openManual, setOpenManual] = useState(false)
+    // El portal de SU país: Colombia entra por marykayintouch.com.co
+    const portal = mkPortalFor(watch('countryCode'))
 
     return (
         <>
@@ -30,7 +33,7 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                 description={
                     simple
                         ? 'Con tu usuario te enlazamos con tu Directora. La contraseña es opcional.'
-                        : 'Para que Eyplease+ trabaje con tu unidad real, ingresa tus datos de marykayintouch.com.mx.'
+                        : `Para que Eyplease+ trabaje con tu unidad real, ingresa tus datos de ${portal}.`
                 }
             >
                 <div className="flex flex-col gap-4">
@@ -80,7 +83,7 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                                         Si la pones, tus pedidos entran solos cada noche. Si prefieres no ponerla, agregas lo que tienes guardado de la lista de Mary Kay en «Tu inventario».
                                     </p>
                                     <p className="mt-1.5">
-                                        Esta <b className="text-foreground">no es tu clave de Eyplease+</b>: es la que usas en marykayintouch.com.mx.
+                                        Esta <b className="text-foreground">no es tu clave de Eyplease+</b>: es la que usas en {portal}.
                                     </p>
                                 </div>
                             </div>
@@ -108,7 +111,7 @@ const StepMKConnect = ({ register, errors, simple = false }: Props) => {
                                         Si la dejas vacía, tendrás que <b className="text-foreground">subirlos manualmente</b>.
                                     </p>
                                     <p className="mt-1.5">
-                                        Esta <b className="text-foreground">no es tu clave de Eyplease+</b>: es la que usas en marykayintouch.com.mx.
+                                        Esta <b className="text-foreground">no es tu clave de Eyplease+</b>: es la que usas en {portal}.
                                     </p>
                                 </div>
                             </div>

@@ -22,6 +22,23 @@ export const COUNTRIES: Country[] = [
 
 export const DEFAULT_COUNTRY_CODE = 'MX'
 
+/**
+ * `?pais=co` en la liga (los anuncios y el bot de Colombia): el registro arranca con ese país, para que la cuenta no nazca
+ * como de México sólo porque no cambió la lada (David, 19-nov-2026: «tenemos que prepararnos para movernos allá»).
+ */
+export const countryFromLink = (): string | null => {
+    const code = new URLSearchParams(window.location.search).get('pais')?.trim().toUpperCase()
+    return code && COUNTRIES.some(country => country.code === code) ? code : null
+}
+
+/** El portal de Mary Kay de cada país, como lo conoce la Directora. */
+const MK_PORTALS: Record<string, string> = { MX: 'marykayintouch.com.mx', CO: 'marykayintouch.com.co' }
+export const mkPortalFor = (code?: string | null) => MK_PORTALS[code ?? ''] ?? MK_PORTALS[DEFAULT_COUNTRY_CODE]
+
+/** Dinero con la costumbre de su moneda: «$64.900» en pesos colombianos, «$349» en mexicanos. */
+export const moneyFor = (amount: number, currency: string = 'MXN') =>
+    `$${amount.toLocaleString(currency === 'COP' ? 'es-CO' : 'es-MX')}`
+
 export const STORE_URLS = {
     ios: 'https://apps.apple.com/mx/app/eyplease/id6756317945',
     android: 'https://play.google.com/store/apps/details?id=com.eyplease&pcampaignid=web_share',

@@ -122,6 +122,7 @@ const SignUpPage = () => {
                         firstName={firstName}
                         preferTrial={!!values.preferTrial}
                         onPreferTrial={(value) => setValue('preferTrial', value)}
+                        country={values.countryCode || undefined}
                     />
                 )}
                 {currentKey === 'mk' && (

@@ -3,6 +3,7 @@ import { Check, Sparkles, Gift, BadgePercent } from "lucide-react"
 
 import StepShell from "../components/StepShell"
 import StepPlanRecommendationSkeleton from "./StepPlanRecommendationSkeleton"
+import { moneyFor } from "@/constants/countries"
 import { PLANS_METADATA } from "@/constants/plans"
 import { PlanKeys } from "@/interfaces/plans"
 import useRecommendedPlan from "../hooks/useRecommendedPlan"
@@ -13,9 +14,9 @@ interface Props {
     /** Escogió su mes gratis en lugar de la promoción con permanencia (Elite y Área en el Buen Fin) */
     preferTrial?: boolean
     onPreferTrial?: (value: boolean) => void
+    /** Su país (la lada que eligió o `?pais=`): el precio sale en su moneda */
+    country?: string
 }
-
-const formatPrice = (n: number) => `$${n.toLocaleString('es-MX')}`
 
 /** Una de las dos formas de empezar (la promoción o el mes gratis), como opción de radio */
 const DealOption = ({ selected, onSelect, icon, title, detail }: {
@@ -46,9 +47,12 @@ const DealOption = ({ selected, onSelect, icon, title, detail }: {
     </button>
 )
 
-const StepPlanRecommendation = ({ planKey, firstName, preferTrial = false, onPreferTrial }: Props) => {
+const StepPlanRecommendation = ({ planKey, firstName, preferTrial = false, onPreferTrial, country }: Props) => {
     // `promo`: la promoción con permanencia de este plan (Elite y Área en el Buen Fin), la haya dejado o no por su mes gratis
-    const { plan, deal, promo } = useRecommendedPlan(planKey, true, preferTrial)
+    const { plan, deal, promo } = useRecommendedPlan(planKey, true, preferTrial, country)
+    // El precio en la moneda de su país, con su costumbre («$64.900 COP» en Colombia)
+    const currency = plan?.currency ?? 'MXN'
+    const formatPrice = (n: number) => moneyFor(n, currency)
 
     const planMetadata = PLANS_METADATA[planKey]
     const planWithMetadata = plan ? { ...plan, ...planMetadata } : null
@@ -97,7 +101,7 @@ const StepPlanRecommendation = ({ planKey, firstName, preferTrial = false, onPre
                                 {formatPrice(offer ? offer.amount : planWithMetadata.price ?? 0)}
                             </span>
                             <span className="text-sm font-semibold text-muted-foreground">
-                                MXN / mes
+                                {currency} / mes
                             </span>
                             {offer && (
                                 <span className="ml-1 text-[15px] font-semibold text-muted-foreground line-through decoration-2">

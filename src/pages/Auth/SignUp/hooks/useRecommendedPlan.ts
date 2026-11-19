@@ -1,11 +1,13 @@
 import { useRef } from "react"
 
 import { API_ROUTES } from "@/constants/api"
+import { DEFAULT_COUNTRY_CODE, moneyFor } from "@/constants/countries"
 import useFetchQuery from "@/hooks/useFetchQuery"
 import { IPlan, IPlanOfferCommitment, PlanKeys } from "@/interfaces/plans"
 import { queryKeys } from "@/utils/cache"
 
-const money = (n: number) => `$${n.toLocaleString('es-MX')}`
+/** «$349» en México; en otro país, con su moneda dicha: «$64.900 COP». */
+const moneyIn = (currency: string) => (n: number) => `${moneyFor(n, currency)}${currency === 'MXN' ? '' : ` ${currency}`}`
 
 /**
  * Cómo entra a su plan al registrarse, ya en palabras: con la oferta de entrada («Tus primeros 6 meses a $659» en el
@@ -34,6 +36,7 @@ export interface PlanDeal {
 const trialSpan = (days: number) => days === 30 ? 'un mes' : days === 1 ? 'un día' : `${days} días`
 
 export const planDeal = (plan: IPlan | null | undefined): PlanDeal => {
+    const money = moneyIn(plan?.currency ?? 'MXN')
     if (plan?.offer) {
         const { months, amount } = plan.offer
         const commitment = plan.offer.commitment ?? null
@@ -73,11 +76,13 @@ export const planDeal = (plan: IPlan | null | undefined): PlanDeal => {
  * Fin): la API le quita la oferta, le deja su prueba y devuelve en `declined_offer` la promoción que dejó.
  * `promo` es esa promoción, la tenga puesta o no: con ella el paso del plan le deja escoger entre las dos.
  */
-const useRecommendedPlan = (planKey: PlanKeys | null | undefined, enabled = true, preferTrial = false) => {
+const useRecommendedPlan = (planKey: PlanKeys | null | undefined, enabled = true, preferTrial = false, country: string = DEFAULT_COUNTRY_CODE) => {
+    // El precio es el de su país (la lada que eligió, o `?pais=` de la liga): Colombia lo ve en pesos colombianos
+    const query = new URLSearchParams({ country, ...(preferTrial ? { prefer_trial: '1' } : {}) })
     const { response, loading } = useFetchQuery<IPlan>(
-        API_ROUTES.SIGN_UP.GET_RECOMMENDED_PLAN.replace('{plan_key}', planKey ?? '') + (preferTrial ? '?prefer_trial=1' : ''),
+        `${API_ROUTES.SIGN_UP.GET_RECOMMENDED_PLAN.replace('{plan_key}', planKey ?? '')}?${query.toString()}`,
         {
-            customQueryKey: queryKeys.detail('plan', `${planKey ?? ''}${preferTrial ? ':mes-gratis' : ''}`),
+            customQueryKey: queryKeys.detail('plan', `${planKey ?? ''}:${country}${preferTrial ? ':mes-gratis' : ''}`),
             enabled: !!planKey && enabled,
         }
     )

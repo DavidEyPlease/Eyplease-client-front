@@ -9,7 +9,7 @@ import usePhoneValidation from "@/hooks/usePhoneValidation"
 import useRequestQuery from "@/hooks/useRequestQuery"
 import { API_ROUTES } from "@/constants/api"
 import { APP_ROUTES, SESSION_KEY } from "@/constants/app"
-import { DEFAULT_COUNTRY_CODE } from "@/constants/countries"
+import { DEFAULT_COUNTRY_CODE, countryFromLink } from "@/constants/countries"
 import { recommendPlan } from "@/constants/plans"
 import { AuthResponse } from "@/interfaces/common"
 import { PlanKeys } from "@/interfaces/plans"
@@ -81,7 +81,8 @@ const useSignUpWizard = () => {
     const form = useCustomForm<ISignUp>(SignUpSchema, {
         fullName: '',
         email: '',
-        countryCode: DEFAULT_COUNTRY_CODE,
+        // `?pais=co` (anuncios y bot de Colombia) arranca con su país; si no, México
+        countryCode: countryFromLink() ?? DEFAULT_COUNTRY_CODE,
         phoneNumber: '',
         password: '',
         // Quien llega invitada por su consultora es Directora; quien llega por la liga de su Directora, consultora
@@ -107,12 +108,13 @@ const useSignUpWizard = () => {
     const directorYears = watch('directorYears')
     const recommendedPlan = watch('recommendedPlan')
     const preferTrial = !!watch('preferTrial')
+    const countryCode = watch('countryCode') || DEFAULT_COUNTRY_CODE
 
     const planToShow: PlanKeys = recommendedPlan
         ?? recommendPlan(userType, unitSize, directorYears)
     // Con oferta de entrada no hay prueba (el Standard hasta el 8-nov-2026: al terminar se le llevaba a contratarlo; desde
     // el 9-nov entra con su mes gratis y la API ya no manda la oferta)
-    const { deal } = useRecommendedPlan(planToShow, userType !== 'other', preferTrial)
+    const { deal } = useRecommendedPlan(planToShow, userType !== 'other', preferTrial, countryCode)
     // La permanencia de su oferta (Elite y Área en el Buen Fin): el último paso le pide aceptarla y va en el alta
     const commitment = deal.kind === 'offer' ? deal.commitment : null
 

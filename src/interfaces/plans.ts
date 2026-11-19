@@ -8,6 +8,8 @@ export interface IPlan {
     /** unit (Directora) o clients (consultora) */
     audience?: string | null
     price: number
+    /** Moneda de ese precio (el registro lo pide por país: Colombia en COP). Sin ella, pesos mexicanos. */
+    currency?: string
     features: string[]
     accesses: IPermission[]
     best_sell?: boolean
