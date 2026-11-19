@@ -6,7 +6,11 @@
 // «Tu inventario» (API cfb7ffb, 9-nov-2026): cada producto con imagen trae su `piece` para «Compartir», y «Agregar» busca
 // en una lista de Mary Kay de mentira (`consultant/inventory/catalog?q=`). Con ?inventario=vacio se ve como una consultora
 // sin pedidos conectados: todo lo agrega a mano, escogiéndolo de la lista.
-import type { CatalogProduct, ConsultantInventory, CustomerSale, InventoryItem, InventoryPiece } from '@/interfaces/inventory'
+// Noviembre 2026 (lo que pidieron las clientas): cada producto con su `category`, «Para tu próximo pedido» (`next_order`,
+// las mismas reglas que ConsultantInventoryService::nextOrder), la lista sin `q` (lo más pedido, de todo o por categoría)
+// y `consultant/inventory/items/batch` («Agrega lo que tienes»). ?inventario=a-mano: como Violeta, todo cargado a mano
+// hace 2 días, sin pedidos bajados.
+import type { CatalogProduct, ConsultantInventory, CustomerSale, InventoryItem, InventoryPiece, NextOrder, NextOrderLine } from '@/interfaces/inventory'
 import type { ConsultantStrategy, StrategyLevel, StrategyMoment, StrategyPiece, StrategyProduct, StrategyStep } from '@/interfaces/strategy'
 
 const STALE_DAYS = 30
@@ -36,6 +40,8 @@ interface Stock {
     last_purchased_at: string | null
     oldest_unit_at: string
     reviewed: boolean
+    /** Lo que agregó ella a mano (en la API, los ajustes con +): con lo comprado y lo que le queda da lo que salió */
+    added: number
 }
 
 const LAST_ORDER_DAYS = 13
@@ -43,7 +49,12 @@ const OLDER_ORDER_DAYS = 42
 
 const row = (sku: string, name: string, shade: string | null, purchased: number, onHand: number, price: number, cost: number | null, when: string, ordenaYa = false): Stock => ({
     sku, name, shade, manual: false, is_ordena_ya: ordenaYa, purchased, on_hand: onHand, price, unit_cost: cost,
-    last_purchased_at: when, oldest_unit_at: when, reviewed: false,
+    last_purchased_at: when, oldest_unit_at: when, reviewed: false, added: 0,
+})
+
+/** Lo que agregó ella (de la lista o escrito), hace `daysAgo` días */
+const manualRow = (sku: string, name: string, added: number, onHand: number, price: number, daysAgo: number): Stock => ({
+    ...row(sku, name, null, 0, onHand, price, null, dateOnly(daysAgo)), manual: true, last_purchased_at: null, reviewed: true, added,
 })
 
 const seedBig = (): Stock[] => {
@@ -58,8 +69,35 @@ const seedBig = (): Stock[] => {
         row('10045632', 'Loción Desmaquillante de Ojos Libre de Aceite', null, 12, 11, 414, 207, last),
         row('10230518', 'Mary Kay Joy Emotion Scent® Eau de Parfum', null, 4, 4, 544, 272, last),
         row('10180326', 'Crema para Manos Satin Hands® Libre de Fragancia', null, 3, 0, 244, 122, older),
+        // Lo que se mueve: lo que bajó con − (sin anotarlo como venta) también cuenta para «Para tu próximo pedido»
+        row('10219874', 'Gel Limpiador TimeWise® 4 en 1', null, 6, 1, 459, 229.5, last),
+        row('10240034', 'Bálsamo Labial Satin Lips®', null, 6, 0, 199, 99.5, older),
+        row('10219890', 'Crema de Noche TimeWise®', null, 3, 1, 589, 294.5, older),
     ]
 }
+
+/**
+ * «Todo a mano» (como Violeta, DDU522, 17-nov-2026: «manejo mucho inventario y a veces solo pido poquitos»): sin
+ * pedidos bajados, lo cargó escogiendo de la lista hace 2 días y ya bajó con − lo que vendió. Uno lo escribió a su modo
+ * y sin precio (como le pasó a Norma).
+ */
+const seedByHand = (): Stock[] => [
+    manualRow('10216713', 'CC Cream Crema Correctora de Color FPS 15 Tono Light to Medium', 6, 4, 404, 2),
+    manualRow('10207045', 'Base de Maquillaje TimeWise 3D Tono Ivory C 110', 3, 3, 389, 2),
+    manualRow('10219874', 'Gel Limpiador TimeWise 4 en 1', 4, 2, 459, 2),
+    manualRow('10219890', 'Crema de Noche TimeWise', 2, 2, 589, 2),
+    manualRow('10219882', 'Crema de Día TimeWise FPS 30', 2, 1, 589, 2),
+    manualRow('10233417', 'Máscara para Pestañas Lash Love', 5, 3, 329, 2),
+    manualRow('10252210', 'Labial Líquido Mate At Play Tono Red My Mind', 3, 3, 299, 2),
+    manualRow('10252232', 'Labial Líquido Mate At Play Tono Nude Attitude', 2, 0, 299, 2),
+    manualRow('10230518', 'Joy Emotion Scent Eau de Parfum', 2, 2, 544, 2),
+    manualRow('10241155', 'Velvet Scent Eau de Parfum', 1, 1, 523, 2),
+    manualRow('10180326', 'Crema para Manos Satin Hands Libre de Fragancia', 4, 1, 244, 2),
+    manualRow('10240034', 'Bálsamo Labial Satin Lips', 3, 3, 199, 2),
+    manualRow('10236911', 'Agua Micelar', 2, 2, 394, 2),
+    manualRow('10229031', 'Tónico Balanceador', 1, 1, 319, 2),
+    manualRow('M-9QX4TB2L', 'Desmaquillante bifásico', 2, 2, 0, 2),
+]
 
 /** «Va empezando»: su primer pedido (el de Sofía en el prototipo), al 35 % */
 const seedStart = (): Stock[] => {
@@ -90,10 +128,10 @@ const seedSales = (customerName: (id: string) => string | null): CustomerSale[] 
 // ---------- Las reglas de la estrategia (copia de config/strategy.php de la API) ----------
 
 const CATEGORIES: Array<{ key: string, label: string, words: string[], reorder: number }> = [
-    { key: 'fragancia', label: 'fragancias', words: ['eau de parfum', 'eau de toilette', 'extrait de parfum', 'perfume', 'fragancia', 'body mist'], reorder: 16 },
-    { key: 'cuerpo', label: 'cuidado del cuerpo', words: ['satin hands', 'satin lips', 'locion corporal', 'crema para manos', 'corporal', 'cuerpo'], reorder: 8 },
-    { key: 'maquillaje', label: 'maquillaje', words: ['base', 'cc cream', 'corrector', 'polvo', 'rubor', 'sombra', 'delineador', 'labial', 'brillo', 'mascara para pestanas', 'rimel', 'lapiz', 'bronceador', 'paleta', 'iluminador', 'primer', 'fijador', 'cejas', 'pestanas', 'esponja', 'brocha', 'pincel', 'maquillaje'], reorder: 10 },
-    { key: 'piel', label: 'cuidado de la piel', words: ['timewise', 'limpiador', 'limpiadora', 'crema', 'gel', 'protector solar', 'balsamo', 'parches', 'mascarilla', 'tonico', 'agua micelar', 'desmaquillante', 'suero', 'serum', 'exfoliante', 'microexfoliacion', 'skinvigorate', 'clear proof', 'botanical', 'contorno de ojos', 'repair', 'volu-firm'], reorder: 8 },
+    { key: 'fragancia', label: 'fragancias', words: ['eau de parfum', 'eau de toilette', 'extrait de parfum', 'eau de cologne', 'colonia', 'perfume', 'body mist', 'if you believe', ' scent'], reorder: 16 },
+    { key: 'cuerpo', label: 'cuidado del cuerpo', words: ['satin hands', 'satin lips', 'locion corporal', 'crema para manos', 'corporal', 'cuerpo', 'para pies', 'piernas'], reorder: 8 },
+    { key: 'maquillaje', label: 'maquillaje', words: ['base', 'cc cream', 'corrector', 'polvo', 'rubor', 'sombra', 'delineador', 'labial', 'brillo', 'labios con color', 'pestanina', 'palet', 'contorno de rostro', 'mascara para pestanas', 'rimel', 'lapiz', 'bronceador', 'paleta', 'iluminador', 'primer', 'fijador', 'cejas', 'pestanas', 'esponja', 'brocha', 'pincel', 'maquillaje'], reorder: 10 },
+    { key: 'piel', label: 'cuidado de la piel', words: ['timewise', 'limpiador', 'limpiadora', 'crema', 'gel', 'protector solar', 'balsamo', 'parches', 'mascarilla', 'tonico', 'agua micelar', 'desmaquillante', 'suero', 'serum', 'exfoliante', 'microexfoliacion', 'skinvigorate', 'clear proof', 'botanical', 'contorno de ojos', 'repair', 'volu-firm', 'clinical solutions', 'facial', 'rutina'], reorder: 8 },
 ]
 const OTHER: { key: string, label: string, words: string[], reorder: number } = { key: 'otros', label: 'tus productos', words: [], reorder: 10 }
 const MOMENTS: Record<string, Array<{ key: string, label: string, from: string, to: string }>> = {
@@ -330,17 +368,77 @@ const CATALOG: Array<{ sku: string, name: string, shade: string | null, price: n
     { sku: '10228650', name: 'Protector Solar FPS 50', shade: null, price: 409, total: 92 },
     { sku: '10240034', name: 'Bálsamo Labial Satin Lips', shade: null, price: 199, total: 133 },
     { sku: '10247719', name: 'Mascarilla Purificante de Carbón Clear Proof', shade: null, price: null, total: 22 },
+    { sku: '10198731', name: 'Limpiador Botanical Effects', shade: null, price: 279, total: 118 },
+    { sku: '10198747', name: 'Crema Hidratante Botanical Effects', shade: null, price: 299, total: 104 },
+    { sku: '10211583', name: 'Gel Limpiador Clarificante Clear Proof', shade: null, price: 329, total: 97 },
+    { sku: '10226654', name: 'Set de Microexfoliación Renovadora TimeWise', shade: null, price: 899, total: 143 },
+    { sku: '10237120', name: 'Contorno de Ojos TimeWise Repair Volu-Firm', shade: null, price: 799, total: 61 },
+    { sku: '10243305', name: 'Parches de Hidrogel para Contorno de Ojos', shade: null, price: 349, total: 88 },
+    { sku: '10204412', name: 'Polvo Mineral Compacto', shade: 'Ivory 1', price: 349, total: 126 },
+    { sku: '10204428', name: 'Polvo Mineral Compacto', shade: 'Beige 2', price: 349, total: 109 },
+    { sku: '10210038', name: 'Corrector Perfeccionador', shade: 'Light Ivory', price: 279, total: 95 },
+    { sku: '10209456', name: 'Rubor Chromafusion', shade: 'Shy Blush', price: 229, total: 77 },
+    { sku: '10213307', name: 'Delineador de Ojos', shade: 'Black', price: 219, total: 102 },
+    { sku: '10239915', name: 'Lápiz Labial Supreme', shade: 'Berry Couture', price: 349, total: 69 },
+    { sku: '10231102', name: 'Brillo Labial Unlimited', shade: 'Pink Luster', price: 259, total: 74 },
+    { sku: '10222876', name: 'Primer Facial TimeWise', shade: null, price: 379, total: 58 },
+    { sku: '10225541', name: 'Polvo Suelto Traslúcido', shade: null, price: 329, total: 83 },
+    { sku: '10232064', name: 'Thinking of You Eau de Parfum', shade: null, price: 589, total: 91 },
+    { sku: '10227713', name: 'Cityscape Eau de Parfum', shade: null, price: 619, total: 57 },
+    { sku: '10234480', name: 'True Original Eau de Toilette para Él', shade: null, price: 569, total: 49 },
+    { sku: '10236655', name: 'Loción Corporal Satin Body', shade: null, price: 289, total: 66 },
+    { sku: '10180334', name: 'Juego Suavizante de Manos Satin Hands', shade: null, price: 763, total: 112 },
 ]
 
-/** Como ConsultantInventoryService::searchCatalog: todas las palabras (de 2 letras o más), primero lo que empieza igual */
-const searchCatalog = (query: string): CatalogProduct[] => {
+const catalogProduct = (row: typeof CATALOG[number]): CatalogProduct => ({
+    sku: row.sku, name: row.name, shade: row.shade, price: row.price, has_image: !!libraryKey(row.sku, row.name), category: category(row.name).key,
+})
+
+/**
+ * Como ConsultantInventoryService::searchCatalog: con texto, todas las palabras (de 2 letras o más), primero lo que
+ * empieza igual (15); sin texto, lo más pedido (40), de todo o de una categoría.
+ */
+const searchCatalog = (query: string, categoryKey: string | null): CatalogProduct[] => {
     const words = plainName(query).split(' ').filter(word => word.length >= 2)
-    if (!words.length) return []
-    return CATALOG
+    const inCategory = CATALOG.filter(row => !categoryKey || category(row.name).key === categoryKey)
+    if (!words.length) return [...inCategory].sort((a, b) => b.total - a.total).slice(0, 40).map(catalogProduct)
+    return inCategory
         .filter(row => words.every(word => plainName(`${row.name} ${row.shade ?? ''}`).includes(word)))
         .sort((a, b) => Number(plainName(b.name).startsWith(words[0])) - Number(plainName(a.name).startsWith(words[0])) || b.total - a.total)
         .slice(0, 15)
-        .map(row => ({ sku: row.sku, name: row.name, shade: row.shade, price: row.price, has_image: !!libraryKey(row.sku, row.name) }))
+        .map(catalogProduct)
+}
+
+// ---------- «Para tu próximo pedido» (ConsultantInventoryService::nextOrder) ----------
+
+const COVER_WEEKS = 4
+const MIN_WEEKS = 4
+
+/**
+ * Lo que salió de cada producto (lo comprado y lo agregado, menos lo que le queda) entre las semanas desde que lo tiene
+ * (mínimo 4) da cuántas salen por semana; se pide lo que falta para cubrir 4 semanas. Se le acabó → «out»; no le alcanza
+ * → «low». Lo agotado primero (lo que más sale arriba) y luego lo que le dura menos.
+ */
+const nextOrderOf = (stock: Stock[]): NextOrder => {
+    const lines: NextOrderLine[] = []
+    let signal = false
+    for (const item of stock) {
+        const onHand = Math.max(r2(item.on_hand), 0)
+        const out = r2(item.purchased + item.added - onHand)
+        if (out < 1) continue
+        signal = true
+        const weekly = out / Math.max(MIN_WEEKS, daysSince(item.oldest_unit_at) / 7)
+        const need = Math.max(1, Math.ceil(weekly * COVER_WEEKS - 0.2))
+        if (onHand >= need) continue
+        lines.push({
+            sku: item.sku, name: short(item.name).replace(/\s+Tono\s+.+$/u, ''), shade: item.shade ?? (item.name.match(/\s+Tono\s+(.+)$/u)?.[1] ?? null),
+            reason: onHand <= 0 ? 'out' : 'low', on_hand: onHand, monthly: Math.round(weekly * 4.35 * 10) / 10,
+            weeks_left: onHand > 0 ? Math.round((onHand / weekly) * 10) / 10 : null, suggested: Math.ceil(need - onHand),
+            price: item.price, unit_cost: item.unit_cost, manual_name: item.sku.startsWith('M-'),
+        })
+    }
+    lines.sort((a, b) => Number(b.reason === 'out') - Number(a.reason === 'out') || (a.reason === 'out' ? b.monthly - a.monthly : (a.weeks_left ?? 0) - (b.weeks_left ?? 0)))
+    return { has_signal: signal, cover_weeks: COVER_WEEKS, lines: lines.slice(0, 12) }
 }
 
 // ---------- «Mándale cómo usarlo» (StrategyLibraryService::howToFor) ----------
@@ -387,26 +485,31 @@ export const createStrategyDemo = (options: {
 }) => {
     const variant = sessionStorage.getItem('cuentas:inventario') ?? ''
     const start = variant === 'empieza'
-    let stock: Stock[] = variant === 'vacio' ? [] : start ? seedStart() : seedBig()
+    const byHand = variant === 'a-mano'
+    let stock: Stock[] = variant === 'vacio' ? [] : byHand ? seedByHand() : start ? seedStart() : seedBig()
     if (variant === 'revisado') stock = [...stock.map(item => ({ ...item, reviewed: true })), { ...row('M-7QK2D9XA', 'Mascarilla de carbón (de un pedido viejo)', null, 0, 1, 0, null, dateOnly(2)), manual: true, last_purchased_at: null, reviewed: true }]
-    let sales: CustomerSale[] = variant === 'vacio' || start ? [] : seedSales(options.customerName)
-    const lastOrder = variant === 'vacio' ? null : { number: '19876543', date: dateOnly(start ? 20 : LAST_ORDER_DAYS) }
+    let sales: CustomerSale[] = variant === 'vacio' || start || byHand ? [] : seedSales(options.customerName)
+    const lastOrder = variant === 'vacio' || byHand ? null : { number: '19876543', date: dateOnly(start ? 20 : LAST_ORDER_DAYS) }
     const level: StrategyLevel = start
         ? { month: monthKey(new Date()), accumulated: 1702.59, earned: 35, kept: 0, kept_from: null, level: 35, next: { level: 40, from: 3600, missing: r2(3600 - 1702.59) }, keeps_next_month: true }
         : { month: monthKey(new Date()), accumulated: variant === 'vacio' ? 0 : 15855.17, earned: variant === 'vacio' ? 0 : 50, kept: 0, kept_from: null, level: variant === 'vacio' ? 0 : 50, next: variant === 'vacio' ? { level: 35, from: 1200, missing: 1200 } : null, keeps_next_month: true }
 
-    const toRow = (item: Stock): InventoryItem => {
+    const toRow = (item: Stock, reorder: Set<string>): InventoryItem => {
         const onHand = Math.max(r2(item.on_hand), 0)
         const days = onHand > 0 ? daysSince(item.oldest_unit_at) : 0
         return {
             sku: item.sku, name: item.name, shade: item.shade, manual: item.manual, is_ordena_ya: item.is_ordena_ya, purchased: item.purchased,
             on_hand: onHand, price: item.price, unit_cost: item.unit_cost, profit_per_unit: item.unit_cost !== null ? r2(item.price - item.unit_cost) : null,
             last_purchased_at: item.last_purchased_at, oldest_unit_at: onHand > 0 ? item.oldest_unit_at : null, days_stored: days,
-            stale: onHand > 0 && days >= STALE_DAYS, reviewed: item.reviewed, piece: pieceFor(item, item.price),
+            // Lo que hay que volver a pedir se está vendiendo: no es «Muévelo primero» aunque su pieza sea vieja
+            stale: onHand > 0 && days >= STALE_DAYS && !reorder.has(item.sku), reviewed: item.reviewed, piece: pieceFor(item, item.price),
+            category: { key: category(item.name).key, label: category(item.name).label },
         }
     }
     const inventory = (): ConsultantInventory => {
-        const rows = stock.map(toRow).sort((a, b) => Number(b.on_hand > 0) - Number(a.on_hand > 0) || b.days_stored - a.days_stored || a.name.localeCompare(b.name))
+        const nextOrder = nextOrderOf(stock)
+        const reorder = new Set(nextOrder.lines.map(line => line.sku))
+        const rows = stock.map(item => toRow(item, reorder)).sort((a, b) => Number(b.on_hand > 0) - Number(a.on_hand > 0) || b.days_stored - a.days_stored || a.name.localeCompare(b.name))
         const inStock = rows.filter(i => i.on_hand > 0)
         const costed = inStock.filter(i => i.unit_cost !== null)
         return {
@@ -417,7 +520,19 @@ export const createStrategyDemo = (options: {
                 profit: r2(costed.reduce((s, i) => s + (i.profit_per_unit ?? 0) * i.on_hand, 0)), without_cost: inStock.length - costed.length,
             },
             items: rows,
+            next_order: nextOrder,
         }
+    }
+
+    /** Un producto que agrega ella (como ConsultantInventoryService::addManual): si ya lo tiene, se le suma */
+    const addOne = (body: Record<string, unknown>) => {
+        const sku = String(body.sku ?? '').trim() || `M-${Math.random().toString(36).slice(2, 10).toUpperCase()}`
+        const existing = stock.find(item => item.sku === sku)
+        const quantity = Number(body.quantity ?? 0)
+        if (existing) {
+            existing.on_hand += quantity
+            existing.added += quantity
+        } else stock.push(manualRow(sku, String(body.name ?? '').trim(), quantity, quantity, body.price ? Math.round(Number(body.price)) : 0, 0))
     }
 
     const ok = (data: unknown): Reply => ({ status: 200, data })
@@ -435,15 +550,17 @@ export const createStrategyDemo = (options: {
         }
         if (path === '/consultant/inventory/catalog' && method === 'GET') {
             const q = (query.get('q') ?? '').trim()
-            if (q.length < 2) return fail('El campo q debe contener al menos 2 caracteres.', 422)
-            return ok(searchCatalog(q))
+            if (q.length === 1) return fail('El campo q debe contener al menos 2 caracteres.', 422)
+            return ok(searchCatalog(q, query.get('category')))
         }
         if (path === '/consultant/inventory/items' && method === 'POST') {
-            const sku = String(body.sku ?? '').trim() || `M-${Math.random().toString(36).slice(2, 10).toUpperCase()}`
-            const existing = stock.find(item => item.sku === sku)
-            const quantity = Number(body.quantity ?? 0)
-            if (existing) existing.on_hand += quantity
-            else stock.push({ ...row(sku, String(body.name ?? '').trim(), null, 0, quantity, body.price ? Math.round(Number(body.price)) : 0, null, dateOnly(0)), manual: true, last_purchased_at: null, reviewed: true })
+            addOne(body)
+            return ok(inventory())
+        }
+        if (path === '/consultant/inventory/items/batch' && method === 'POST') {
+            const items = Array.isArray(body.items) ? body.items as Array<Record<string, unknown>> : []
+            if (!items.length) return fail('Escoge al menos un producto.', 422)
+            items.forEach(addOne)
             return ok(inventory())
         }
         const itemMatch = path.match(/^\/consultant\/inventory\/items\/(.+)$/)

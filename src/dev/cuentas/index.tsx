@@ -5,7 +5,7 @@
 //   …&ir=/indicators                                       (página en la que abre; por defecto el Inicio)
 //   …&cobro=aldia|toca|atrasado                            (cómo va su pago; por defecto «toca»)
 //   …&boletin=sin-ordenes | con-fotos | sin-fotos          (boletín dinámico sin órdenes / con siluetas / productos sin foto)
-//   …&inventario=empieza | vacio | revisado | sin-ligar     («Tu estrategia» de la consultora, plan=standard; ver estrategia-demo.ts)
+//   …&inventario=empieza | vacio | a-mano | revisado | sin-ligar  («Tu estrategia» de la consultora, plan=standard; ver estrategia-demo.ts)
 //   plan=gratis-consultora …&standard=apagado | prueba | automatica | contacto | sin-oferta  (contratar el Standard con tarjeta)
 //   plan=standard&tarjeta=si (o &cancelada=1)&ir=/profile?section=billing  (su Standard a tarjeta: cancelarlo o reanudarlo)
 //   …&sintarjeta=1 (y &ficha=oxxo|transfer, &sincorreo=1, &clabe=1)   (pagar en OXXO o por transferencia: ver mock-api.ts)

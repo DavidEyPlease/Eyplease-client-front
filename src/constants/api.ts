@@ -151,7 +151,12 @@ export const API_ROUTES = {
         INVENTORY_REVIEW: '/consultant/inventory/review',
         /** Agregar algo que no sale en sus pedidos */
         INVENTORY_ITEMS: '/consultant/inventory/items',
-        /** Buscar en la lista de productos de Mary Kay de su país (`?q=`, mín. 2 letras) para agregar a mano */
+        /** «Agrega lo que tienes»: varios productos de una vez (`{ items: [...] }`) */
+        INVENTORY_ITEMS_BATCH: '/consultant/inventory/items/batch',
+        /**
+         * La lista de productos de Mary Kay de su país para agregar a mano: `?q=` (mín. 2 letras) busca; sin `q`, lo más
+         * pedido (con `?category=piel|maquillaje|fragancia|cuerpo`, lo más pedido de esa categoría)
+         */
         INVENTORY_CATALOG: '/consultant/inventory/catalog',
         /** Corregir «te quedan» de un producto */
         INVENTORY_ITEM: '/consultant/inventory/items/{sku}',

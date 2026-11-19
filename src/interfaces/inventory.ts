@@ -31,6 +31,14 @@ export interface InventoryItem {
     reviewed: boolean
     /** Su imagen de la biblioteca (con su logo) y el mensaje para mandarlo suelto; nulo si todavía no tiene imagen */
     piece?: InventoryPiece | null
+    /** Su categoría por el nombre (config/strategy.php de la API); sin ella, va en «Otros» */
+    category?: InventoryCategory
+}
+
+/** Las categorías de la estrategia: piel, maquillaje, fragancia, cuerpo y otros */
+export interface InventoryCategory {
+    key: string
+    label: string
 }
 
 export interface InventoryPiece {
@@ -49,6 +57,8 @@ export interface CatalogProduct {
     price: number | null
     /** Ya tiene su imagen en la biblioteca: al agregarlo, sale con «Compartir» */
     has_image: boolean
+    /** La clave de su categoría (piel, maquillaje, fragancia, cuerpo u otros) */
+    category?: string
 }
 
 export interface InventorySummary {
@@ -73,6 +83,41 @@ export interface ConsultantInventory {
     summary: InventorySummary
     /** Ya viene ordenado: lo que tiene primero y, de eso, lo guardado más tiempo */
     items: InventoryItem[]
+    /** «Para tu próximo pedido»: lo que se le acabó o le va a faltar, según lo que sale de su inventario */
+    next_order?: NextOrder
+}
+
+/**
+ * «Para tu próximo pedido». Lo que sale de cada producto (sus ventas y lo que bajó con −) entre el tiempo desde que lo
+ * tiene (mínimo 4 semanas) da cuántas salen por semana; se sugiere lo que le falta para cubrir `cover_weeks`.
+ */
+export interface NextOrder {
+    /** Ya hay salidas (ventas o −) con qué calcular; si no, todavía no sabemos qué se vende */
+    has_signal: boolean
+    /** Para cuántas semanas se sugiere tener */
+    cover_weeks: number
+    /** Lo agotado primero y luego lo que le alcanza para menos tiempo */
+    lines: NextOrderLine[]
+}
+
+export interface NextOrderLine {
+    sku: string
+    name: string
+    shade: string | null
+    /** `out`: se le acabó · `low`: le alcanza para menos de `cover_weeks` */
+    reason: 'out' | 'low'
+    on_hand: number
+    /** Cuántas salen al mes, con un decimal */
+    monthly: number
+    /** Para cuántas semanas le alcanza lo que tiene (nulo si se le acabó) */
+    weeks_left: number | null
+    /** Cuántas pedir */
+    suggested: number
+    /** Precio para la clienta, con IVA (0 si lo agregó sin precio) */
+    price: number
+    unit_cost: number | null
+    /** Lo agregó escrito a mano (sin clave de Mary Kay) */
+    manual_name: boolean
 }
 
 export interface CustomerSaleItem {
@@ -120,4 +165,9 @@ export interface NewInventoryItemPayload {
     quantity: number
     price?: number
     sku?: string
+}
+
+/** «Agrega lo que tienes»: varios de una vez (máx. 150) */
+export interface NewInventoryItemsBatchPayload {
+    items: NewInventoryItemPayload[]
 }

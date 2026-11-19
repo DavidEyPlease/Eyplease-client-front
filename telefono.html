@@ -26,10 +26,12 @@
     <script>
       // Cada demo con sus casos (?demo=…; sin él, «Invitar con regalo»)
       const DEMOS = {}
-      // «Tu inventario»: «Compartir» en los productos con imagen y «Agregar» escogiendo de la lista de Mary Kay
+      // «Tu inventario» (noviembre 2026): «Para tu próximo pedido», ver por categoría y «Agrega lo que tienes» (varios de una vez)
       DEMOS.inventario = [
         ['Tu inventario', 'plan=standard&ir=/tu-inventario'],
-        ['Sin pedidos: todo a mano', 'plan=standard&inventario=vacio&ir=/tu-inventario'],
+        ['Por categoría', 'plan=standard&ir=' + encodeURIComponent('/tu-inventario?vista=categoria')],
+        ['Empieza de cero', 'plan=standard&inventario=vacio&ir=/tu-inventario'],
+        ['Todo a mano (como Violeta)', 'plan=standard&inventario=a-mano&ir=/tu-inventario'],
         ['Va empezando', 'plan=standard&inventario=empieza&ir=/tu-inventario'],
       ]
       // «Invitar con regalo»: la consultora (sin cuenta) y la Directora (Mi unidad)

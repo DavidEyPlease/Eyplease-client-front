@@ -6,13 +6,17 @@ import { Chip } from './Chips'
 import ProductShape from './ProductShape'
 import Stepper from './Stepper'
 
-/** En qué parte del inventario va: lo de pedidos anteriores, lo del último pedido, lo que agregó ella o lo agotado. */
-export type ItemGroup = 'older' | 'last' | 'manual' | 'out'
+/**
+ * En qué parte del inventario va: lo de pedidos anteriores, lo del último pedido, lo que agregó ella o lo agotado.
+ * `mine`: lo agregó ella y no tiene pedidos bajados (todo es suyo): sin repetir «lo agregaste tú» en cada renglón.
+ */
+export type ItemGroup = 'older' | 'last' | 'manual' | 'mine' | 'out'
 
 const detailOf = (item: InventoryItem, group: ItemGroup) => {
     const bought = item.purchased > 0 ? `compraste ${pieces(item.purchased)}` : null
     if (group === 'older') return [item.oldest_unit_at ? `del ${dayLabel(item.oldest_unit_at)}` : null, storedLabel(item.days_stored), bought]
     if (group === 'manual') return ['lo agregaste tú', item.price ? `${money(item.price)} c/u` : 'sin precio']
+    if (group === 'mine') return [item.price ? `${money(item.price)} c/u` : 'sin precio']
     if (group === 'out') return ['se te acabó', bought]
     return [`${money(item.price)} c/u`, bought]
 }

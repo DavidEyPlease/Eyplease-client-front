@@ -4,7 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import HttpService from '@/services/http'
 import { API_ROUTES } from '@/constants/api'
 import { ApiResponse, PaginationResponse } from '@/interfaces/common'
-import { CatalogProduct, ConsultantInventory, CustomerSale, InventoryItem, InventorySummary, NewInventoryItemPayload, NewSalePayload } from '@/interfaces/inventory'
+import { CatalogProduct, ConsultantInventory, CustomerSale, InventoryItem, InventorySummary, NewInventoryItemPayload, NewInventoryItemsBatchPayload, NewSalePayload } from '@/interfaces/inventory'
 import useAuthStore from '@/store/auth'
 
 /** Como el resto de la web: nada sale antes de tener a la usuaria (ni con la sesión cerrada) */
@@ -144,6 +144,12 @@ const useInventory = ({ enabled = true, onSaveError }: Options = {}) => {
         onSuccess: data => { putServer(data); queryClient.invalidateQueries({ queryKey: STRATEGY_KEY }) },
     })
 
+    /** «Agrega lo que tienes»: varios productos de una vez (un solo viaje y una sola cuenta) */
+    const addItems = useMutation({
+        mutationFn: async (payload: NewInventoryItemsBatchPayload) => (await HttpService.post<ApiResponse<ConsultantInventory>>(API_ROUTES.CONSULTANT.INVENTORY_ITEMS_BATCH, payload)).data,
+        onSuccess: data => { putServer(data); queryClient.invalidateQueries({ queryKey: STRATEGY_KEY }) },
+    })
+
     return {
         data: query.data ?? null,
         loading: query.isLoading,
@@ -153,16 +159,18 @@ const useInventory = ({ enabled = true, onSaveError }: Options = {}) => {
         stepOnHand,
         review,
         addItem,
+        addItems,
     }
 }
 
 const CATALOG_DELAY_MS = 250
 
 /**
- * La lista de productos de Mary Kay de su país, mientras escribe en «Agregar»: espera a que deje de teclear, pide
- * con 2 letras o más y deja a la vista lo de antes mientras llega lo nuevo (la lista no parpadea a cada letra).
+ * La lista de productos de Mary Kay de su país, para «Agrega lo que tienes». Con 2 letras o más busca (espera a que
+ * deje de teclear y deja a la vista lo de antes mientras llega lo nuevo: la lista no parpadea a cada letra); sin texto
+ * enseña lo más pedido, de todo o de una categoría, para escoger sin escribir.
  */
-export const useInventoryCatalog = (text: string, enabled = true) => {
+export const useInventoryCatalog = (text: string, enabled = true, category: string | null = null) => {
     const wanted = text.trim().replace(/\s+/g, ' ').slice(0, 80)
     const [query, setQuery] = useState(wanted)
     useEffect(() => {
@@ -170,12 +178,20 @@ export const useInventoryCatalog = (text: string, enabled = true) => {
         return () => clearTimeout(timer)
     }, [wanted])
 
-    const active = enabled && query.length >= 2
+    const typing = query.length >= 2
+    // Con una letra suelta no se busca ni se cambia lo que se ve
+    const active = enabled && (typing || query.length === 0)
     const canRun = useQueryGate(active)
     const result = useQuery({
         // Fuera de INVENTORY_KEY: al guardar algo no hace falta volver a buscar
-        queryKey: ['consultant', 'inventory-catalog', query.toLowerCase()],
-        queryFn: async () => (await HttpService.get<ApiResponse<CatalogProduct[]>>(`${API_ROUTES.CONSULTANT.INVENTORY_CATALOG}?${new URLSearchParams({ q: query })}`)).data,
+        queryKey: ['consultant', 'inventory-catalog', typing ? query.toLowerCase() : '', category ?? 'todo'],
+        queryFn: async () => {
+            const params = new URLSearchParams()
+            if (typing) params.set('q', query)
+            if (category) params.set('category', category)
+            const search = params.toString()
+            return (await HttpService.get<ApiResponse<CatalogProduct[]>>(`${API_ROUTES.CONSULTANT.INVENTORY_CATALOG}${search ? `?${search}` : ''}`)).data
+        },
         staleTime: 10 * 60 * 1000,
         retry: false,
         placeholderData: keepPreviousData,
@@ -184,8 +200,10 @@ export const useInventoryCatalog = (text: string, enabled = true) => {
 
     return {
         products: active ? result.data ?? [] : [],
+        /** Busca lo que escribió (no lo más pedido) */
+        typing,
         /** Todavía escribe o ya pidió y no llega: el «Buscando…» */
-        searching: enabled && wanted.length >= 2 && (wanted !== query || result.isFetching),
+        searching: (enabled && wanted !== query) || (active && result.isFetching),
         /** Ya buscó lo que está escrito (para decir «no sale en la lista») */
         searched: active && wanted === query && !result.isFetching && !result.isPlaceholderData && result.isSuccess,
         failed: active && result.isError,
