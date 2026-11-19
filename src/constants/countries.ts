@@ -35,6 +35,14 @@ export const countryFromLink = (): string | null => {
 const MK_PORTALS: Record<string, string> = { MX: 'marykayintouch.com.mx', CO: 'marykayintouch.com.co' }
 export const mkPortalFor = (code?: string | null) => MK_PORTALS[code ?? ''] ?? MK_PORTALS[DEFAULT_COUNTRY_CODE]
 
+/**
+ * Dinero con su moneda dicha, para cobros y pagos: «$1,234.50 MXN» (como siempre) y, en pesos colombianos, con punto de
+ * miles y sin centavos: «$179.900 COP». Antes `es-MX` con COP escribía «COP 179,900».
+ */
+export const moneyWithCurrency = (value = 0, currency = 'MXN') => currency === 'COP'
+    ? `$${Math.round(value).toLocaleString('es-CO')} COP`
+    : `${value.toLocaleString('es-MX', { style: 'currency', currency, maximumFractionDigits: 2 })} ${currency}`
+
 /** Dinero con la costumbre de su moneda: «$64.900» en pesos colombianos, «$349» en mexicanos. */
 export const moneyFor = (amount: number, currency: string = 'MXN') =>
     `$${amount.toLocaleString(currency === 'COP' ? 'es-CO' : 'es-MX')}`

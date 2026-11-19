@@ -1,3 +1,4 @@
+import { moneyWithCurrency } from '@/constants/countries'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import { ArrowRightIcon, CheckIcon, CreditCardIcon, LandmarkIcon, LoaderCircleIcon, LockIcon, MessageCircleIcon, PartyPopperIcon, StoreIcon } from 'lucide-react'
@@ -19,7 +20,8 @@ import useAuthStore from '@/store/auth'
 import LOGO_CLARO from '@/assets/images/eyplease-logo-color.png'
 import LOGO_OSCURO from '@/assets/images/eyplease-logo-fondo-oscuro.png'
 
-const pesos = (valor = 0, moneda = 'MXN') => `${valor.toLocaleString('es-MX', { style: 'currency', currency: moneda, maximumFractionDigits: 2 })} ${moneda}`
+// En pesos colombianos, «$18.900 COP» (moneyWithCurrency); en mexicanos, como siempre
+const pesos = (valor = 0, moneda = 'MXN') => moneyWithCurrency(valor, moneda)
 const dormir = (ms: number) => new Promise(listo => setTimeout(listo, ms))
 
 type Metodo = 'card' | 'oxxo' | 'transfer'

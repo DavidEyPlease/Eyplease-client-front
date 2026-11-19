@@ -42,6 +42,8 @@ export const objectToQueryParams = (obj: Record<string, any>): string => {
 }
 
 export const formatCurrency = (value = 0, currency = 'USD') => {
+    // Pesos colombianos con su costumbre («$179.900 COP»); en-US los escribía «COP 179,900.00»
+    if (currency === 'COP') return `$${Math.round(value || 0).toLocaleString('es-CO')} COP`
     if (!value) return '$0.00'
     return value.toLocaleString('en-US', {
         style: 'currency',

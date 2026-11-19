@@ -1,3 +1,4 @@
+import { moneyWithCurrency } from '@/constants/countries'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { ArrowRightIcon, CheckIcon, CreditCardIcon, LoaderCircleIcon, LockIcon, MessageCircleIcon, PartyPopperIcon } from 'lucide-react'
@@ -29,7 +30,8 @@ interface Cotizacion {
 
 const PLANES = ['elite', 'national']
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
-const pesos = (valor = 0, moneda = 'MXN') => `${valor.toLocaleString('es-MX', { style: 'currency', currency: moneda, maximumFractionDigits: 2 })} ${moneda}`
+// En pesos colombianos, «$179.900 COP» (moneyWithCurrency); en mexicanos, como siempre
+const pesos = (valor = 0, moneda = 'MXN') => moneyWithCurrency(valor, moneda)
 const mesSiguiente = () => MESES[(new Date().getMonth() + 1) % 12]
 const dormir = (ms: number) => new Promise(listo => setTimeout(listo, ms))
 

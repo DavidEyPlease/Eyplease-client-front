@@ -1,3 +1,4 @@
+import { moneyWithCurrency } from '@/constants/countries'
 import { useState } from 'react'
 import { CheckCircle2Icon, ClockIcon, CopyIcon, ExternalLinkIcon, LandmarkIcon, LoaderCircleIcon, StoreIcon, XCircleIcon } from 'lucide-react'
 import { toast } from 'sonner'
@@ -9,7 +10,8 @@ import { cn } from '@/lib/utils'
 import HttpService from '@/services/http'
 import { copyToClipboard } from '@/utils'
 
-const money = (value = 0, currency = 'MXN') => `${value.toLocaleString('es-MX', { style: 'currency', currency, maximumFractionDigits: 2 })} ${currency}`
+// En pesos colombianos, «$179.900 COP» (moneyWithCurrency); en mexicanos, como siempre
+const money = (value = 0, currency = 'MXN') => moneyWithCurrency(value, currency)
 /** «12345678901234567890» → «1234 5678 9012 3456 7890» (se lee y se dicta mejor) */
 const grouped = (text: string) => text.replace(/\s+/g, '').replace(/(.{4})(?=.)/g, '$1 ')
 
