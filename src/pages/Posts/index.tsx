@@ -7,7 +7,7 @@ import useInfiniteListQuery from '@/hooks/useInfiniteListQuery'
 import { BillingRestrictedFeature } from '@/interfaces/billing'
 import { IPost, IPostsFilters, MainPostSectionTypes, PostSectionTypes } from '@/interfaces/posts'
 import { usePostsStore } from '@/store/posts'
-import { isImageRegenerating, isPostRegenerating } from './lib'
+import { groupPostVersions, isImageRegenerating, isPostRegenerating } from './lib'
 import FilterPosts from './components/FilterPosts'
 import PostsHeader from './components/PostsHeader'
 import PostsTray from './components/PostsTray'
@@ -61,7 +61,12 @@ const PostsPage = () => {
 	)
 
 	const posts = useMemo(() => data?.pages.flatMap(page => page.items) ?? [], [data])
-	const total = data?.pages[0]?.total_items ?? posts.length
+	/* Se cuentan noticias, no filas: una con versiones A/B son dos filas en el servidor.
+	   Con todo cargado el conteo es exacto; si falta página se le quitan al total del
+	   servidor las versiones de más ya cargadas (lo que no ha llegado aún puede sobrar). */
+	const groupedCount = useMemo(() => groupPostVersions(posts).length, [posts])
+	const serverTotal = data?.pages[0]?.total_items ?? posts.length
+	const total = hasNextPage ? serverTotal - (posts.length - groupedCount) : groupedCount
 	const sectionLabel = sections.find(section => section.key.toString() === filters.section.toString())?.label ?? ''
 
 	// Mientras alguna publicación se esté regenerando, se sondea la lista para reflejar el artefacto nuevo.

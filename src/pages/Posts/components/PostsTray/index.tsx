@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { EmptySection } from '@/components/generics/EmptySection'
 import PageLoader from '@/components/generics/PageLoader'
@@ -36,14 +36,19 @@ const PostsTray = ({ posts, total, sectionLabel, loading, filters, hasNextPage, 
 	   la previsualización, y para que la elección sobreviva a cambiar de fila. */
 	const [versionByGroup, setVersionByGroup] = useState<Record<string, string>>({})
 	const detailRef = useRef<HTMLElement>(null)
-	const selection = usePostsSelection(posts)
 
-	const groups = groupPostVersions(posts)
-	const chosenOf = (group: (typeof groups)[number]) =>
-		group.versions.find(version => version.id === versionByGroup[group.key]) ?? group.versions[0]
+	const groups = useMemo(() => groupPostVersions(posts), [posts])
 
 	// Una fila por noticia: la versión elegida es la que representa al grupo.
-	const visiblePosts = groups.map(chosenOf)
+	const visiblePosts = useMemo(
+		() => groups.map(group => group.versions.find(version => version.id === versionByGroup[group.key]) ?? group.versions[0]),
+		[groups, versionByGroup],
+	)
+
+	/* La selección va sobre las filas, no sobre `posts`: con las versiones ocultas
+	   dentro, «todas» contaba doble y «Marcar enviadas» marcaba también la que no se eligió. */
+	const selection = usePostsSelection(visiblePosts)
+
 	const selectedPost = visiblePosts.find(post => post.id === selectedId) ?? visiblePosts[0]
 	const selectedGroup = groups.find(group => group.versions.some(version => version.id === selectedPost?.id))
 	const showDetail = !loading && !!selectedPost

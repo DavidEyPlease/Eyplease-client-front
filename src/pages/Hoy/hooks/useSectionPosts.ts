@@ -18,8 +18,9 @@ const STALE_MS = 2 * 60 * 1000
 const REGENERATING_POLL_MS = 8000
 /** Cuando ya sólo falta el video, que tarda minutos, se pregunta más despacio */
 const REGENERATING_VIDEO_POLL_MS = 25000
-/** Se pide la sección entera: con la página por defecto Círculo Rosa salía a medias. */
-const PER_PAGE = 80
+/** Se pide la sección entera: con la página por defecto Círculo Rosa salía a medias.
+ *  160 porque con versiones A/B cada consultora ocupa dos filas (la app subió igual). */
+const PER_PAGE = 160
 
 const BIRTHDAY_SECTIONS: string[] = [
     PostSectionTypes.BIRTHDAYS,
