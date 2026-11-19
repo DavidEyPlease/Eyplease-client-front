@@ -220,6 +220,8 @@ const useSignUpWizard = () => {
             // guarda sólo dígitos y la lada sale del país.
             phone: data.phoneNumber || undefined,
             source: invite.source ?? undefined,
+            // La casilla de términos y condiciones: la API la guarda como su aceptación (versión, día, IP)
+            accept_terms: data.acceptTerms === true ? true : undefined,
             // La permanencia del Buen Fin y la versión de los términos que vio: la API la guarda como evidencia
             ...(commitment && data.acceptPromoTerms
                 ? { accept_promo_terms: true, promo_terms_version: commitment.terms_version }

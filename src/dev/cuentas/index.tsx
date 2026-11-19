@@ -64,6 +64,11 @@ const inventario = params.get('inventario')
 if (inventario) sessionStorage.setItem('cuentas:inventario', inventario)
 else if (params.has('plan')) sessionStorage.removeItem('cuentas:inventario')
 
+// Los términos y condiciones sin aceptar (…&terminos=0): sale el aviso que los pide al entrar (TermsGate)
+const terminos = params.get('terminos')
+if (terminos) sessionStorage.setItem('cuentas:terminos', terminos)
+else if (params.has('plan')) sessionStorage.removeItem('cuentas:terminos')
+
 installMockApi(plan, role, params.has('plan') && !params.has('rango') ? null : rank)
 // Para revisar desde la consola qué pidió la web y qué no estaba previsto
 Object.assign(window, { __cuentas: { plan, role, calls } })

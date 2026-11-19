@@ -7,6 +7,14 @@ type Photo = FileUrls & {
     filename: string
 }
 
+/** Los términos y condiciones vigentes (versión y ligas) y si esta cuenta ya los aceptó */
+export interface IAuthUserTerms {
+    version: string
+    url: string
+    privacy_url?: string
+    accepted: boolean
+}
+
 export interface IAuthUser {
     id: string
     user_id: string
@@ -27,6 +35,8 @@ export interface IAuthUser {
     company_features?: Partial<Record<import('@/utils/company').CompanyFeature, boolean>>
     /** Cómo nombra su empresa a su gente («grupo», «unidad»…). Se lee con `useCompany().t()`. */
     company_terms?: Partial<Record<import('@/utils/company').CompanyTerm, string>>
+    /** Términos y condiciones vigentes y si ya los aceptó (TermsService de la API). Sin aceptar, `TermsGate` se los pide. */
+    terms?: IAuthUserTerms
     canva_connected: boolean
     template_id: string | null
     /** Hasta cuándo dura su prueba o su regalo (el de «Invitar con regalo»); null si no tiene */

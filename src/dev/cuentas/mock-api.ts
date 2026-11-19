@@ -564,6 +564,14 @@ let intouchSaved = false
 const INTOUCH = new URLSearchParams(location.search).get('intouch')
 const respond = (data: unknown, status = 200) => new Response(JSON.stringify({ success: status < 400, data, message: status < 400 ? 'OK' : 'Sin permiso (simulado)' }), { status, headers: { 'Content-Type': 'application/json' } })
 
+/** Los términos como los manda la API en /me; `…&terminos=0` los deja sin aceptar hasta tocar «Acepto». */
+const termsFor = () => ({
+    version: 'v1',
+    url: 'https://eyplease.com.mx/terminos/',
+    privacy_url: 'https://eyplease.com.mx/politicas-privacidad/',
+    accepted: sessionStorage.getItem('cuentas:terminos') !== '0',
+})
+
 export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', rank?: string | null) => {
     const base = import.meta.env.VITE_API_URL as string
     const realFetch = window.fetch.bind(window)
@@ -735,8 +743,13 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
                 : new Response(JSON.stringify({ success: false, data: null, message: strategyReply.message }), { status: strategyReply.status, headers: { 'Content-Type': 'application/json' } })
         }
         else if (path === '/customers/client' && method === 'GET' && role === 'consultant') response = respond(page(customers))
+        else if (path === '/terms/accept' && method === 'POST') {
+            sessionStorage.setItem('cuentas:terminos', '1')
+            await new Promise(resolve => setTimeout(resolve, 300))
+            response = respond(termsFor())
+        }
         else if (path === '/me') response = registrada
-            ? respond({ ...userFor(actual, role, rank), ...(giftTrial ? { trial_ends_at: giftTrial, on_trial: true } : {}) })
+            ? respond({ ...userFor(actual, role, rank), terms: termsFor(), ...(giftTrial ? { trial_ends_at: giftTrial, on_trial: true } : {}) })
             : new Response(JSON.stringify({ success: false, data: null, message: 'Unauthenticated.' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
         else if (path === '/sign-up/validate-email' || path === '/sign-up/validate-username') response = respond(null)
         else if (path.startsWith('/sign-up/recommended-plan/')) {

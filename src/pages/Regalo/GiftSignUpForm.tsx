@@ -7,6 +7,7 @@ import { GiftView } from '@/interfaces/invitations'
 
 /** El aviso vive en la web pública (igual que en el registro). */
 const PRIVACY_URL = `${import.meta.env.VITE_WEB_URL || 'https://eyplease.com.mx'}/politicas-privacidad/`
+const TERMS_URL = `${import.meta.env.VITE_WEB_URL || 'https://eyplease.com.mx'}/terminos/`
 
 export interface GiftSignUpData {
     email: string
@@ -95,7 +96,9 @@ const GiftSignUpForm = ({ signup, withGift, sending, error, onSubmit }: Props) =
             <div className="flex items-start gap-3">
                 <Checkbox id="regalo-terminos" checked={acepta} onCheckedChange={value => setAcepta(value === true)} className="mt-0.5 size-5" aria-invalid={!!ver('acepta')} />
                 <label htmlFor="regalo-terminos" className="cursor-pointer text-[13px] leading-relaxed text-muted-foreground">
-                    Acepto los términos y condiciones y el{' '}
+                    Acepto los{' '}
+                    <a href={TERMS_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#6C47FF] underline underline-offset-2 dark:text-[#A894FF]">términos y condiciones</a>
+                    {' '}y el{' '}
                     <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#6C47FF] underline underline-offset-2 dark:text-[#A894FF]">aviso de privacidad</a>.
                 </label>
             </div>

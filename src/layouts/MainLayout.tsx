@@ -12,6 +12,7 @@ import UploadToastProgress from "@/components/generics/UploadToastProgress"
 import ReportTaskCenter from "@/components/generics/ReportTasks/ReportTaskCenter"
 import BoletinInteractivoAnuncio from "@/components/announcements/BoletinInteractivoAnuncio"
 import BoletinNacionalAnuncio from "@/components/announcements/BoletinNacionalAnuncio"
+import TermsGate from "@/components/legal/TermsGate"
 import useAuthStore from "@/store/auth"
 import TopShell from "./TopShell"
 import { isNewShell } from "./TopShell/useNewShell"
@@ -80,6 +81,8 @@ const MainLayout = () => {
                 <BoletinInteractivoAnuncio />
                 {/* Y la del boletín nacional, sólo a las Directoras Nacionales: espera a que se cierre la otra */}
                 <BoletinNacionalAnuncio />
+                {/* Términos y condiciones: si no ha aceptado la versión vigente, tapan todo hasta aceptarlos */}
+                <TermsGate />
             </BillingEnforcementProvider>
         </section>
     )

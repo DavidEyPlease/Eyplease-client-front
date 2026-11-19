@@ -1,4 +1,6 @@
 export const API_ROUTES = {
+    /** Aceptar los términos y condiciones vigentes (el aviso que sale al entrar: TermsGate) */
+    TERMS_ACCEPT: '/terms/accept',
     SIGN_UP: {
         GET_RECOMMENDED_PLAN: '/sign-up/recommended-plan/{plan_key}',
         VALIDATE_EMAIL: '/sign-up/validate-email',

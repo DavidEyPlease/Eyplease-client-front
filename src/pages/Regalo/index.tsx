@@ -82,6 +82,8 @@ const RegaloPage = () => {
                 phone: form.phone,
                 source: 'regalo',
                 giftToken: token,
+                // Su casilla obligatoria de términos: la API la guarda como su aceptación
+                accept_terms: true,
             })
             if (!response.data?.token) throw response
             localStorage.setItem(SESSION_KEY, response.data.token)

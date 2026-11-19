@@ -11,6 +11,8 @@ import type { ISignUp } from "../schema"
 
 /** El aviso vive en la web pública: `/privacidad` no es ninguna ruta de esta web (abría una página en blanco). */
 const PRIVACY_URL = `${import.meta.env.VITE_WEB_URL || 'https://eyplease.com.mx'}/politicas-privacidad/`
+/** Los términos y condiciones (versión 1, 19-nov-2026). La casilla se guarda en la API como su aceptación (`accept_terms`). */
+export const TERMS_URL = `${import.meta.env.VITE_WEB_URL || 'https://eyplease.com.mx'}/terminos/`
 
 interface Props {
     register: UseFormRegister<ISignUp>
@@ -66,7 +68,11 @@ const StepPassword = ({ register, errors, watch, setValue, onEnter, commitment, 
                             className={CHECKBOX_CLASS}
                         />
                         <Label htmlFor="acceptTerms" className="block cursor-pointer text-left text-[13px] leading-relaxed font-medium text-muted-foreground">
-                            Acepto los términos y condiciones y el{' '}
+                            Acepto los{' '}
+                            <a href={TERMS_URL} target="_blank" rel="noopener noreferrer" className="su-accent font-bold underline underline-offset-2">
+                                términos y condiciones
+                            </a>
+                            {' '}y el{' '}
                             <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer" className="su-accent font-bold underline underline-offset-2">
                                 aviso de privacidad
                             </a>
