@@ -179,6 +179,25 @@ const toolsFor = (section: string) => [0, 1, 2].map(index => ({
 
 const page = <T,>(items: T[]) => ({ items, current_page: 1, last_page: 1, per_page: items.length || 15, total_items: items.length, next_cursor: null })
 
+/*
+ * Las conversaciones del Asistente de esta visita (opción A, 19-nov-2026: «seguir donde se quedó»). `?chat=hoy` o
+ * `?chat=ayer` siembra una que se quedó con una pregunta sin contestar; lo que se manda en la visita se guarda aquí.
+ */
+interface DemoConversation { id: string, title: string, last_message_at: string, created_at: string, messages: Array<{ id: string, role: 'user' | 'assistant', text: string, created_at: string }> }
+const CHAT_DEMO = new URLSearchParams(location.search).get('chat')
+const demoConversations: DemoConversation[] = (() => {
+    if (CHAT_DEMO !== 'hoy' && CHAT_DEMO !== 'ayer') return []
+    const at = new Date(Date.now() - (CHAT_DEMO === 'ayer' ? 26 : 0.1) * 3600_000)
+    const later = new Date(at.getTime() + 20_000).toISOString()
+    return [{
+        id: 'conv-seguir', title: '¿Qué activas no han pedido este mes?', last_message_at: later, created_at: at.toISOString(),
+        messages: [
+            { id: 'm-1', role: 'user', text: '¿Qué activas no han pedido este mes?', created_at: at.toISOString() },
+            { id: 'm-2', role: 'assistant', text: 'Van 3 activas sin pedir: **Ana Valadez**, **Rosa Pérez** y **Lupita Soto**. ¿Le mando un recordatorio a alguna?', created_at: later },
+        ],
+    }]
+})()
+
 /**
  * Entrenamientos de ejemplo, agrupados por categoría como los agrupa la API
  * (`TrainingController`: `groupBy(category->slug)`). Los slugs salen de `util-data.json`, que es de
@@ -970,14 +989,22 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/chat/services') {
             const sent = JSON.parse(String(init?.body ?? '{}'))
             const files = (sent.attachments ?? []) as Array<{ name: string, previewUri?: string | null }>
-            response = respond({
-                conversation_id: 'demo',
-                message: files.length
-                    ? `Esto es el simulador: recibí ${files.length} ${files.length === 1 ? 'archivo' : 'archivos'} (${files.map(f => f.name).join(', ')}); ${files.filter(f => f.previewUri).length} con copia ligera para que la IA los vea. Con tu sesión real la IA los mira y los adjunta al pedido.`
-                    : 'Esto es el simulador: aquí el Asistente no está conectado. Con tu sesión real contesta con tus datos.',
-            })
+            const reply = files.length
+                ? `Esto es el simulador: recibí ${files.length} ${files.length === 1 ? 'archivo' : 'archivos'} (${files.map(f => f.name).join(', ')}); ${files.filter(f => f.previewUri).length} con copia ligera para que la IA los vea. Con tu sesión real la IA los mira y los adjunta al pedido.`
+                : 'Esto es el simulador: aquí el Asistente no está conectado. Con tu sesión real contesta con tus datos.'
+            // La conversación: la que manda la web, o una nueva arriba del listado
+            const nowIso = new Date().toISOString()
+            let conversation = demoConversations.find(item => item.id === sent.conversation_id)
+            if (!conversation) {
+                conversation = { id: `conv-${demoConversations.length + 1}`, title: String(sent.message ?? '').slice(0, 60), last_message_at: nowIso, created_at: nowIso, messages: [] }
+                demoConversations.push(conversation)
+            }
+            conversation.last_message_at = nowIso
+            conversation.messages.push({ id: `m-${Date.now()}`, role: 'user', text: String(sent.message ?? ''), created_at: nowIso }, { id: `m-${Date.now()}-r`, role: 'assistant', text: reply, created_at: new Date(Date.now() + 1000).toISOString() })
+            response = respond({ conversation_id: conversation.id, message: reply })
         }
-        else if (/^\/chat\/conversations\/[^/]+\/messages$/.test(path)) response = respond([])
+        else if (/^\/chat\/conversations\/[^/]+\/messages$/.test(path)) response = respond(demoConversations.find(item => item.id === path.split('/')[3])?.messages ?? [])
+        else if (path === '/chat/conversations') response = respond(page([...demoConversations].sort((a, b) => b.last_message_at.localeCompare(a.last_message_at)).map(item => ({ id: item.id, title: item.title, last_message_at: item.last_message_at, created_at: item.created_at }))))
         else if (path === '/chat/conversations' || path === '/request-services' || path === '/events' || path === '/customers/client' || path === '/sponsored') response = respond(page([]))
         else { known = false; response = respond(method === 'GET' ? page([]) : null) }
 

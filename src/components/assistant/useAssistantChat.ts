@@ -3,12 +3,14 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { API_ROUTES } from '@/constants/api'
+import useCursorListQuery from '@/hooks/useCursorListQuery'
 import useFetchQuery from '@/hooks/useFetchQuery'
 import useRequestQuery from '@/hooks/useRequestQuery'
 import { ApiResponse } from '@/interfaces/common'
-import { ChatRole, IChatAttachmentRef, IChatMessage, IChatSendPayload, IChatSendResponse } from '@/interfaces/chat'
+import { ChatRole, IChatAttachmentRef, IChatConversation, IChatMessage, IChatSendPayload, IChatSendResponse } from '@/interfaces/chat'
 import { queryKeys } from '@/utils/cache'
-import { CONVERSATIONS_ENTITY, messagesKey } from './utils'
+import { lastActivity, sameDay, whenLabel } from './resume'
+import { CONVERSATIONS_ENTITY, conversationsListKey, messagesKey } from './utils'
 
 const HISTORY_STALE_TIME_MS = 60_000
 
@@ -19,6 +21,14 @@ const buildMessage = (role: ChatRole, text: string, extra: Partial<IChatMessage>
 	created_at: new Date().toISOString(),
 	...extra,
 })
+
+/** «Seguir lo de ayer»: su última conversación es de otro día y se le ofrece volver a ella (ver resume.ts) */
+export interface ChatResumeOffer {
+	title: string
+	/** «ayer», «el martes», «el 12 de octubre» */
+	when: string
+	open: () => void
+}
 
 /** Lo que acompaña a un mensaje: las referencias para el servidor y las miniaturas para pintarlo ya */
 export interface ChatSendExtras {
@@ -89,6 +99,36 @@ const useAssistantChat = () => {
 		setMessages([])
 	}
 
+	/*
+	 * Seguir donde se quedó (opción A, ver resume.ts). La más reciente es la primera del listado (la misma caché que el
+	 * Historial). Si es de hoy, se abre sola UNA vez al cargar; si es de otro día, se ofrece «Seguir lo de…».
+	 */
+	const recent = useCursorListQuery<IChatConversation>(API_ROUTES.CHAT.CONVERSATIONS, { customQueryKey: conversationsListKey })
+	const latest = recent.items[0] ?? null
+	const resumed = useRef(false)
+	useEffect(() => {
+		if (resumed.current || !recent.isSuccess) return
+		resumed.current = true
+		// Si ya empezó algo (un encargo de una página, un mensaje), no se le cambia la conversación
+		if (!latest || conversationId || messagesRef.current.length) return
+		if (sameDay(lastActivity(latest))) {
+			setConversationId(latest.id)
+			setMessages([])
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- sólo la primera vez que llega el listado
+	}, [recent.isSuccess, latest])
+
+	/* La pestaña puede quedarse abierta días: al volver a ella, si lo abierto es de otro día, empieza en blanco con «Seguir» */
+	useEffect(() => {
+		const onVisible = () => {
+			if (document.visibilityState !== 'visible' || sendingRef.current) return
+			const last = messagesRef.current[messagesRef.current.length - 1]
+			if (last && !sameDay(last.created_at)) startNewChat()
+		}
+		document.addEventListener('visibilitychange', onVisible)
+		return () => document.removeEventListener('visibilitychange', onVisible)
+	}, [])
+
 	/** @returns false si falló, para que el composer restaure el texto */
 	const send = async (text: string, extras: ChatSendExtras = {}) => {
 		const attachments = extras.attachments ?? []
@@ -157,6 +197,9 @@ const useAssistantChat = () => {
 		openConversation,
 		startNewChat,
 		removeConversation,
+		resumeOffer: (latest && !conversationId && messages.length === 0 && !requestState.loading && !sameDay(lastActivity(latest))
+			? { title: latest.title, when: whenLabel(lastActivity(latest)), open: () => openConversation(latest.id) }
+			: null) as ChatResumeOffer | null,
 	}
 }
 

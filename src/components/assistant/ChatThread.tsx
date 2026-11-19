@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
+import { ChevronRightIcon, Undo2Icon } from 'lucide-react'
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { IChatMessage } from '@/interfaces/chat'
 import { CHAT_SUGGESTIONS } from './utils'
 import ChatMessageBubble, { AssistantAvatar } from './ChatMessageBubble'
+import type { ChatResumeOffer } from './useAssistantChat'
 
 /** Cómo se presenta el chat vacío. Sin esto sale el saludo de siempre (asistente de servicios). */
 export interface ChatIntro {
@@ -24,6 +26,8 @@ interface Props {
 	loadingHistory: boolean
 	onSuggestion: (text: string) => void
 	intro?: ChatIntro
+	/** Su última conversación es de otro día: «Seguir lo de ayer» arriba del saludo */
+	resume?: ChatResumeOffer | null
 }
 
 /** Burbuja de "escribiendo…" mientras responde el asistente */
@@ -70,7 +74,7 @@ const HistorySkeleton = () => (
 	</div>
 )
 
-const ChatThread = ({ messages, sending, loadingHistory, onSuggestion, intro = DEFAULT_INTRO }: Props) => {
+const ChatThread = ({ messages, sending, loadingHistory, onSuggestion, intro = DEFAULT_INTRO, resume }: Props) => {
 	const bottomRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
@@ -82,6 +86,20 @@ const ChatThread = ({ messages, sending, loadingHistory, onSuggestion, intro = D
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5 sm:px-6">
 			{loadingHistory && <HistorySkeleton />}
+			{isEmpty && resume && (
+				<button
+					type="button"
+					onClick={resume.open}
+					className="mb-4 flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-border bg-surface-soft px-3.5 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
+				>
+					<span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary"><Undo2Icon className="size-4" /></span>
+					<span className="min-w-0 flex-1">
+						<small className="block text-[11.5px] font-semibold text-muted-foreground">Seguir lo de {resume.when}</small>
+						<b className="block truncate text-[13.5px] font-bold text-foreground">{resume.title}</b>
+					</span>
+					<ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />
+				</button>
+			)}
 			{isEmpty && <EmptyState intro={intro} onSuggestion={onSuggestion} />}
 
 			{messages.length > 0 && (

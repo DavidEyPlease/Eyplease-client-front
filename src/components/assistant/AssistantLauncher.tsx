@@ -23,7 +23,7 @@ const AssistantLauncher = () => {
 	const [view, setView] = useState<AssistantView>('chat')
 	const {
 		conversationId, messages, sending, loadingHistory, deleting,
-		send, openConversation, startNewChat, removeConversation,
+		send, openConversation, startNewChat, removeConversation, resumeOffer,
 	} = useAssistantChat()
 
 	const isHistory = view === 'history'
@@ -81,7 +81,7 @@ const AssistantLauncher = () => {
 						/>
 					) : (
 						<>
-							<ChatThread
+							<ChatThread resume={resumeOffer}
 								messages={messages}
 								sending={sending}
 								loadingHistory={loadingHistory}

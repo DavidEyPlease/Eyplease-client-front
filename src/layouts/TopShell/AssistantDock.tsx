@@ -73,7 +73,7 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
     const [view, setView] = useState<'chat' | 'history'>('chat')
     const {
         conversationId, messages, sending, loadingHistory, deleting,
-        send, openConversation, startNewChat, removeConversation,
+        send, openConversation, startNewChat, removeConversation, resumeOffer,
     } = useAssistantChat()
 
     const queryClient = useQueryClient()
@@ -164,7 +164,7 @@ const AssistantDock = ({ open, onOpenChange }: Props) => {
                         />
                     ) : (
                         <>
-                            <ChatThread messages={messages} sending={sending} loadingHistory={loadingHistory} onSuggestion={onSend} intro={intro} />
+                            <ChatThread resume={resumeOffer} messages={messages} sending={sending} loadingHistory={loadingHistory} onSuggestion={onSend} intro={intro} />
                             <ChatComposer sending={sending} onSend={onSend} allowAttachments={hasServices} placeholder={hasServices ? 'Pídeme un diseño o pregúntame algo…' : 'Pregúntame algo…'} />
                         </>
                     )}
