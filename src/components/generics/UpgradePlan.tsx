@@ -5,6 +5,7 @@ import { useState } from 'react'
 import useAuthStore from '@/store/auth'
 import { CheckCircleIcon } from 'lucide-react'
 import { ScrollArea } from '../ui/scroll-area'
+import { moneyFor } from '@/constants/countries'
 
 const WS_LINK = `https://api.whatsapp.com/send/?phone=${import.meta.env.VITE_WS_NUMBER}&text={textReplace}&type=phone_number&app_absent=0`
 
@@ -42,9 +43,9 @@ const UpgradePlan = () => {
                                 </h2>
                                 <div className="flex items-baseline mb-8">
                                     <span className="text-5xl font-bold text-gray-900 dark:text-white tracking-tighter">
-                                        ${plan.price}
+                                        {plan.currency === 'COP' ? moneyFor(plan.price, 'COP') : <>${plan.price}</>}
                                     </span>
-                                    <span className="text-gray-400 text-lg ml-1">/mensual</span>
+                                    <span className="text-gray-400 text-lg ml-1">{plan.currency === 'COP' ? 'COP/mensual' : '/mensual'}</span>
                                 </div>
                                 <Button text="Contratar" block size='lg' onClick={() => {
                                     window.open(WS_LINK.replace('{textReplace}', `Hola, estoy interesada (o) en el ${plan.name} de Eyplease+`), '_blank')
