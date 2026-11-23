@@ -20,6 +20,7 @@ import ItemRow, { ItemGroup } from './components/ItemRow'
 import HowToDialog from './components/HowToDialog'
 import SaleDialog, { SalePreset } from './components/SaleDialog'
 import ItemShareDialog from './components/ItemShareDialog'
+import ItemPriceDialog from './components/ItemPriceDialog'
 import SalesList from './components/SalesList'
 import ConnectMaryKay from './components/ConnectMaryKay'
 
@@ -56,7 +57,7 @@ const savedView = (): View | null => {
 const InventarioPage = () => {
     const access = useStrategyAccess()
     const [params] = useSearchParams()
-    const { data, loading, error, refetch, stepOnHand, review, addItems } = useInventory({
+    const { data, loading, error, refetch, stepOnHand, review, addItems, setPrice } = useInventory({
         // Con plan gratis no se pide (la API respondería 403): va el candado
         enabled: !access.locked,
         onSaveError: saveError => toast.error(friendlyError(saveError, 'No se guardó ese cambio. Intenta de nuevo.')),
@@ -72,6 +73,7 @@ const InventarioPage = () => {
     }
     const [selling, setSelling] = useState<{ preset: SalePreset | null } | null>(null)
     const [sharing, setSharing] = useState<InventoryItem | null>(null)
+    const [pricing, setPricing] = useState<InventoryItem | null>(null)
     const [showOut, setShowOut] = useState(false)
     const [howto, setHowto] = useState<CustomerSale | null>(null)
 
@@ -111,7 +113,7 @@ const InventarioPage = () => {
     })
 
     const rows = (items: InventoryItem[], group: ItemGroup) => items.map(item => (
-        <ItemRow key={item.sku} item={item} group={group} onStep={delta => stepOnHand(item.sku, delta)} onShare={setSharing} />
+        <ItemRow key={item.sku} item={item} group={group} onStep={delta => stepOnHand(item.sku, delta)} onShare={setSharing} onPrice={setPricing} />
     ))
     const heading = (text: string) => <p className="mt-4 text-[13px] font-extrabold first:mt-3">{text}</p>
 
@@ -196,7 +198,7 @@ const InventarioPage = () => {
                                         <small className="text-[11.5px] font-semibold text-muted-foreground tabular-nums">{pieces(category.units)} {category.units === 1 ? 'pieza' : 'piezas'}{category.value > 0 && <> · {money(category.value)}</>}</small>
                                     </p>
                                     {category.items.map(item => (
-                                        <ItemRow key={item.sku} item={item} group={byOrder ? groupOf.get(item.sku) ?? 'manual' : 'mine'} onStep={delta => stepOnHand(item.sku, delta)} onShare={setSharing} />
+                                        <ItemRow key={item.sku} item={item} group={byOrder ? groupOf.get(item.sku) ?? 'manual' : 'mine'} onStep={delta => stepOnHand(item.sku, delta)} onShare={setSharing} onPrice={setPricing} />
                                     ))}
                                 </div>
                             )) : (
@@ -265,6 +267,7 @@ const InventarioPage = () => {
 
             <AddItemsSheet open={adding} onClose={() => setAdding(false)} onSave={items => addItems.mutateAsync({ items })} saving={addItems.isPending} existing={data?.items} />
             <ItemShareDialog item={sharing} onClose={() => setSharing(null)} onSold={sellItem} />
+            <ItemPriceDialog item={pricing} onClose={() => setPricing(null)} onSave={(sku, price) => setPrice.mutateAsync({ sku, price })} saving={setPrice.isPending} />
             <SaleDialog open={!!selling} onClose={() => setSelling(null)} preset={selling?.preset ?? null} />
             <HowToDialog sale={howto} onClose={() => setHowto(null)} />
         </div>

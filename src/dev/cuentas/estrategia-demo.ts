@@ -82,6 +82,8 @@ const seedBig = (): Stock[] => {
  * y sin precio (como le pasó a Norma).
  */
 const seedByHand = (): Stock[] => [
+    // Escrito a mano sin precio, como le pasó a Norma: sale «Ponle precio»
+    manualRow('M-HTSPY26R', 'Rubor rosy nude', 2, 2, 0, 2),
     manualRow('10216713', 'CC Cream Crema Correctora de Color FPS 15 Tono Light to Medium', 6, 4, 404, 2),
     manualRow('10207045', 'Base de Maquillaje TimeWise 3D Tono Ivory C 110', 3, 3, 389, 2),
     manualRow('10219874', 'Gel Limpiador TimeWise 4 en 1', 4, 2, 459, 2),
@@ -567,7 +569,11 @@ export const createStrategyDemo = (options: {
         if (itemMatch && method === 'PATCH') {
             const item = stock.find(r => r.sku === decodeURIComponent(itemMatch[1]))
             if (!item) return fail('No query results for model [App\\Models\\InventoryItem].')
-            item.on_hand = Number(body.on_hand ?? 0)
+            if (body.price !== undefined) {
+                if (!item.manual || item.purchased > 0) return fail('Este precio viene de tu pedido de Mary Kay. Si lo vendes a otro precio, ponlo al anotar «Ya me compró».', 422)
+                item.price = Number(body.price)
+            }
+            if (body.on_hand !== undefined) item.on_hand = Number(body.on_hand)
             item.reviewed = true
             return ok(inventory())
         }

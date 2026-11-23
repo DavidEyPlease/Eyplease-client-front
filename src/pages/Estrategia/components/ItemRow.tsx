@@ -1,4 +1,4 @@
-import { Share2Icon } from 'lucide-react'
+import { PencilIcon, Share2Icon } from 'lucide-react'
 
 import { InventoryItem } from '@/interfaces/inventory'
 import { dayLabel, money, pieces, storedLabel } from '../format'
@@ -15,8 +15,8 @@ export type ItemGroup = 'older' | 'last' | 'manual' | 'mine' | 'out'
 const detailOf = (item: InventoryItem, group: ItemGroup) => {
     const bought = item.purchased > 0 ? `compraste ${pieces(item.purchased)}` : null
     if (group === 'older') return [item.oldest_unit_at ? `del ${dayLabel(item.oldest_unit_at)}` : null, storedLabel(item.days_stored), bought]
-    if (group === 'manual') return ['lo agregaste tú', item.price ? `${money(item.price)} c/u` : 'sin precio']
-    if (group === 'mine') return [item.price ? `${money(item.price)} c/u` : 'sin precio']
+    if (group === 'manual') return ['lo agregaste tú', item.price ? `${money(item.price)} c/u` : null]
+    if (group === 'mine') return [item.price ? `${money(item.price)} c/u` : null]
     if (group === 'out') return ['se te acabó', bought]
     return [`${money(item.price)} c/u`, bought]
 }
@@ -27,19 +27,36 @@ interface Props {
     onStep: (delta: 1 | -1) => void
     /** «Compartir»: sólo sale si el producto ya tiene su imagen (`piece`) y le queda */
     onShare?: (item: InventoryItem) => void
+    /** Ponerle o cambiarle el precio: sólo a lo que agregó ella (lo de sus pedidos trae el de lista de Mary Kay) */
+    onPrice?: (item: InventoryItem) => void
 }
 
-const ItemRow = ({ item, group, onStep, onShare }: Props) => {
+const ItemRow = ({ item, group, onStep, onShare, onPrice }: Props) => {
     const gain = group !== 'out' && item.profit_per_unit !== null && item.profit_per_unit > 0
     // «Lo tengo para entrega inmediata»: no se ofrece lo que ya se le acabó
     const share = !!onShare && !!item.piece && group !== 'out' && item.on_hand > 0
+    const canPrice = !!onPrice && item.manual && item.purchased === 0
+    const detail = detailOf(item, group).filter(Boolean).join(' · ')
     return (
         <div className="flex items-center gap-3 border-b border-border py-2.5 last:border-b-0">
             <ProductShape name={item.name} />
             <span className="min-w-0 flex-1">
                 <b className="block text-[13.5px] leading-snug font-bold">{item.name}</b>
                 {item.shade && <span className="block truncate text-[11.5px] font-semibold text-muted-foreground">{item.shade}</span>}
-                <span className="block text-[11.5px] leading-snug text-muted-foreground">{detailOf(item, group).filter(Boolean).join(' · ')}</span>
+                <span className="flex flex-wrap items-center gap-x-1.5 text-[11.5px] leading-snug text-muted-foreground">
+                    {detail && <span>{detail}</span>}
+                    {canPrice && (item.price ? (
+                        <button type="button" onClick={() => onPrice?.(item)} aria-label={`Cambiar precio de ${item.name}`}
+                            className="-my-1 inline-grid size-6 cursor-pointer place-items-center rounded-full text-[#6C47FF] hover:bg-[#6C47FF]/10 dark:text-[#BBAAFF]">
+                            <PencilIcon className="size-3" />
+                        </button>
+                    ) : (
+                        <button type="button" onClick={() => onPrice?.(item)} aria-label={`Ponle precio a ${item.name}`}
+                            className="my-0.5 inline-flex h-[24px] cursor-pointer items-center gap-1 rounded-full border border-amber-500/50 bg-amber-500/10 px-2.5 text-[11px] font-bold text-amber-700 hover:bg-amber-500/20 dark:text-amber-300">
+                            <PencilIcon className="size-3" /> Ponle precio
+                        </button>
+                    ))}
+                </span>
                 {(item.stale || item.is_ordena_ya || gain || share) && (
                     <span className="mt-1 flex flex-wrap items-center gap-1">
                         {item.stale && <Chip tone="magenta">Muévelo primero</Chip>}

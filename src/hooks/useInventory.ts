@@ -150,6 +150,12 @@ const useInventory = ({ enabled = true, onSaveError }: Options = {}) => {
         onSuccess: data => { putServer(data); queryClient.invalidateQueries({ queryKey: STRATEGY_KEY }) },
     })
 
+    /** Ponerle o corregirle el precio a un producto que agregó ella */
+    const setPrice = useMutation({
+        mutationFn: async ({ sku, price }: { sku: string, price: number }) => (await HttpService.patch<ApiResponse<ConsultantInventory>>(API_ROUTES.CONSULTANT.INVENTORY_ITEM.replace('{sku}', encodeURIComponent(sku)), { price })).data,
+        onSuccess: data => { putServer(data); queryClient.invalidateQueries({ queryKey: STRATEGY_KEY }) },
+    })
+
     return {
         data: query.data ?? null,
         loading: query.isLoading,
@@ -160,6 +166,7 @@ const useInventory = ({ enabled = true, onSaveError }: Options = {}) => {
         review,
         addItem,
         addItems,
+        setPrice,
     }
 }
 
