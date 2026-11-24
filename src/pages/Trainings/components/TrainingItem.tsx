@@ -13,6 +13,7 @@ import { FileTypes } from '@/interfaces/files'
 import { ITraining } from '@/interfaces/trainings'
 import useAuthStore from '@/store/auth'
 import { formatDate } from '@/utils/dates'
+import CompartirConUnidad from './CompartirConUnidad'
 import {
     getDownloadableFiles,
     getTrainingFileByType,
@@ -112,6 +113,8 @@ const TrainingItem = ({ training, showRibbon, showCategory }: Props) => {
                         Abrir presentación interactiva
                     </Link>
                 )}
+
+                <CompartirConUnidad training={training} />
 
                 {!!files.length && (
                     <div className={`${training.web_url ? '' : 'mt-auto '}grid-cols-2 gap-1.5 border-t border-dashed pt-2.5`}>

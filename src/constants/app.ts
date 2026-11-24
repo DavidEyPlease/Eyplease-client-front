@@ -46,6 +46,9 @@ export const APP_ROUTES = {
     GIFT: '/regalo/:token',
     /** El boletín interactivo que una Directora compartió con su unidad: público, sólo para ver */
     BOLETIN_PUBLICO: '/b/:token',
+    /** La presentación que una Directora (Elite o Área) compartió con su Unidad: pública, la abre la consultora sin cuenta */
+    UNIDAD: '/u/:token',
+    UNIDAD_REGISTRO: '/u/:token/registro',
     /** «Tu estrategia» de la consultora (plan Standard) y su inventario */
     STRATEGY: '/tu-estrategia',
     INVENTORY: '/tu-inventario',
@@ -68,8 +71,8 @@ export const APP_ROUTES = {
 }
 
 export const SESSION_KEY = 'eyWebPleaseToken'
-/** Páginas que se abren sin sesión (fuera de /auth): sin cuenta, no se manda al acceso. La del regalo y la liga del boletín */
-export const PUBLIC_PREFIXES = ['/regalo/', '/b/']
+/** Páginas que se abren sin sesión (fuera de /auth): sin cuenta, no se manda al acceso. La del regalo, la liga del boletín y la de la presentación para la Unidad */
+export const PUBLIC_PREFIXES = ['/regalo/', '/b/', '/u/']
 export const isPublicPath = (pathname: string) => PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix))
 /** El regalo que quería activar quien ya tenía cuenta: al entrar, se le regresa a su página */
 export const PENDING_GIFT_KEY = 'eyplease:regalo'

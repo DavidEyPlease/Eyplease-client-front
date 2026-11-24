@@ -48,6 +48,8 @@ export const API_ROUTES = {
         LIST: '/trainings',
         FILTER: '/trainings/filter',
         DETAIL: '/trainings/{id}',
+        /** «Compártela con mi Unidad» (Elite y Área): GET estado, POST compartir, DELETE dejar de compartir */
+        UNIT_LINK: '/trainings/{id}/unit-link',
     },
     POSTS: {
         LIST: '/posts',
@@ -176,6 +178,11 @@ export const API_ROUTES = {
     /** La página del regalo de la consultora (sin sesión, por el token de su liga) y activarlo con su cuenta */
     /** La liga del boletín interactivo de una Directora: pública, sólo para ver */
     BOLETIN_PUBLICO: '/boletin-publico/{token}',
+    /** La presentación que una Directora compartió con su Unidad: pública */
+    CAPACITACION_PUBLICA: {
+        SHOW: '/capacitacion-publica/{token}',
+        ABRIR: '/capacitacion-publica/{token}/abrir',
+    },
     GIFTS: {
         SHOW: '/gifts/{token}',
         OPEN: '/gifts/{token}/open',
