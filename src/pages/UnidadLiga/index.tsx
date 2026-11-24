@@ -37,6 +37,8 @@ const UnidadLigaPage = ({ registro = false }: { registro?: boolean }) => {
     const [error, setError] = useState<string | null>(null)
     /** Ya creó su cuenta: se le ofrece la app (ahí le llega lo que le comparte su Directora) */
     const [lista, setLista] = useState<string | null>(null)
+    /** El número que ya se le avisó que no está en la Unidad: si lo deja igual, entra (puede ser nueva y no salir en los reportes) */
+    const [avisado, setAvisado] = useState<string | null>(null)
 
     const { data, error: errorCarga, isLoading } = useQuery({
         queryKey: ['unidad-liga', token],
@@ -59,14 +61,28 @@ const UnidadLigaPage = ({ registro = false }: { registro?: boolean }) => {
 
     const abrir = async () => {
         if (!data) return
+        const limpio = numero.trim().toUpperCase().replace(/\s+/g, '')
+        // Obligatorio (David, 24-nov-2026): así la saluda por su nombre y su Directora sabe quién entró
+        if (!/^[A-Z0-9]{3,20}$/.test(limpio)) {
+            setError('Escribe tu número de consultora para entrar.')
+            return
+        }
         setEnviando(true)
         setError(null)
-        const limpio = numero.trim().toUpperCase().replace(/\s+/g, '')
         let saludo: UnitLinkOpen | null = null
-        try {
-            saludo = (await HttpService.post<ApiResponse<UnitLinkOpen>>(API_ROUTES.CAPACITACION_PUBLICA.ABRIR.replace('{token}', token), limpio ? { account: limpio } : {})).data
-        } catch { /* no detiene nada: entra sin saludo */ }
-        try { if (limpio) sessionStorage.setItem(NUMERO_KEY, limpio) } catch { /* sin almacenamiento */ }
+        if (avisado !== limpio) {
+            try {
+                saludo = (await HttpService.post<ApiResponse<UnitLinkOpen>>(API_ROUTES.CAPACITACION_PUBLICA.ABRIR.replace('{token}', token), { account: limpio })).data
+            } catch { /* sin conexión con la API: entra igual, sin saludo */ }
+            // No es de la Unidad de su Directora (o no está en sus reportes): se le avisa UNA vez, por si se equivocó de número
+            if (saludo && !saludo.consultant) {
+                setAvisado(limpio)
+                setError(`No encontramos ese número en la Unidad de ${data.director.first_name}. Revísalo; si está bien, toca otra vez «Abrir la presentación».`)
+                setEnviando(false)
+                return
+            }
+        }
+        try { sessionStorage.setItem(NUMERO_KEY, limpio) } catch { /* sin almacenamiento */ }
         const pase = {
             nombre: data.director.name,
             foto: data.director.photo,
@@ -194,8 +210,8 @@ const UnidadLigaPage = ({ registro = false }: { registro?: boolean }) => {
             </p>
             <section className="mt-6 rounded-[22px] border bg-card p-5 shadow-card">
                 <label className="grid gap-1.5">
-                    <span className="text-[13px] font-bold">Tu número de consultora <span className="font-semibold text-muted-foreground">(opcional)</span></span>
-                    <Input value={numero} onChange={e => setNumero(e.target.value.slice(0, 20))} onKeyDown={e => { if (e.key === 'Enter') abrir() }} placeholder="Ej. 186234" autoComplete="username" />
+                    <span className="text-[13px] font-bold">Tu número de consultora</span>
+                    <Input value={numero} onChange={e => { setNumero(e.target.value.slice(0, 20)); setError(null) }} onKeyDown={e => { if (e.key === 'Enter') abrir() }} placeholder="Ej. 186234" autoComplete="username" />
                     <span className="text-[12px] text-muted-foreground">Para que salga tu nombre y {director.first_name} sepa que la viste.</span>
                 </label>
                 {error && <p role="alert" className="mt-3 rounded-xl bg-destructive/10 px-4 py-2 text-center text-[13px] font-semibold text-destructive">{error}</p>}
