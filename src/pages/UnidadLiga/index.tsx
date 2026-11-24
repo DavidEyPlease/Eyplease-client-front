@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeftIcon, LoaderCircleIcon, SparklesIcon } from 'lucide-react'
+import { AppleIcon, ArrowLeftIcon, LoaderCircleIcon, PartyPopperIcon, PlayIcon, SparklesIcon } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
 import { API_ROUTES } from '@/constants/api'
 import { APP_ROUTES, SESSION_KEY } from '@/constants/app'
+import { STORE_URLS } from '@/constants/countries'
 import useAuth from '@/hooks/useAuth'
 import { ApiResponse, AuthResponse } from '@/interfaces/common'
 import { UnitLinkOpen, UnitLinkPublic } from '@/interfaces/trainings'
@@ -34,6 +35,8 @@ const UnidadLigaPage = ({ registro = false }: { registro?: boolean }) => {
     const [numero, setNumero] = useState(leerNumero)
     const [enviando, setEnviando] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    /** Ya creó su cuenta: se le ofrece la app (ahí le llega lo que le comparte su Directora) */
+    const [lista, setLista] = useState<string | null>(null)
 
     const { data, error: errorCarga, isLoading } = useQuery({
         queryKey: ['unidad-liga', token],
@@ -98,7 +101,8 @@ const UnidadLigaPage = ({ registro = false }: { registro?: boolean }) => {
             if (!response.data?.token) throw response
             localStorage.setItem(SESSION_KEY, response.data.token)
             await getMe()
-            navigate(APP_ROUTES.STRATEGY, { replace: true })
+            setLista(form.name.split(/\s+/)[0] || 'Listo')
+            setEnviando(false)
         } catch (err) {
             setError(errorDe(err, 'No pudimos crear tu cuenta. Inténtalo otra vez.'))
             setEnviando(false)
@@ -142,6 +146,25 @@ const UnidadLigaPage = ({ registro = false }: { registro?: boolean }) => {
             </p>
         </div>
     )
+
+    // Ya tiene su cuenta: la app es donde recibe lo que le comparte su Directora (la web sigue sirviendo)
+    if (lista) {
+        return (
+            <Marco logo={Logo}>
+                <section className="mt-6 grid justify-items-center gap-3 rounded-[24px] border bg-card p-6 text-center shadow-card">
+                    <span className="grid size-14 place-items-center rounded-full bg-[linear-gradient(135deg,#E5077D,#6C47FF)] text-white"><PartyPopperIcon className="size-7" /></span>
+                    <h1 className="text-[25px] leading-tight font-extrabold tracking-tight">¡Listo, {lista}!</h1>
+                    <p className="text-[14.5px] leading-relaxed text-muted-foreground">Ya estás en la Unidad de {director.first_name}. Descarga la app de Eyplease+: ahí tienes «Tu estrategia» de este mes y, muy pronto, todo lo que te comparta.</p>
+                    <p className="text-[12.5px] text-muted-foreground">Entras con tu número de consultora y la contraseña que acabas de crear.</p>
+                    <div className="mt-2 grid w-full gap-2">
+                        <a href={STORE_URLS.ios} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-foreground px-5 text-[15px] font-extrabold text-background"><AppleIcon className="size-5" /> Descargar para iPhone</a>
+                        <a href={STORE_URLS.android} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-primary-gradient px-5 text-[15px] font-extrabold text-white shadow-primary-glow"><PlayIcon className="size-5" /> Descargar para Android</a>
+                    </div>
+                    <button type="button" onClick={() => navigate(APP_ROUTES.STRATEGY, { replace: true })} className="mt-2 text-[13.5px] font-bold text-[#6C47FF] underline underline-offset-2 dark:text-[#A894FF]">Seguir en la web</button>
+                </section>
+            </Marco>
+        )
+    }
 
     if (registro) {
         return (
