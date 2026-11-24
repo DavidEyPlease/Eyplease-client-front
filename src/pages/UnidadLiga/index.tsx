@@ -117,12 +117,15 @@ const UnidadLigaPage = ({ registro = false }: { registro?: boolean }) => {
     }
 
     if (errorCarga || !data) {
+        // Sin conexión no es lo mismo que una liga apagada: se le dice distinto y puede reintentar
+        const sinRed = !(errorCarga as { status?: number } | null)?.status && /fetch|network|red/i.test(errorDe(errorCarga, ''))
         return (
             <Marco logo={Logo}>
                 <section className="mt-6 rounded-[24px] border bg-card p-6 text-center shadow-card">
                     <SparklesIcon className="mx-auto size-9 text-[#E5077D]" />
-                    <h1 className="mt-3 text-[22px] font-extrabold tracking-tight">Esta liga ya no está disponible</h1>
-                    <p className="mt-2 text-sm text-muted-foreground">{errorDe(errorCarga, 'Pídele a tu Directora la nueva.')}</p>
+                    <h1 className="mt-3 text-[22px] font-extrabold tracking-tight">{sinRed ? 'No pudimos abrirla' : 'Esta liga ya no está disponible'}</h1>
+                    <p className="mt-2 text-sm text-muted-foreground">{sinRed ? 'Revisa tu conexión e inténtalo otra vez.' : 'Pídele a tu Directora la nueva.'}</p>
+                    {sinRed && <button type="button" onClick={() => location.reload()} className="mt-4 rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-bold text-white shadow-primary-glow">Reintentar</button>}
                 </section>
             </Marco>
         )
