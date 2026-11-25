@@ -8,6 +8,8 @@ import { ITraining } from "@/interfaces/trainings"
 import LOGO_CLARO from "@/assets/images/eyplease-logo-color.png"
 import LOGO_OSCURO from "@/assets/images/eyplease-logo-fondo-oscuro.png"
 import useAuthStore from "@/store/auth"
+import HttpService from "@/services/http"
+import { ApiResponse } from "@/interfaces/common"
 
 /**
  * Presentación interactiva de un tema: una página web aparte (paquete en el CDN). Esta ruta es
@@ -37,17 +39,31 @@ const TrainingWebPage = () => {
     )
     const webUrl = response?.data?.web_url ?? null
 
+    /* Su liga para recomendar Eyplease+ («Invita a una Directora»): las presentaciones que cierran con «empieza hoy» la
+       usan en su botón y su QR. Nunca detiene la apertura: si no llega en 1.5 s (o su empresa no la tiene), va sin ella. */
+    const [recomienda, setRecomienda] = useState<string | null | undefined>(undefined)
+    useEffect(() => {
+        if (!user) return
+        let listo = false
+        const corte = setTimeout(() => { if (!listo) { listo = true; setRecomienda(null) } }, 1500)
+        HttpService.get<ApiResponse<{ link?: string }>>(API_ROUTES.REFERRALS.MINE)
+            .then(r => { if (!listo) { listo = true; setRecomienda(r.data?.link ?? null) } })
+            .catch(() => { if (!listo) { listo = true; setRecomienda(null) } })
+        return () => { listo = true; clearTimeout(corte) }
+    }, [user])
+
     const destino = useMemo(() => {
-        if (!webUrl || !user) return null
+        if (!webUrl || !user || recomienda === undefined) return null
         const pass = {
             nombre: user.name,
             foto: user.profile_picture?.has_photo ? user.profile_picture.url : null,
             logo: user.logotype?.url ?? null,
             origen: location.origin,
             t: Date.now(),
+            ...(recomienda ? { recomienda } : {}),
         }
         return `${webUrl}#e=${encodeURIComponent(JSON.stringify(pass))}`
-    }, [webUrl, user])
+    }, [webUrl, user, recomienda])
 
     /* La cuenta avanza por pasos reales (sesión → tema → salto) y entre uno y otro se arrastra
        despacio, para que nunca parezca detenida. */
