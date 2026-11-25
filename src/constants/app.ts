@@ -79,9 +79,14 @@ export const PENDING_GIFT_KEY = 'eyplease:regalo'
 /** La página que pidió sin sesión (una liga del bot o de un correo, p. ej. `/tu-estrategia?conectar=1`): al entrar regresa ahí */
 export const RETURN_AFTER_LOGIN_KEY = 'eyplease:volver'
 
-/** Sólo rutas internas de la app (nada de otro dominio ni de las pantallas de acceso) */
+/**
+ * Sólo rutas internas de la app (nada de otro dominio ni de las pantallas de acceso). La raíz tampoco: no es una
+ * pantalla, y «regresar» ahí al entrar dejaba la página en blanco en vez de llevarla a «Hoy» (25-nov-2026).
+ */
 export const safeReturnPath = (path: string | null | undefined): string | null =>
-    path && path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/auth') ? path : null
+    path && path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/auth') && !/^\/(?:[?#]|$)/.test(path)
+        ? path
+        : null
 /** Lo que se acaba de activar, para el aviso de bienvenida en «Tu estrategia» (una sola vez) */
 export const GIFT_WELCOME_KEY = 'eyplease:regalo-activo'
 /** Nombre de quien acaba de cerrar sesión: el acceso lo lee una vez para despedirla */
