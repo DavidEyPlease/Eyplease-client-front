@@ -14,13 +14,40 @@ export const dayLabel = (date: string) => {
     return `${day} de ${MONTHS[month - 1] ?? ''}`
 }
 
-/** Hoy y fin de mes como YYYY-MM-DD en el día del teléfono. */
+/** "2026-11-28" + 6 → "2026-12-04" (en UTC a propósito: es un día de calendario, no un instante) */
+export const shiftDay = (date: string, days: number) => {
+    const [year, month, day] = date.split('-').map(Number)
+    return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10)
+}
+
+/** «del 17 al 23 de noviembre» o, si cruza de mes, «del 28 de noviembre al 4 de diciembre» */
+export const rangeLabel = (from: string, to: string) => {
+    const [, fromMonth, fromDay] = from.split('-').map(Number)
+    const [, toMonth, toDay] = to.split('-').map(Number)
+    return fromMonth === toMonth
+        ? `del ${fromDay} al ${toDay} de ${MONTHS[toMonth - 1] ?? ''}`
+        : `del ${fromDay} de ${MONTHS[fromMonth - 1] ?? ''} al ${toDay} de ${MONTHS[toMonth - 1] ?? ''}`
+}
+
+/** Cuándo corre un reto a la unidad: el de una semana (o el próximo) dice sus dos fechas; los del mes, hasta cuándo. */
+export const scheduleLabel = (challenge: IChallenge) => {
+    if (!challenge.is_open) return `terminó el ${dayLabel(challenge.ends_on)}`
+    if ((challenge.own_start || challenge.is_upcoming) && challenge.starts_on) return rangeLabel(challenge.starts_on, challenge.ends_on)
+    return `hasta el ${dayLabel(challenge.ends_on)}`
+}
+
+/** Hoy, fin de mes y fin del mes siguiente como YYYY-MM-DD en el día del teléfono. */
 export const monthBounds = () => {
     const now = new Date()
     const pad = (n: number) => String(n).padStart(2, '0')
     const last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+    const nextLast = new Date(now.getFullYear(), now.getMonth() + 2, 0)
     const prefix = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`
-    return { today: `${prefix}-${pad(now.getDate())}`, end: `${prefix}-${pad(last)}` }
+    return {
+        today: `${prefix}-${pad(now.getDate())}`,
+        end: `${prefix}-${pad(last)}`,
+        nextEnd: `${nextLast.getFullYear()}-${pad(nextLast.getMonth() + 1)}-${pad(nextLast.getDate())}`,
+    }
 }
 
 export const formatNumber = (value: number) => value.toLocaleString('es-MX')

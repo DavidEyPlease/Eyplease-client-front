@@ -54,8 +54,10 @@ export interface IChallenge {
     ends_on: string
     /** Puesto para el mes siguiente (p. ej. desde el Asistente): todavía no empieza a contar */
     is_upcoming?: boolean
-    /** YYYY-MM-DD: el día 1 de su mes */
+    /** YYYY-MM-DD: el día 1 de su mes, o el suyo en un reto de una semana */
     starts_on?: string
+    /** Reto de una semana: tiene su propio día de inicio y cuenta sólo lo de esas fechas (puede cruzar de mes) */
+    own_start?: boolean
     /** Retos a la unidad: el pedido de diseño con su pieza, que entra solo al ponerlo (lo fabrica el estudio) */
     piece?: ChallengePiece | null
     /** Cuántas ganadoras ya tienen su pieza (Elite y Nacional: llegan solas al llegar a la meta) */
@@ -86,6 +88,8 @@ export interface NewChallenge {
     target?: number
     prize?: string
     title?: string
+    /** Reto de una semana: desde qué día cuenta (sin `ends_on`, la API lo deja de 7 días) */
+    starts_on?: string
     ends_on?: string
     params?: Record<string, string> | null
     /** Foto del premio ya subida a `private/challenges/{usuario}/`: va adjunta en la pieza del reto y en las de ganadora */

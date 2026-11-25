@@ -499,6 +499,21 @@ const person = (index: number) => ({ id: `person-${index}`, name: PEOPLE[index].
 const monthKey = () => month(0).slice(0, 7)
 const monthEnd = () => { const d = new Date(now.getFullYear(), now.getMonth() + 1, 0); return `${monthKey()}-${String(d.getDate()).padStart(2, '0')}` }
 
+/** "2026-11-28" + 6 → "2026-12-04" */
+const shiftDay = (date: string, days: number) => {
+    const [y, m, d] = date.split('-').map(Number)
+    return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10)
+}
+const todayKey = () => `${monthKey()}-${String(now.getDate()).padStart(2, '0')}`
+/** El lunes de esta semana: el reto de una semana de ejemplo va de lunes a domingo */
+const thisMonday = () => shiftDay(todayKey(), -((now.getDay() + 6) % 7))
+const MONTH_NAMES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+const rangeText = (from: string, to: string) => {
+    const [, fm, fd] = from.split('-').map(Number)
+    const [, tm, td] = to.split('-').map(Number)
+    return fm === tm ? `del ${fd} al ${td} de ${MONTH_NAMES[tm - 1]}` : `del ${fd} de ${MONTH_NAMES[fm - 1]} al ${td} de ${MONTH_NAMES[tm - 1]}`
+}
+
 /** Retos de ejemplo: uno suyo (cobertura) y uno puesto a la unidad, con su tabla por persona. */
 const challengeStore = {
     personal: [{
@@ -511,6 +526,12 @@ const challengeStore = {
         target: 1800, prize: 'Set de brochas + reconocimiento en el boletín', period: monthKey(), ends_on: monthEnd(), is_open: true, awards_count: 0,
         piece: { service_id: 'req-demo', status: 'ready-for-review', status_name: 'Lista para revisión', url: piece('Reto', '1,800 puntos', 260, '9:16'), uri: 'demo/reto.svg', ext: 'svg' }, celebrated_count: 2,
         progress: { current: 2, goal: 52, measure: 'people', done: false, detail: null, data_missing: false },
+    }, {
+        /* De una semana (lunes a domingo): cuenta sólo lo que pidan esos 7 días, con la foto diaria de ventas */
+        id: 'ch-week', scope: 'unit', type: 'unit_points', title: `Llegar a 600 puntos ${rangeText(thisMonday(), shiftDay(thisMonday(), 6))}`, description: null,
+        target: 600, prize: 'Labial a elegir', period: thisMonday().slice(0, 7), starts_on: thisMonday(), own_start: true, is_upcoming: false,
+        ends_on: shiftDay(thisMonday(), 6), is_open: true, awards_count: 0, celebrated_count: 1,
+        progress: { current: 3, goal: 52, measure: 'people', done: false, detail: null, data_missing: false },
     }, {
         /* Reactivación: las inactivas (T1 a T7) que vuelven a pedir; cada una que regresa es ganadora */
         id: 'ch-react', scope: 'unit', type: 'unit_reactivation', title: 'Pon tu negocio en acción', description: 'Especial para consultoras T1 a T7: regresa a pedir y agrega tu kit especial por $139.',
@@ -865,10 +886,17 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/challenges' && method === 'POST') {
             const body = JSON.parse(String(init?.body ?? '{}'))
             const unit = String(body.type).startsWith('unit_')
+            /* Como la API: uno de una semana trae su inicio, dura 7 días si no dice el fin y lleva sus fechas en el título */
+            const week = unit && body.starts_on ? { starts_on: body.starts_on as string, ends_on: (body.ends_on as string | undefined) ?? shiftDay(body.starts_on, 6) } : null
             const created = {
                 id: `ch-${Date.now()}`, scope: unit ? 'unit' : 'personal', type: body.type, description: null, target: body.target, prize: body.prize ?? null,
-                title: body.title ?? (unit ? `${Number(body.target).toLocaleString('es-MX')} ${body.type === 'unit_hearts' ? 'corazones' : 'puntos'} antes del cierre` : suggestions.find(item => item.type === body.type)?.title ?? 'Nuevo reto'),
-                period: monthKey(), ends_on: body.ends_on ?? monthEnd(), is_open: true, awards_count: 0,
+                title: body.title ?? (week
+                    ? `Llegar a ${Number(body.target).toLocaleString('es-MX')} puntos ${rangeText(week.starts_on, week.ends_on)}`
+                    : unit ? `${Number(body.target).toLocaleString('es-MX')} ${body.type === 'unit_hearts' ? 'corazones' : 'puntos'} antes del cierre` : suggestions.find(item => item.type === body.type)?.title ?? 'Nuevo reto'),
+                ...(week
+                    ? { period: week.starts_on.slice(0, 7), starts_on: week.starts_on, ends_on: week.ends_on, own_start: true, is_upcoming: week.starts_on > todayKey() }
+                    : { period: monthKey(), ends_on: body.ends_on ?? monthEnd() }),
+                is_open: true, awards_count: 0,
                 /* Como la API: un reto a la unidad trae su pieza, un pedido de diseño que entra solo */
                 piece: unit ? { service_id: `req-${Date.now()}`, status: 'unassigned', status_name: 'Sin asignar' } : null, celebrated_count: 0,
                 progress: { current: 0, goal: unit ? 52 : body.target, measure: unit ? 'people' : 'pieces', done: false, detail: null, data_missing: false },

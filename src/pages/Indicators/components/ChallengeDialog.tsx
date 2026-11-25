@@ -10,7 +10,7 @@ import useFiles from '@/hooks/useFiles'
 import { ChallengePiece, ChallengeRow, IChallenge } from '@/interfaces/challenges'
 import { cn } from '@/lib/utils'
 import { titleCaseName } from '@/pages/Hoy/lib'
-import { dayLabel, formatNumber, progressChip, progressPercent, rowUnit, sourceName } from '../helpers'
+import { dayLabel, formatNumber, progressChip, progressPercent, rowUnit, scheduleLabel, sourceName } from '../helpers'
 
 interface Props {
     /** El reto tal como viene en la lista: pinta la cabecera mientras llega la tabla */
@@ -86,7 +86,7 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
                         {current.description && <p className="mt-0.5 text-[12.5px] text-muted-foreground">{current.description}</p>}
                         {isUnit && (
                             <p className="mt-1 text-[12.5px] text-muted-foreground">
-                                {current.prize ? <>Premio: <b className="text-foreground">{current.prize}</b> · </> : null}{current.is_open ? `hasta el ${dayLabel(current.ends_on)}` : `terminó el ${dayLabel(current.ends_on)}`}
+                                {current.prize ? <>Premio: <b className="text-foreground">{current.prize}</b> · </> : null}{scheduleLabel(current)}
                             </p>
                         )}
                     </div>

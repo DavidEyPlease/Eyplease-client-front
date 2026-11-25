@@ -3,7 +3,7 @@ import { FlagIcon, TargetIcon } from 'lucide-react'
 import { MAP_STATUS_USER_REQUEST_SERVICES } from '@/constants/app'
 import { IChallenge } from '@/interfaces/challenges'
 import { cn } from '@/lib/utils'
-import { dayLabel, progressChip, progressPercent } from '../helpers'
+import { dayLabel, progressChip, progressPercent, scheduleLabel } from '../helpers'
 
 interface Props {
     challenge: IChallenge
@@ -42,7 +42,7 @@ const ChallengeCard = ({ challenge, onOpen }: Props) => {
                     <b className="block text-[14px] leading-snug font-extrabold">{challenge.title}</b>
                     {isUnit && (
                         <small className="block text-[12px] text-muted-foreground">
-                            {challenge.prize ? <>Premio: <b className="text-foreground">{challenge.prize}</b> · </> : null}{upcoming ? `del ${dayLabel(challenge.starts_on!)} al ${dayLabel(challenge.ends_on)}` : challenge.is_open ? `hasta el ${dayLabel(challenge.ends_on)}` : `terminó el ${dayLabel(challenge.ends_on)}`}
+                            {challenge.prize ? <>Premio: <b className="text-foreground">{challenge.prize}</b> · </> : null}{scheduleLabel(challenge)}
                         </small>
                     )}
                 </span>
