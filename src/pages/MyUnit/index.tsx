@@ -15,6 +15,8 @@ import { titleCaseName } from '@/pages/Hoy/lib'
 import { groupPostVersions } from '@/pages/Posts/lib'
 import EditPersonDialog from './EditPersonDialog'
 import InvitationsSection from './invitations/InvitationsSection'
+import { nicknameOf, shownName } from './names'
+import useUnitPeople from './useUnitPeople'
 import { useCompany } from '@/utils/company'
 
 const TAG = 'inline-flex h-[22px] items-center rounded-full px-2.5 text-[10.5px] font-bold tracking-wide whitespace-nowrap'
@@ -29,6 +31,8 @@ const FILTERS: Array<{ key: Filter, label: string }> = [
 interface Person {
     id: string
     name: string
+    /** El apodo que ella le puso (sólo su seguimiento): sale del directorio de la unidad, las publicaciones no lo traen */
+    nickname: string | null
     /** Consultora del padrón o clienta: sólo a la consultora se le edita el nombre y el sexo */
     type: IPostVendorable['type']
     /** Sus publicaciones, con la sección de cada una */
@@ -54,13 +58,15 @@ const MyUnitPage = () => {
     const [search, setSearch] = useState('')
     const [openId, setOpenId] = useState<string | null>(null)
     const [editing, setEditing] = useState(false)
+    const directory = useUnitPeople()
 
     const people = useMemo(() => {
+        const nicknames = new Map((directory.data ?? []).map(item => [item.id, nicknameOf(item.nickname)]))
         const byId = new Map<string, Person>()
         sections.forEach((section, index) => {
             for (const post of postsBySection[index] ?? []) {
                 if (!post.vendorable) continue
-                const person = byId.get(post.vendorable.id) ?? { id: post.vendorable.id, name: post.vendorable.name, type: post.vendorable.type, posts: [], pieces: 0, unsent: 0, noPhoto: false, labels: [] }
+                const person = byId.get(post.vendorable.id) ?? { id: post.vendorable.id, name: post.vendorable.name, nickname: post.vendorable.type === 'sponsored' ? nicknames.get(post.vendorable.id) ?? null : null, type: post.vendorable.type, posts: [], pieces: 0, unsent: 0, noPhoto: false, labels: [] }
                 person.posts.push({ post, section: section.key.toString(), label: section.label })
                 byId.set(person.id, person)
             }
@@ -75,8 +81,8 @@ const MyUnitPage = () => {
         }
 
         /* Primero a quien más se le debe: es la lista de pendientes, no un directorio */
-        return [...byId.values()].sort((a, b) => b.unsent - a.unsent || b.pieces - a.pieces || a.name.localeCompare(b.name))
-    }, [sections, postsBySection])
+        return [...byId.values()].sort((a, b) => b.unsent - a.unsent || b.pieces - a.pieces || shownName(a.name, a.nickname).localeCompare(shownName(b.name, b.nickname), 'es'))
+    }, [sections, postsBySection, directory.data])
 
     /* La página nace con el marco nuevo: con el de siempre esto es Publicaciones */
     if (!isNewShell()) return <Navigate to={APP_ROUTES.POSTS.LIST} replace />
@@ -84,7 +90,7 @@ const MyUnitPage = () => {
     const term = search.trim().toLocaleLowerCase('es-MX')
     const visible = people.filter(person =>
         (filter === 'all' || (filter === 'unsent' ? person.unsent > 0 : person.noPhoto))
-        && (!term || person.name.toLocaleLowerCase('es-MX').includes(term)),
+        && (!term || `${person.name} ${person.nickname ?? ''}`.toLocaleLowerCase('es-MX').includes(term)),
     )
 
     const opened = people.find(person => person.id === openId) ?? null
@@ -150,7 +156,9 @@ const MyUnitPage = () => {
                         >
                             <span className="hoy-soft grid size-12 shrink-0 place-items-center rounded-2xl text-[14px] font-extrabold text-primary">{initials(person.name)}</span>
                             <span className="min-w-0 flex-1">
-                                <b className="block truncate text-[13.5px] font-extrabold">{titleCaseName(person.name)}</b>
+                                {/* Con apodo: el apodo grande y su nombre completo chico debajo */}
+                                <b className="block truncate text-[13.5px] font-extrabold">{shownName(person.name, person.nickname)}</b>
+                                {person.nickname && <small className="block truncate text-[11.5px] font-semibold text-foreground/70">{titleCaseName(person.name)}</small>}
                                 <small className="block truncate text-[11.5px] text-muted-foreground">{person.labels.slice(0, 2).join(' · ')}{person.labels.length > 2 ? ` +${person.labels.length - 2}` : ''}</small>
                                 <span className="mt-1.5 flex flex-wrap gap-1.5">
                                     <span className={cn(TAG, 'bg-[#6C47FF]/10 text-[#6C47FF] dark:text-[#BBAAFF]')}>{person.pieces} {person.pieces === 1 ? 'pieza' : 'piezas'}</span>
@@ -165,13 +173,13 @@ const MyUnitPage = () => {
                 </div>
             )}
 
-            <Modal open={!!opened} size="lg" title={opened ? titleCaseName(opened.name) : ''} description={opened ? `${opened.pieces} ${opened.pieces === 1 ? 'pieza' : 'piezas'} este mes${opened.unsent ? ` · ${opened.unsent} sin compartir` : ' · todo compartido'}` : undefined} onOpenChange={open => { if (!open) { setOpenId(null); setEditing(false) } }}>
+            <Modal open={!!opened} size="lg" title={opened ? shownName(opened.name, opened.nickname) : ''} description={opened ? `${opened.nickname ? `${titleCaseName(opened.name)} · ` : ''}${opened.pieces} ${opened.pieces === 1 ? 'pieza' : 'piezas'} este mes${opened.unsent ? ` · ${opened.unsent} sin compartir` : ' · todo compartido'}` : undefined} onOpenChange={open => { if (!open) { setOpenId(null); setEditing(false) } }}>
                 <div className="hoy-rail -mx-1 grid max-h-[70vh] grid-cols-1 gap-4 overflow-y-auto px-1 pb-1">
                     {/* Corregir cómo se llama (p. ej. quitarle un primer nombre que no usa) sin escribirnos */}
                     {opened?.type === 'sponsored' && (
                         <div className="flex justify-end">
                             <button type="button" onClick={() => setEditing(true)} className="flex h-8 cursor-pointer items-center gap-1.5 rounded-[11px] bg-foreground/5 px-3 text-[12px] font-bold transition-colors hover:bg-foreground/10 [&_svg]:size-[15px]">
-                                <PencilIcon /> Editar su nombre y sexo
+                                <PencilIcon /> Editar su apodo, nombre y sexo
                             </button>
                         </div>
                     )}

@@ -11,6 +11,8 @@ import { GiftInfo, InvitationShare } from '@/interfaces/invitations'
 import Panel from '@/pages/Estrategia/components/Panel'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import HttpService from '@/services/http'
+import { nicknameOf } from '../names'
+import useUnitPeople from '../useUnitPeople'
 import shareInvitation from './shareInvitation'
 
 interface Props {
@@ -25,6 +27,12 @@ interface Props {
 }
 
 type Channel = 'share' | 'whatsapp' | 'copy' | 'image'
+
+/** El mensaje de la API saluda con su primer nombre («¡Hola, Andrea!»): si su Directora le puso apodo, la saluda con él */
+const greetWithNickname = (message: string, firstName: string, nickname: string | null) => {
+    const hello = `¡Hola, ${firstName}!`
+    return nickname && firstName && message.startsWith(hello) ? `¡Hola, ${nickname}!${message.slice(hello.length)}` : message
+}
 
 /**
  * Invitar (o recordarle) a UNA consultora, como «Tu lista de hoy»: su imagen con su nombre y el de su Directora, el
@@ -45,6 +53,9 @@ const InviteDialog = ({ personId, gift, remaining, onClose, onNext, onSkip }: Pr
         retry: false,
     })
     const data = invitation.data
+    /* Su apodo (sólo de esta Directora) sale del directorio de la unidad: la invitación no lo trae */
+    const directory = useUnitPeople(!!personId)
+    const nickname = nicknameOf(directory.data?.find(item => item.id === data?.person.id)?.nickname)
     const image = useQuery({
         queryKey: ['unit', 'invitation-image', data?.id],
         queryFn: () => HttpService.get<Blob>(API_ROUTES.UNIT.INVITATION_IMAGE.replace('{id}', data!.id), { responseType: 'blob' }),
@@ -61,11 +72,11 @@ const InviteDialog = ({ personId, gift, remaining, onClose, onNext, onSkip }: Pr
     }, [image.data])
 
     useEffect(() => { setSent(false) }, [personId])
-    useEffect(() => { if (data) setMessage(data.message) }, [data])
+    useEffect(() => { if (data) setMessage(greetWithNickname(data.message, data.person.first_name, nickname)) }, [data, nickname])
 
     const reminder = data ? ['invitada', 'abrio'].includes(data.list_status) : false
-    const name = data ? titleCaseName(data.person.name) : ''
-    const first = data?.person.first_name ?? ''
+    const name = data ? nickname ?? titleCaseName(data.person.name) : ''
+    const first = nickname ?? data?.person.first_name ?? ''
 
     const markSent = async (channel: Channel) => {
         if (!data) return

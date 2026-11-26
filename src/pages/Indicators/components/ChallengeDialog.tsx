@@ -10,6 +10,7 @@ import useFiles from '@/hooks/useFiles'
 import { ChallengePiece, ChallengeRow, IChallenge } from '@/interfaces/challenges'
 import { cn } from '@/lib/utils'
 import { titleCaseName } from '@/pages/Hoy/lib'
+import { callName, nicknameOf } from '@/pages/MyUnit/names'
 import { dayLabel, formatNumber, progressChip, progressPercent, rowUnit, scheduleLabel, sourceName } from '../helpers'
 
 interface Props {
@@ -19,7 +20,8 @@ interface Props {
 }
 
 const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(word => word[0]?.toUpperCase() ?? '').join('')
-const firstName = (name: string) => titleCaseName(name.trim().split(' ')[0] ?? '')
+/** Cómo le dice su Directora: su apodo si le puso uno, si no su primer nombre (su pieza de ganadora va con su nombre) */
+const rowCallName = (row: ChallengeRow) => callName(row.name, row.nickname)
 const messageOf = (error: unknown, fallback: string) => (error as { message?: string })?.message || fallback
 
 /** Detalle de un reto: avance, tabla por persona y, en los de la unidad, premiar a quien llegó. */
@@ -47,8 +49,8 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
     const congratulate = async (row: ChallengeRow) => {
         if (!current) return
         const text = current.type === 'unit_reactivation'
-            ? `¡Qué gusto tenerte de regreso, ${firstName(row.name)}! 🎉 Gracias por poner tu negocio en acción.${current.prize ? ` Tu premio: ${current.prize}.` : ''}`
-            : `¡Felicidades, ${firstName(row.name)}! 🎉 Lograste el reto «${current.title}».${current.prize ? ` Tu premio: ${current.prize}.` : ''} ¡Gracias por tu esfuerzo!`
+            ? `¡Qué gusto tenerte de regreso, ${rowCallName(row)}! 🎉 Gracias por poner tu negocio en acción.${current.prize ? ` Tu premio: ${current.prize}.` : ''}`
+            : `¡Felicidades, ${rowCallName(row)}! 🎉 Lograste el reto «${current.title}».${current.prize ? ` Tu premio: ${current.prize}.` : ''} ¡Gracias por tu esfuerzo!`
         try {
             await navigator.clipboard.writeText(text)
             toast.success('Mensaje copiado: pégalo en WhatsApp')
@@ -61,7 +63,7 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
         if (!current) return
         try {
             await award({ id: current.id, personId: row.id })
-            toast.success(`${firstName(row.name)} quedó premiada`)
+            toast.success(`${rowCallName(row)} quedó premiada`)
         } catch (error) {
             toast.error(messageOf(error, 'No se pudo premiar'))
         }
@@ -144,7 +146,11 @@ const ChallengeDialog = ({ challenge, onClose }: Props) => {
                                             ? <img src={row.photo.url} alt="" className="size-9 shrink-0 rounded-full object-cover" />
                                             : <span className="hoy-soft grid size-9 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-primary">{initials(row.name)}</span>}
                                         <span className="min-w-0 flex-1">
-                                            <span className="block truncate text-[13px] font-semibold">{titleCaseName(row.name)}</span>
+                                            {/* Con apodo: «Andy · Andrea Gorgonio» */}
+                                            <span className="block truncate text-[13px] font-semibold">
+                                                {nicknameOf(row.nickname) ?? titleCaseName(row.name)}
+                                                {nicknameOf(row.nickname) && <span className="font-normal text-muted-foreground"> · {titleCaseName(row.name)}</span>}
+                                            </span>
                                             <span className={cn('block text-[11.5px]', row.done ? 'font-semibold text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground')}>
                                                 {current.type === 'leaders_five'
                                                     ? `${row.current} de ${row.goal} ya pidieron`

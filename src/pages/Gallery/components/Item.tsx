@@ -3,6 +3,7 @@ import { EyeOffIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { ISponsored } from "@/interfaces/sponsored"
+import { nicknameOf } from "@/pages/MyUnit/names"
 import SponsoredPhoto from "./SponsoredPhoto"
 import VendorEdit from "./VendorEdit"
 
@@ -11,6 +12,9 @@ interface Props {
 }
 
 const VendorItem = ({ item }: Props) => {
+    /* Con apodo (sólo lo ve su Directora): el apodo grande y su nombre completo chico debajo */
+    const nickname = nicknameOf(item.nickname)
+
     return (
         <Card className="relative flex flex-col items-center gap-2.5 rounded-[20px] px-4 pt-7 pb-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/15 hover:shadow-card-hover">
             <VendorEdit sponsored={item} />
@@ -27,7 +31,10 @@ const VendorItem = ({ item }: Props) => {
                 />
             </div>
 
-            <p className="text-center text-sm font-bold leading-snug tracking-tight">{item.name}</p>
+            <div className="text-center">
+                <p className="text-sm font-bold leading-snug tracking-tight">{nickname ?? item.name}</p>
+                {nickname && <p className="mt-0.5 text-[12px] leading-snug text-muted-foreground">{item.name}</p>}
+            </div>
 
             <div className="flex flex-col items-center gap-1.5">
                 <Badge

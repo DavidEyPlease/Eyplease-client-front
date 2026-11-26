@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { EllipsisIcon, EyeIcon, EyeOffIcon, PencilIcon, Trash2Icon } from "lucide-react"
 
 import Modal from "@/components/common/Modal"
@@ -7,6 +8,7 @@ import AlertConfirm from "@/components/generics/AlertConfirm"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ISponsored } from "@/interfaces/sponsored"
+import { patchUnitPerson } from "@/pages/MyUnit/useUnitPeople"
 import useSponsoredActions from "../hooks/useSponsoredActions"
 import VendorForm from "./VendorForm"
 
@@ -19,6 +21,7 @@ const DROPDOWN_ITEM_STYLES = 'cursor-pointer rounded-lg py-2 font-medium transit
 const VendorEdit = ({ sponsored }: Props) => {
     const [openEdit, setOpenEdit] = useState(false)
     const { actionLoading, updateCachedVendor, onRemoveVendor, onDisplayVendor } = useSponsoredActions()
+    const queryClient = useQueryClient()
 
     const DisplayIcon = sponsored.display_in_reports ? EyeOffIcon : EyeIcon
 
@@ -84,6 +87,8 @@ const VendorEdit = ({ sponsored }: Props) => {
                     sponsored={sponsored}
                     onSuccess={updated => {
                         updateCachedVendor(sponsored.id, updated)
+                        /* Su apodo y su sexo también en Mi unidad, sin esperar a que se vuelva a pedir */
+                        patchUnitPerson(queryClient, sponsored.id, updated)
                         setOpenEdit(false)
                     }}
                 />

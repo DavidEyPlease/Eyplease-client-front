@@ -9,6 +9,8 @@ export type GalleryFilters = {
 
 export interface ISponsored extends IBaseDBProperties {
     name: string;
+    /** El apodo que le puso su Directora: sólo para su seguimiento (sus piezas y el boletín van con su nombre completo) */
+    nickname?: string | null;
     account: string;
     country: string;
     gender: Gender | null;
@@ -19,6 +21,8 @@ export interface ISponsored extends IBaseDBProperties {
 
 export interface ISponsoredUpdate {
     name?: string;
+    /** Vacío o null lo quita (hasta 40 letras) */
+    nickname?: string | null;
     gender?: Gender | null;
     photo?: string | null; // file ID
 }

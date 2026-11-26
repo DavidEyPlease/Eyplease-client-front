@@ -4,6 +4,8 @@ export type ChallengeType = 'coverage' | 'section_share' | 'leaders_five' | 'uni
 export interface ChallengePerson {
     id: string
     name: string
+    /** El apodo que le puso su Directora (sólo viene en las filas de su reto) */
+    nickname?: string | null
     account: string | null
     photo: { url: string, has_photo: boolean } | null
 }

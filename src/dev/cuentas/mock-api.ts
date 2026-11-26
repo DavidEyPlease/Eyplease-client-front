@@ -496,6 +496,35 @@ const FILE_PATH = '/files/download'
 let savedStore: Array<Record<string, unknown>> = []
 
 const person = (index: number) => ({ id: `person-${index}`, name: PEOPLE[index].toUpperCase(), account: `00${index}4${index}1`, photo: null })
+
+/** Apodos que la Directora les puso (sólo su seguimiento): Andrea Gorgonio es «Andy»; el PUT /sponsored/{id} los cambia */
+const nicknames: Record<string, string | null> = { 'person-2': 'Andy' }
+/** Lo demás que se edita (nombre completo y sexo): se queda mientras no se recargue la página */
+const personEdits: Record<string, { name?: string, gender?: string }> = {}
+/** Como la API: el apodo sale en las filas de un reto */
+const withNickname = <T extends { id: string },>(row: T) => ({ ...row, nickname: nicknames[row.id] ?? null })
+/** GET /unit/people: el directorio de la unidad, con lo que la web lee de ahí (sexo y apodo) */
+const unitPeople = () => ({
+    month: monthKey(), loaded: { sales: true, status: true, hearts: true },
+    summary: { unit_total: PEOPLE.length, with_app: 0, active: null, ordered: null, with_hearts: null, no_photo: 0 },
+    people: PEOPLE.map((name, index) => ({
+        ...withNickname({ id: `person-${index}` }), sponsorship_id: `sp-${index}`, name: personEdits[`person-${index}`]?.name ?? name,
+        account: `00${index}4${index}1`, country: 'MX', rank: 'Consultora', gender: personEdits[`person-${index}`]?.gender ?? 'female', phone: null,
+        photo: { url: null, has_photo: false }, display_in_reports: true, mk_status: null, is_active: null, points: null, ordered: null,
+        last_order_date: null, hearts: null, pink_circle_months: null, app: null,
+    })),
+})
+/** GET /sponsored (Galería): su unidad, con su apodo; las Directoras del Área no se simulan */
+const galleryPage = (q: URLSearchParams) => {
+    const search = (q.get('search') ?? '').trim().toLocaleLowerCase('es-MX')
+    const letter = (q.get('letter') ?? '').toLocaleLowerCase('es-MX')
+    const items = q.get('vendorRole') === 'directors' ? [] : PEOPLE.map((name, index) => ({
+        ...withNickname({ id: `person-${index}` }), name: (personEdits[`person-${index}`]?.name ?? name).toUpperCase(), account: `00${index}4${index}1`, country: 'MX',
+        gender: personEdits[`person-${index}`]?.gender ?? 'female', photo: null, rank: 'Consultora', display_in_reports: true,
+        created_at: iso(200), updated_at: iso(1),
+    })).filter(item => (!search || `${item.name} ${item.account}`.toLocaleLowerCase('es-MX').includes(search)) && (!letter || item.name.toLocaleLowerCase('es-MX').startsWith(letter)))
+    return page(items)
+}
 const monthKey = () => month(0).slice(0, 7)
 const monthEnd = () => { const d = new Date(now.getFullYear(), now.getMonth() + 1, 0); return `${monthKey()}-${String(d.getDate()).padStart(2, '0')}` }
 
@@ -857,8 +886,15 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (path === '/files/sign-url' && method === 'POST') response = respond({ url: `${base.replace(/\/$/, '')}/__subida`, key: 'demo/foto-nueva.jpg', disk: 'private' })
         else if (path === '/__subida') response = respond(null)
         else if (/^\/(sponsored|customers\/client)\/[^/]+$/.test(path) && (method === 'PUT' || method === 'PATCH')) {
-            redoRequests.set(path.split('/').pop() as string, { at: Date.now(), formats: ['image', 'image_square', 'video'] })
-            response = respond({})
+            const id = path.split('/').pop() as string
+            redoRequests.set(id, { at: Date.now(), formats: ['image', 'image_square', 'video'] })
+            if (path.startsWith('/sponsored/') && method === 'PUT') {
+                // Como la API: el apodo es de la Directora (vacío o null lo quita) y el nombre oficial no cambia por él
+                const body = JSON.parse(String(init?.body ?? '{}')) as { name?: string, gender?: string, nickname?: string | null }
+                if ('nickname' in body) nicknames[id] = String(body.nickname ?? '').trim() || null
+                personEdits[id] = { ...personEdits[id], ...(body.name ? { name: body.name } : {}), ...(body.gender ? { gender: body.gender } : {}) }
+                response = respond({ id, ...body, nickname: nicknames[id] ?? null })
+            } else response = respond({})
         }
         else if (path === '/tools/saved') response = respond(page(savedStore))
         else if (/^\/tools\/saved\/[^/]+$/.test(path) && method === 'DELETE') {
@@ -908,7 +944,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         else if (/^\/challenges\/[^/]+\/awards$/.test(path)) {
             const row = challengeRows.find(item => item.id === JSON.parse(String(init?.body ?? '{}')).person_id)
             if (row) row.awarded = true
-            response = respond({ ...challengeStore.unit[0], rows: challengeRows })
+            response = respond({ ...challengeStore.unit[0], rows: challengeRows.map(withNickname) })
         }
         else if (/^\/challenges\/[^/]+$/.test(path)) {
             const id = path.split('/')[2]
@@ -921,7 +957,7 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
                 const rows = found?.type === 'unit_reactivation'
                     ? [0, 1].map(index => ({ ...person(index + 2), current: 1, goal: 1, done: true, awarded: false, returned_on: dayOfThisMonth(15 + index * 4, 0) }))
                     : challengeRows
-                response = found ? respond({ ...found, rows: found.scope === 'unit' ? rows : [] }) : respond(null, 404)
+                response = found ? respond({ ...found, rows: found.scope === 'unit' ? rows.map(withNickname) : [] }) : respond(null, 404)
             }
         }
         else if (path === '/users/notifications') response = respond(page([]))
@@ -1065,6 +1101,8 @@ export const installMockApi = (plan: DemoPlan, role: 'director' | 'consultant', 
         }
         else if (/^\/chat\/conversations\/[^/]+\/messages$/.test(path)) response = respond(demoConversations.find(item => item.id === path.split('/')[3])?.messages ?? [])
         else if (path === '/chat/conversations') response = respond(page([...demoConversations].sort((a, b) => b.last_message_at.localeCompare(a.last_message_at)).map(item => ({ id: item.id, title: item.title, last_message_at: item.last_message_at, created_at: item.created_at }))))
+        else if (path === '/unit/people') response = role === 'director' ? respond(unitPeople()) : respond(null, 403)
+        else if (path === '/sponsored' && role === 'director') response = respond(galleryPage(q))
         else if (path === '/chat/conversations' || path === '/request-services' || path === '/events' || path === '/customers/client' || path === '/sponsored') response = respond(page([]))
         else { known = false; response = respond(method === 'GET' ? page([]) : null) }
 

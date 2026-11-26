@@ -6,6 +6,8 @@ import { InvitationStatus, UnitInvitationRow } from '@/interfaces/invitations'
 import { cn } from '@/lib/utils'
 import Panel from '@/pages/Estrategia/components/Panel'
 import { titleCaseName } from '@/pages/Hoy/lib'
+import { nicknameOf, shownName } from '../names'
+import useUnitPeople from '../useUnitPeople'
 import InviteDialog from './InviteDialog'
 
 const TAG = 'inline-flex h-[22px] items-center rounded-full px-2.5 text-[10.5px] font-bold tracking-wide whitespace-nowrap'
@@ -47,6 +49,9 @@ const detalle = (row: UnitInvitationRow): string => {
  */
 const InvitationsSection = () => {
     const { data } = useUnitInvitations()
+    /* Su apodo (sólo de esta Directora) sale del directorio de la unidad: las invitaciones no lo traen */
+    const directory = useUnitPeople(!!data?.available)
+    const nicknames = useMemo(() => new Map((directory.data ?? []).map(item => [item.id, nicknameOf(item.nickname)])), [directory.data])
     const [active, setActive] = useState<string | null>(null)
     const [skipped, setSkipped] = useState<Set<string>>(new Set())
     const [listOpen, setListOpen] = useState(false)
@@ -67,7 +72,7 @@ const InvitationsSection = () => {
     }
 
     const term = search.trim().toLocaleLowerCase('es-MX')
-    const listed = people.filter(row => row.status === tab && (!term || row.name.toLocaleLowerCase('es-MX').includes(term)))
+    const listed = people.filter(row => row.status === tab && (!term || `${row.name} ${nicknames.get(row.id) ?? ''}`.toLocaleLowerCase('es-MX').includes(term)))
     const { totals } = data
 
     return (
@@ -94,7 +99,7 @@ const InvitationsSection = () => {
                     {queue.length > 0 && (
                         <button type="button" onClick={() => setActive(queue[0].id)} className="flex h-11 cursor-pointer items-center gap-2 rounded-full bg-white px-5 text-[14px] font-extrabold text-[#4E31C0] shadow-sm hover:bg-white/90">
                             <GiftIcon className="size-4" /> {totals.invited ? 'Invitar a la siguiente' : 'Invitar a la primera'}
-                            <span className="max-w-[16ch] truncate font-semibold text-[#4E31C0]/70">· {titleCaseName(queue[0].first_name)}</span>
+                            <span className="max-w-[16ch] truncate font-semibold text-[#4E31C0]/70">· {nicknames.get(queue[0].id) ?? titleCaseName(queue[0].first_name)}</span>
                         </button>
                     )}
                     <button type="button" onClick={() => { setTab(queue.length ? 'sin_invitar' : 'invitada'); setListOpen(true) }} className="flex h-11 cursor-pointer items-center gap-2 rounded-full bg-white/14 px-5 text-[14px] font-bold text-white hover:bg-white/20">
@@ -130,7 +135,10 @@ const InvitationsSection = () => {
                                         ? <img src={row.photo} alt="" loading="lazy" className="size-10 shrink-0 rounded-xl object-cover" />
                                         : <span className="hoy-soft grid size-10 shrink-0 place-items-center rounded-xl text-[12.5px] font-extrabold text-primary">{initials(row.name)}</span>}
                                     <span className="min-w-0 flex-1">
-                                        <b className="block truncate text-[13.5px] font-extrabold">{titleCaseName(row.name)}</b>
+                                        <b className="block truncate text-[13.5px] font-extrabold">
+                                            {shownName(row.name, nicknames.get(row.id))}
+                                            {nicknames.get(row.id) && <span className="font-semibold text-muted-foreground"> · {titleCaseName(row.name)}</span>}
+                                        </b>
                                         <small className={cn('block truncate text-[12px]', row.status === 'sin_invitar' && row.has_orders ? 'font-semibold text-[#C0066A] dark:text-[#FF7AC0]' : 'text-muted-foreground')}>{detalle(row)}</small>
                                     </span>
                                     {action
