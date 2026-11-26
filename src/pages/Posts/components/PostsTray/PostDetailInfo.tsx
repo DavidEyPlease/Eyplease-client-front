@@ -30,8 +30,9 @@ const PostDetailInfo = ({ post, media, mediaType }: Props) => {
 	/* Sin foto propia el render repetiría la pieza con el avatar por defecto: primero
 	   se pide la foto y solo después se encola. */
 	const needsPhoto = post.has_photo === false && !!post.vendorable
-	/* Volver a generar, sólo si su empresa tiene piezas del render (las de Zermat las sube el equipo terminadas) */
-	const canRegenerate = useCompany().can('regenerate')
+	/* Volver a generar, sólo si su empresa tiene piezas del render o si ESTA pieza sale del render (el cumpleaños de
+	   Zermat: lo demás de Zermat lo sube el equipo terminado) */
+	const canRegenerate = useCompany().can('regenerate') || !!post.regenerable
 
 	const onRegenerate = () => {
 		if (needsPhoto) {

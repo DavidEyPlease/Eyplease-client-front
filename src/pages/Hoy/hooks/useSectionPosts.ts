@@ -26,6 +26,8 @@ const BIRTHDAY_SECTIONS: string[] = [
     PostSectionTypes.BIRTHDAYS,
     PostSectionTypes.NATIONAL_BIRTHDAYS,
     PostSectionTypes.CUSTOMER_BIRTHDAYS,
+    /* El cumpleaños de Zermat (26-nov-2026) */
+    'zermat_birthday',
 ]
 
 /* Fuera del componente para que sea estable: así `useQueries` sólo recalcula cuando cambia

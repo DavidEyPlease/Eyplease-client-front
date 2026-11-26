@@ -268,7 +268,7 @@ const UnitGroupCard = ({ group, patchPost, index = 0 }: Props) => {
                     </div>
 
                     {/* Las piezas de retos no salen del render: se piden como pedido de diseño, así que aquí no se rehacen */}
-                    {!isChallengePiece && canRegenerate && <div className="flex gap-2">
+                    {!isChallengePiece && (canRegenerate || !!post.regenerable) && <div className="flex gap-2">
                         <button type="button" disabled={regenerating} onClick={onRegenerate} className={GHOST}>
                             <RefreshCwIcon className={cn(regenerating && 'animate-spin')} /> Rehacer
                         </button>

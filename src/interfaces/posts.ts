@@ -59,6 +59,11 @@ export interface IPost {
      * volver a generarlo sin subirla antes daría exactamente la misma pieza.
      */
     has_photo?: boolean
+    /**
+     * La API dice que ESTA pieza sale del render y se puede rehacer aunque su empresa no rehaga en general: el cumpleaños
+     * de Zermat (`zermat_birthday`, 26-nov-2026) en una empresa cuyas demás piezas las sube el equipo terminadas.
+     */
+    regenerable?: boolean
     vendorable?: IPostVendorable | null
     files: EypleaseFile[]
     /**

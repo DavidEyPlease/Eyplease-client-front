@@ -18,6 +18,8 @@ export const IconBySection = ({ sectionKey }: Props) => {
         [PermissionKeys.BIRTHDAYS]: CakeIcon,
         [PermissionKeys.NATIONAL_BIRTHDAYS]: CakeIcon,
         [PermissionKeys.CUSTOMER_BIRTHDAYS]: CakeIcon,
+        /* Cumpleaños de Zermat */
+        zermat_birthday: CakeIcon,
         [PermissionKeys.NEW_BEGGININGS]: SparkleIcon,
         [PermissionKeys.ROAD_TO_SUCCESS]: TargetIcon,
         [PermissionKeys.ANNIVERSARIES]: CalendarIcon,
