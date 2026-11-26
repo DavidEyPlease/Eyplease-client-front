@@ -12,11 +12,19 @@ import { Gender } from "@/interfaces/common"
 import { API_ROUTES } from "@/constants/api"
 import { toast } from "sonner"
 import useRequestQuery from "@/hooks/useRequestQuery"
-import useSponsoredActions from "../../hooks/useSponsoredActions"
+
+/** Lo mínimo para editar a una persona: Galería pasa su vendedora entera y Mi unidad sólo esto. */
+export interface VendorFormPerson {
+    id: string
+    name: string
+    /** Sin dato (null o ausente), el selector arranca vacío y no se manda: se queda el que tiene */
+    gender?: Gender | null
+}
 
 interface Props {
-    sponsored: ISponsored
-    onSuccess?: () => void
+    sponsored: VendorFormPerson
+    /** Con lo guardado (lo que contestó la API sobre lo que se mandó), para que quien abrió el formulario refresque su lista */
+    onSuccess?: (updated: Partial<ISponsored>) => void
 }
 
 const VendorForm = ({ sponsored, onSuccess }: Props) => {
@@ -27,17 +35,17 @@ const VendorForm = ({ sponsored, onSuccess }: Props) => {
         setValue,
         watch,
         formState: { errors },
-    } = useCustomForm<SponsoredFormData>(SponsoredSchema, sponsored)
+    } = useCustomForm<SponsoredFormData>(SponsoredSchema, { name: sponsored.name, gender: sponsored.gender ?? null })
     const { request, requestState } = useRequestQuery()
-    const { updateCachedVendor } = useSponsoredActions()
 
     const onSubmit = handleSubmit(async (data) => {
         try {
-            const response = await request<SponsoredFormData, ISponsored>('PUT', API_ROUTES.SPONSORED.UPDATE.replace('{id}', sponsored.id), data)
+            /* El sexo sólo va si hay uno elegido: la API rechaza `gender: null` («filled») */
+            const body = { name: data.name, ...(data.gender ? { gender: data.gender } : {}) }
+            const response = await request<SponsoredFormData, ISponsored>('PUT', API_ROUTES.SPONSORED.UPDATE.replace('{id}', sponsored.id), body)
             if (response.success) {
                 toast.success('Datos actualizados correctamente')
-                updateCachedVendor(sponsored.id, response.data)
-                onSuccess?.()
+                onSuccess?.({ ...body, ...response.data })
             }
         } catch (error) {
             console.error(error)
@@ -53,7 +61,8 @@ const VendorForm = ({ sponsored, onSuccess }: Props) => {
                     error={errors.name?.message}
                 />
 
-                <ToggleGroup type="single" variant="outline" value={watch('gender')?.toString()} onValueChange={e => setValue('gender', e as Gender)}>
+                {/* Volver a tocar el elegido lo deja vacío: se ignora, el sexo no se borra */}
+                <ToggleGroup type="single" variant="outline" value={watch('gender')?.toString() ?? ''} onValueChange={e => { if (e) setValue('gender', e as Gender) }}>
                     <ToggleGroupItem value={Gender.MALE} aria-label="Masculino">
                         Masculino
                     </ToggleGroupItem>

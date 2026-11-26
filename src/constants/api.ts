@@ -170,6 +170,8 @@ export const API_ROUTES = {
     },
     /** «Invitar con regalo», lado de la Directora: su unidad con cada invitación, la de una consultora y «ya la mandé» */
     UNIT: {
+        /** El directorio de su unidad (el de la app): de aquí sale el sexo de cada consultora */
+        PEOPLE: '/unit/people',
         INVITATIONS: '/unit/invitations',
         INVITATION_SENT: '/unit/invitations/{id}/sent',
         /** La imagen de la invitación (JPEG 1080×1350; pide sesión) */

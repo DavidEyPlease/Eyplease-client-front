@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router'
-import { SearchIcon } from 'lucide-react'
+import { PencilIcon, SearchIcon } from 'lucide-react'
 
 import Modal from '@/components/common/Modal'
 import { APP_ROUTES } from '@/constants/app'
-import { IPost, MainPostSectionTypes } from '@/interfaces/posts'
+import { IPost, IPostVendorable, MainPostSectionTypes } from '@/interfaces/posts'
 import { isNewShell } from '@/layouts/TopShell/useNewShell'
 import { cn } from '@/lib/utils'
 import UnitGroupCard from '@/pages/Hoy/components/UnitGroupCard'
@@ -13,6 +13,7 @@ import useSectionPosts from '@/pages/Hoy/hooks/useSectionPosts'
 import { buildUnitGroups, dayKey } from '@/pages/Hoy/hooks/useUnitToday'
 import { titleCaseName } from '@/pages/Hoy/lib'
 import { groupPostVersions } from '@/pages/Posts/lib'
+import EditPersonDialog from './EditPersonDialog'
 import InvitationsSection from './invitations/InvitationsSection'
 import { useCompany } from '@/utils/company'
 
@@ -28,6 +29,8 @@ const FILTERS: Array<{ key: Filter, label: string }> = [
 interface Person {
     id: string
     name: string
+    /** Consultora del padrón o clienta: sólo a la consultora se le edita el nombre y el sexo */
+    type: IPostVendorable['type']
     /** Sus publicaciones, con la sección de cada una */
     posts: Array<{ post: IPost, section: string, label: string }>
     /** Por noticia, no por versión: dos diseños de la misma noticia cuentan una vez */
@@ -50,13 +53,14 @@ const MyUnitPage = () => {
     const [filter, setFilter] = useState<Filter>('all')
     const [search, setSearch] = useState('')
     const [openId, setOpenId] = useState<string | null>(null)
+    const [editing, setEditing] = useState(false)
 
     const people = useMemo(() => {
         const byId = new Map<string, Person>()
         sections.forEach((section, index) => {
             for (const post of postsBySection[index] ?? []) {
                 if (!post.vendorable) continue
-                const person = byId.get(post.vendorable.id) ?? { id: post.vendorable.id, name: post.vendorable.name, posts: [], pieces: 0, unsent: 0, noPhoto: false, labels: [] }
+                const person = byId.get(post.vendorable.id) ?? { id: post.vendorable.id, name: post.vendorable.name, type: post.vendorable.type, posts: [], pieces: 0, unsent: 0, noPhoto: false, labels: [] }
                 person.posts.push({ post, section: section.key.toString(), label: section.label })
                 byId.set(person.id, person)
             }
@@ -161,11 +165,21 @@ const MyUnitPage = () => {
                 </div>
             )}
 
-            <Modal open={!!opened} size="lg" title={opened ? titleCaseName(opened.name) : ''} description={opened ? `${opened.pieces} ${opened.pieces === 1 ? 'pieza' : 'piezas'} este mes${opened.unsent ? ` · ${opened.unsent} sin compartir` : ' · todo compartido'}` : undefined} onOpenChange={open => { if (!open) setOpenId(null) }}>
+            <Modal open={!!opened} size="lg" title={opened ? titleCaseName(opened.name) : ''} description={opened ? `${opened.pieces} ${opened.pieces === 1 ? 'pieza' : 'piezas'} este mes${opened.unsent ? ` · ${opened.unsent} sin compartir` : ' · todo compartido'}` : undefined} onOpenChange={open => { if (!open) { setOpenId(null); setEditing(false) } }}>
                 <div className="hoy-rail -mx-1 grid max-h-[70vh] grid-cols-1 gap-4 overflow-y-auto px-1 pb-1">
+                    {/* Corregir cómo se llama (p. ej. quitarle un primer nombre que no usa) sin escribirnos */}
+                    {opened?.type === 'sponsored' && (
+                        <div className="flex justify-end">
+                            <button type="button" onClick={() => setEditing(true)} className="flex h-8 cursor-pointer items-center gap-1.5 rounded-[11px] bg-foreground/5 px-3 text-[12px] font-bold transition-colors hover:bg-foreground/10 [&_svg]:size-[15px]">
+                                <PencilIcon /> Editar su nombre y sexo
+                            </button>
+                        </div>
+                    )}
                     {openedGroups.map(group => <UnitGroupCard key={group.id} group={group} patchPost={patchPost} />)}
                 </div>
             </Modal>
+
+            <EditPersonDialog person={opened?.type === 'sponsored' ? opened : null} open={editing} onOpenChange={setEditing} />
         </div>
     )
 }

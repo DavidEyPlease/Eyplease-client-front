@@ -18,7 +18,7 @@ const DROPDOWN_ITEM_STYLES = 'cursor-pointer rounded-lg py-2 font-medium transit
 
 const VendorEdit = ({ sponsored }: Props) => {
     const [openEdit, setOpenEdit] = useState(false)
-    const { actionLoading, onRemoveVendor, onDisplayVendor } = useSponsoredActions()
+    const { actionLoading, updateCachedVendor, onRemoveVendor, onDisplayVendor } = useSponsoredActions()
 
     const DisplayIcon = sponsored.display_in_reports ? EyeOffIcon : EyeIcon
 
@@ -80,7 +80,13 @@ const VendorEdit = ({ sponsored }: Props) => {
                 </DropdownMenuContent>
             </DropdownMenu>
             <Modal open={openEdit} onOpenChange={setOpenEdit} title="Editar">
-                <VendorForm sponsored={sponsored} onSuccess={() => setOpenEdit(false)} />
+                <VendorForm
+                    sponsored={sponsored}
+                    onSuccess={updated => {
+                        updateCachedVendor(sponsored.id, updated)
+                        setOpenEdit(false)
+                    }}
+                />
             </Modal>
         </>
     )
