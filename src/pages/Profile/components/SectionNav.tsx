@@ -30,7 +30,7 @@ const SectionNav = ({ active, onChange }: Props) => {
     /* La facturación no aplica a todas las cuentas: a las excluidas ni se les ofrece */
     const { can } = useCompany()
     /* Facturación no aplica a todas las cuentas; «Mis boletines», sólo si su empresa tiene boletín */
-    const sections = SECTIONS.filter(section => (section.key !== 'billing' || canSeeBilling) && (section.key !== 'reports' || can('newsletter')))
+    const sections = SECTIONS.filter(section => (section.key !== 'billing' || canSeeBilling) && (section.key !== 'reports' || (can('newsletter') && can('portal'))))
 
     return (
         <nav className="flex flex-col gap-1 rounded-3xl border bg-card p-2 shadow-card">

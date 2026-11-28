@@ -42,7 +42,7 @@ const ProfilePage = () => {
 
             <div>
                 {section === 'personal' && <FormEditProfile user={user} />}
-                {section === 'reports' && can('newsletter') && <ReportContent />}
+                {section === 'reports' && can('newsletter') && can('portal') && <ReportContent />}
                 {section === 'billing' && canSeeBilling && <Billing />}
                 {section === 'preferences' && <Preferences user={user} />}
                 {section === 'security' && <ChangePassword />}

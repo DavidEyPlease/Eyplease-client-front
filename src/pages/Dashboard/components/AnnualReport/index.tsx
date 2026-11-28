@@ -2,6 +2,7 @@ import AnnualReportBanner from './AnnualReportBanner'
 import AnnualReportDialog from './AnnualReportDialog'
 import { useAnnualReportPopup } from './useAnnualReportPopup'
 import { isAnnualReportAvailable } from './constants'
+import { useCompany } from '@/utils/company'
 
 /**
  * Reporte anual en la vista Inicio: solo se muestra en junio (cierre del año).
@@ -9,7 +10,9 @@ import { isAnnualReportAvailable } from './constants'
  * por año (memoria en localStorage).
  */
 const AnnualReport = () => {
-    const available = isAnnualReportAvailable()
+    // Sale de los reportes de InTouch (Mary Kay): otra empresa no lo tiene aunque tenga boletín.
+    const { can } = useCompany()
+    const available = isAnnualReportAvailable() && can('portal')
     const { open, dismiss } = useAnnualReportPopup(available)
 
     if (!available) return null

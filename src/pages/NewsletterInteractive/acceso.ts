@@ -15,9 +15,11 @@ const CUENTAS_DE_PRUEBA = null as string[] | null
 /** La unidad de ejemplo es el cierre de septiembre de 2026 (piel de la Plantilla 9). */
 export const MES_DEL_EJEMPLO = '2026-09'
 
-/** Y su empresa tiene boletín (utils/company): a otra empresa no se le ofrece el de Mary Kay ni con candado. */
+/** Y su empresa tiene boletín CON reportes de InTouch (utils/company): a otra empresa no se le ofrece el de Mary Kay ni con
+    candado. Zermat tiene boletín desde el 28-nov-2026, pero el suyo sale de su portal y no tiene versión interactiva. */
 const lanzado = (user?: IUser | null): boolean =>
     companyCan(user as Parameters<typeof companyCan>[0], 'newsletter')
+    && companyCan(user as Parameters<typeof companyCan>[0], 'portal')
     && (import.meta.env.DEV || CUENTAS_DE_PRUEBA === null || (!!user?.account && CUENTAS_DE_PRUEBA.includes(user.account)))
 
 export const planConBoletinDinamico = (user?: IUser | null): boolean =>

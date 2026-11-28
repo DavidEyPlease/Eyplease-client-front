@@ -21,6 +21,7 @@ import { LIGA_LO_QUIERO, ofrecerBoletinDinamico, pielDePlantilla, puedeVerBoleti
 import { NEWSLETTER_TAG } from '@/pages/Reports/lib'
 import useReportsStatus from '@/pages/Reports/useReportsStatus'
 import useAuthStore from '@/store/auth'
+import { useCompany } from '@/utils/company'
 import { reportMonthLabel } from '@/utils/dates'
 
 const CARD = 'shell-glass hoy-rise rounded-[22px] p-[18px]'
@@ -42,6 +43,8 @@ const FORMATS: Array<{ value: ReportFileType, label: string, icon: typeof FileTe
 const NewsletterStudio = () => {
     const wizard = useNewsletterWizard()
     const user = useAuthStore(state => state.user)
+    // «Personalizar contenido» es de las secciones de Mary Kay (sus reportes de InTouch); Zermat elige las suyas aquí.
+    const conPreferencias = useCompany().can('portal')
     const canUploadReports = useAuthStore(state => state.permissions.includes(PermissionKeys.REPORTS_UPLOAD))
     const [submitted, setSubmitted] = useState(false)
     const [sheetOpen, setSheetOpen] = useState(false)
@@ -278,13 +281,15 @@ const NewsletterStudio = () => {
                     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                         <div>
                             <h2 className="text-[15px] font-extrabold tracking-tight">Secciones de este boletín</h2>
-                            <p className="text-[12px] text-muted-foreground">{wizard.sections.length} de {selectable.length} · sólo para esta vez; lo permanente va en «Personalizar contenido»</p>
+                            <p className="text-[12px] text-muted-foreground">{wizard.sections.length} de {selectable.length}{conPreferencias ? ' · sólo para esta vez; lo permanente va en «Personalizar contenido»' : ''}</p>
                         </div>
                         <div className="flex gap-2">
                             <button type="button" onClick={wizard.toggleAllSections} className="h-8 cursor-pointer rounded-[11px] bg-foreground/5 px-3 text-[12px] font-bold transition-colors hover:bg-foreground/10">{allSelected ? 'Quitar todas' : 'Marcar todas'}</button>
-                            <button type="button" onClick={() => setSheetOpen(true)} className="flex h-8 cursor-pointer items-center gap-1.5 rounded-[11px] bg-[#6C47FF]/10 px-3 text-[12px] font-bold text-[#6C47FF] transition-colors hover:bg-[#6C47FF]/18 dark:text-[#C4B5FF]">
-                                <SlidersHorizontalIcon className="size-3.5" /> Personalizar contenido
-                            </button>
+                            {conPreferencias && (
+                                <button type="button" onClick={() => setSheetOpen(true)} className="flex h-8 cursor-pointer items-center gap-1.5 rounded-[11px] bg-[#6C47FF]/10 px-3 text-[12px] font-bold text-[#6C47FF] transition-colors hover:bg-[#6C47FF]/18 dark:text-[#C4B5FF]">
+                                    <SlidersHorizontalIcon className="size-3.5" /> Personalizar contenido
+                                </button>
+                            )}
                         </div>
                     </div>
 
